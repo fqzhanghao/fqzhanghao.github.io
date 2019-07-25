@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fqzhanghao.github.io</id>
     <title>浩浩的博客</title>
-    <updated>2019-07-11T06:27:49.792Z</updated>
+    <updated>2019-07-25T02:32:03.868Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fqzhanghao.github.io"/>
     <link rel="self" href="https://fqzhanghao.github.io/atom.xml"/>
@@ -11,7 +11,7 @@
     <icon>https://fqzhanghao.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, 浩浩的博客</rights>
     <entry>
-        <title type="html"><![CDATA[开始兼职计划]]></title>
+        <title type="html"><![CDATA[兼职计划]]></title>
         <id>https://fqzhanghao.github.io/post/kai-shi-jian-zhi-ji-hua</id>
         <link href="https://fqzhanghao.github.io/post/kai-shi-jian-zhi-ji-hua">
         </link>
@@ -19,8 +19,8 @@
         <content type="html"><![CDATA[<!-- more -->
 <p>我计划分以下几步</p>
 <p>一、社群</p>
-<p>1.创建QQ群：京东优惠券购物群
-2.创建微信群：京东优惠券购物群
+<p>1.创建QQ群：京东优惠券购物群<br>
+2.创建微信群：京东优惠券购物群<br>
 3.创建公众号：京东优惠券购物</p>
 <p>二、小程序</p>
 <p>求生之路图鉴，接入广告</p>
