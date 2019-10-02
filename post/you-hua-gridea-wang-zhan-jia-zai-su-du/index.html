@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>浩浩的博客</title>
+<title>优化Gridea网站加载速度 | 浩浩的博客</title>
 <meta name="description" content="记录日常生活">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -85,60 +85,52 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://fqzhanghao.github.io//post/you-hua-gridea-wang-zhan-jia-zai-su-du">
-                  <h2 class="post-title">优化Gridea网站加载速度</h2>
-                </a>
-                <div class="post-date">
-                  2019-10-02
-                </div>
-                <div class="post-abstract">
-                  <p>我觉得一开始的加载速度实在是太慢了，一直在转圈圈。<br>
+          <div class="post-detail">
+            <h2 class="post-title">优化Gridea网站加载速度</h2>
+            <div class="post-date">2019-10-02</div>
+            
+            <div class="post-content">
+              <p>我觉得一开始的加载速度实在是太慢了，一直在转圈圈。<br>
 打开网站，按F12，查看network选项卡，锁定了几个js脚本比较缓慢，一个sidebar图片比较缓慢。<br>
 so,开始替换。</p>
+<!-- more -->
+<h2 id="1替换jscss">1.替换js,css</h2>
+<p>搜索找到最快的js CDN托管。<a href="https://cdnjs.com/">cdnjs地址</a><br>
+找到Gridea的theme文件夹，我使用的SIMPLE，主要修改以下几处<br>
+your\path\Gridea\themes\simple\templates_blocks\head.ejs</p>
+<pre><code class="language-ejs">\\替换gittalk
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.5.0/gitalk.min.css&quot; /&gt;
+\\替换vue，highlight，aos
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js&quot;&gt;&lt;/script&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css&quot; /&gt;
+</code></pre>
+<p>your\path\Gridea\themes\simple\templates_blocks\scripts.ejs</p>
+<pre><code class="language-ejs">\\替换aos
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js&quot;&gt;&lt;/script&gt;
+\\替换gittalk
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.5.0/gitalk.min.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p>其实我这边没有开评论，也就无所谓了，如果你开了评论系统的话，最好还是替换以下</p>
+<p>##2.替换sidebar图片<br>
+从加载上来看，sidebar图片过大，我这边使用了tinypng进行了压缩处理<a href="https://tinypng.com/">tinypng地址</a>。从800K减小到了200K,能小一点是一点。其实最好换成纯色背景，这样会更快。</p>
 
-                </div>
-              </div>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
                 <a href="https://fqzhanghao.github.io//post/kai-shi-jian-zhi-ji-hua">
-                  <h2 class="post-title">兼职计划</h2>
+                  <h3 class="post-title">
+                    兼职计划
+                  </h3>
                 </a>
-                <div class="post-date">
-                  2019-07-11
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
               </div>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://fqzhanghao.github.io//post/kai-shi-ji-lu">
-                  <h2 class="post-title">开始记录</h2>
-                </a>
-                <div class="post-date">
-                  2019-07-10
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-            </article>
-          
+            
 
-          <div class="pagination-container">
-  
-  
-</div>
+            
+
+          </div>
 
         </div>
       </div>
