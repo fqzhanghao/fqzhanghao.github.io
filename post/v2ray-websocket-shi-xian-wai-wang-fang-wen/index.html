@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>标签列表 | 浩浩的博客</title>
+<title>V2Ray WebSocket实现外网访问 | 浩浩的博客</title>
 <meta name="description" content="记录日常生活">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -85,10 +85,55 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="tag-list-title">标签列表</h2>
-          <div class="tags-container">
+          <div class="post-detail">
+            <h2 class="post-title">V2Ray WebSocket实现外网访问</h2>
+            <div class="post-date">2019-06-07</div>
             
+            <div class="post-content">
+              <p>使用 V2Ray 的 WebSocket 传输协议 + Cloudflare 可以访问无法ping通的ip.简单说就是使用 V2Ray 的 WebSocket + TLS 传输协议，使用Cloudflare 中转。</p>
+<!--more-->
+<h3 id="准备工作">准备工作</h3>
+<p>去<a href="https://my.freenom.com">freenom</a>注册一个免费域名.</p>
+<p>去<a href="https://dash.cloudflare.com">cloudflare</a>注册一个账户</p>
+<h3 id="开始工作">开始工作</h3>
+<ol>
+<li>先去cloudflare的DNS配置页配置如下</li>
+</ol>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607101504.png" alt=""></figure>
+<p>加密选项配置如下</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607101620.png" alt=""></figure>
+<ol start="2">
+<li>去免费域名处,将第一步的DNS解析填入</li>
+</ol>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607101750.png" alt=""></figure>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607104552.png" alt=""></figure>
+<p>3.完成以后,就可以去你的IDC服务商后台,使用webshell安装V2ray.配置成websocket+ssl模式.域名填写为准备工作的免费域名.自己搞太麻烦了,我这边用的是一键脚本.</p>
+<blockquote>
+<p>bash &lt;(curl -s -L https://233v2.com/v2ray.sh)</p>
+</blockquote>
+<p>这一步会自动配置v2ray参数,并生成ssl证书,如果自己搞的话,还需要在nginx里面配置,自己创建证书.(当然也可以用cloudflare的,免费15年,一劳永逸)</p>
+<p>4.再到cloudflare网站去,将dns选项中的灰色云朵,点黄即可.状态为DNS and HTTP proxy(CDN)</p>
+<h3 id="备注">备注</h3>
+<p>无限域名模式.万一上面的操作完成以后,还是有问题.可以在cloudflare使用如下配置.</p>
+<p>WebSocket 协议，80 端口，Cloudflare 的 Crypto 选项卡 SSL 为 Flexible</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-aira2-he-webui">
+                  <h3 class="post-title">
+                    服务器搭建aira2和webui
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
           </div>
+
         </div>
       </div>
     </div>

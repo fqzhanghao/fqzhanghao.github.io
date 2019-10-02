@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>标签列表 | 浩浩的博客</title>
+<title>screen命令速查 | 浩浩的博客</title>
 <meta name="description" content="记录日常生活">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -85,10 +85,48 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="tag-list-title">标签列表</h2>
-          <div class="tags-container">
+          <div class="post-detail">
+            <h2 class="post-title">screen命令速查</h2>
+            <div class="post-date">2019-04-17</div>
             
+            <div class="post-content">
+              <p>系统管理员经常需要SSH 或者telent 远程登录到Linux 服务器，经常运行一些需要很长时间才能完成的任务，比如系统备份、ftp 传输等等。通常情况下我们都是为每一个这样的任务开一个远程终端窗口，因为它们执行的时间太长了。必须等待它们执行完毕，在此期间不能关掉窗口或者断开连接，否则这个任务就会被杀掉，一切半途而废了。</p>
+<!-- more-->
+<p>GNU Screen可以看作是窗口管理器的命令行界面版本。它提供了统一的管理多个会话的界面和相应的功能。</p>
+<p>screen -S yourname -&gt; 新建一个叫yourname的session<br>
+screen -ls -&gt; 列出当前所有的session<br>
+screen -r yourname -&gt; 回到yourname这个session<br>
+screen -d yourname -&gt; 远程detach某个session<br>
+screen -d -r yourname -&gt; 结束当前session并回到yourname这个session</p>
+<p>附录:</p>
+<p>问题描述:</p>
+<p>userA首先登录系统，使用screen开启了一个session，然后detach这个窗口。</p>
+<p>userB然后登录系统，通过su - userA 变成userA，然后使用screen -r 恢复之前detached窗口，这时系统报如下错误:</p>
+<p>Cannot open your terminal '/dev/pts/1' - please check.</p>
+<p>解决方法:</p>
+<p>userB在 su - userA以后，执行如下命令即可:</p>
+<p>script /dev/null</p>
+<p>参考链接:</p>
+<p><a href="http://blog.sina.com.cn/s/blog_704836f401010osn.html">解决screen Cannot open your terminal '/dev/pts/1'问题</a></p>
+<p><a href="https://www.cnblogs.com/lpfuture/p/5786843.html">linux screen工具</a></p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://fqzhanghao.github.io//post/picgo-ce-shi">
+                  <h3 class="post-title">
+                    picgo测试
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
           </div>
+
         </div>
       </div>
     </div>

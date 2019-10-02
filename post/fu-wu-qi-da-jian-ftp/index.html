@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>标签列表 | 浩浩的博客</title>
+<title>服务器搭建ftp | 浩浩的博客</title>
 <meta name="description" content="记录日常生活">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -85,10 +85,66 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="tag-list-title">标签列表</h2>
-          <div class="tags-container">
+          <div class="post-detail">
+            <h2 class="post-title">服务器搭建ftp</h2>
+            <div class="post-date">2019-05-23</div>
             
+            <div class="post-content">
+              <p>新买的服务器安装ftp服务器</p>
+<!-- more-->
+<p>1、使用命令安装</p>
+<blockquote>
+<p>sudo apt install vsftpd</p>
+</blockquote>
+<p>2、为FTP添加用户</p>
+<blockquote>
+<p>sudo useradd -m ye</p>
+</blockquote>
+<p>3、为ye用户设置密码</p>
+<blockquote>
+<p>sudo passwd ye</p>
+</blockquote>
+<p>4、在/home/ye/目录中创建一个download目录用于作为ftp的根目录</p>
+<blockquote>
+<p>cd /home/ye</p>
+<p>mkdir download</p>
+</blockquote>
+<p>5、使用 sudo vim /etc/vsftpd.conf编辑配置文件，用于配置目录信息</p>
+<pre><code>local_root=/home/sunftp/ftpdir
+allow_writeable_chroot=YES
+chroot_local_user=YES
+</code></pre>
+<p>6、其他选择默认，保存退出，然后启动</p>
+<blockquote>
+<p>sudo service vsftpd start</p>
+</blockquote>
+<p>备注:</p>
+<ol>
+<li>
+<p><a href="https://blog.csdn.net/liwb94/article/details/80090082">vsftpd参数参考</a></p>
+</li>
+<li>
+<p>第五步中的配置: 如果不进行参数配置也是可以的.用户的根目录为/home/ye.即当前登录用户的根目录.对于我们来说够用了,不用配置太多</p>
+</li>
+</ol>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-http-fu-wu">
+                  <h3 class="post-title">
+                    服务器搭建http服务
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
           </div>
+
         </div>
       </div>
     </div>

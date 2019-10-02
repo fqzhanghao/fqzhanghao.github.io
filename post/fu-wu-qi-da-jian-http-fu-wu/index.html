@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>兼职计划 | 浩浩的博客</title>
+<title>服务器搭建http服务 | 浩浩的博客</title>
 <meta name="description" content="记录日常生活">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -86,29 +86,83 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">兼职计划</h2>
-            <div class="post-date">2019-07-11</div>
+            <h2 class="post-title">服务器搭建http服务</h2>
+            <div class="post-date">2019-05-23</div>
             
             <div class="post-content">
-              <!-- more -->
-<p>我计划分以下几步</p>
-<p>一、社群</p>
-<p>1.创建QQ群：京东优惠券购物群<br>
-2.创建微信群：京东优惠券购物群<br>
-3.创建公众号：京东优惠券购物</p>
-<p>二、小程序</p>
-<p>求生之路图鉴，接入广告</p>
-<p>三、app</p>
-<p>mp3铃声剪辑，接入广告</p>
+              <p>新买的服务器安装http服务器</p>
+<!-- more-->
+<p>首先安装Apache</p>
+<blockquote>
+<p>sudo apt-get install apache2</p>
+</blockquote>
+<p>Apache2的默认访问端口为80，当端口被占用时需要更改其访问端口</p>
+<p>进入apache2的安装目录  /etc/apache2/，修改器ports.conf文件</p>
+<pre><code># If you just change the port or add more ports here, you will likely also
+# have to change the VirtualHost statement in
+# /etc/apache2/sites-enabled/000-default.conf
+
+#Listen 80
+Listen 8001
+
+&lt;IfModule ssl_module&gt;
+        Listen 443
+&lt;/IfModule&gt;
+
+&lt;IfModule mod_gnutls.c&gt;
+        Listen 443
+&lt;/IfModule&gt;
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+</code></pre>
+<p>进入 目录 /etc/apache2/sites-available， 修改000-default.conf文件</p>
+<pre><code>#&lt;VirtualHost *:80&gt;
+&lt;VirtualHost *:8001&gt;
+        # The ServerName directive sets the request scheme, hostname and port that
+        # the server uses to identify itself. This is used when creating
+        # redirection URLs. In the context of virtual hosts, the ServerName
+        # specifies what hostname must appear in the request's Host: header to
+        # match this virtual host. For the default virtual host (this file) this
+        # value is not decisive as it is used as a last resort host regardless.
+        # However, you must set it for any further virtual host explicitly.
+        #ServerName www.example.com
+
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html
+
+        # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+        # error, crit, alert, emerg.
+        # It is also possible to configure the loglevel for particular
+        # modules, e.g.
+        #LogLevel info ssl:warn
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        # For most configuration files from conf-available/, which are
+        # enabled or disabled at a global level, it is possible to
+        # include a line for only one particular virtual host. For example the
+        # following line enables the CGI configuration for this host only
+        # after it has been globally disabled with &quot;a2disconf&quot;.
+        #Include conf-available/serve-cgi-bin.conf
+&lt;/VirtualHost&gt;
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+</code></pre>
+<p>然后重启apache服务器</p>
+<blockquote>
+<p>sudo /etc/init.d/apache2 restart</p>
+</blockquote>
+<p>apache服务器的默认目录在/var/www/html，如果想利用http服务器下载文件，需要删除其index.html文件，然后把文件放在该目录即可.</p>
 
             </div>
             
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://fqzhanghao.github.io//post/v2ray-websocket-shi-xian-wai-wang-fang-wen">
+                <a href="https://fqzhanghao.github.io//post/fu-wu-qi-duan-da-jian-ss">
                   <h3 class="post-title">
-                    V2Ray WebSocket实现外网访问
+                    服务器端搭建ss
                   </h3>
                 </a>
               </div>

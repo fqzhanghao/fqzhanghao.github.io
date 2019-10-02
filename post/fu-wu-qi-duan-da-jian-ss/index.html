@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>标签列表 | 浩浩的博客</title>
+<title>服务器端搭建ss | 浩浩的博客</title>
 <meta name="description" content="记录日常生活">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -85,10 +85,86 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="tag-list-title">标签列表</h2>
-          <div class="tags-container">
+          <div class="post-detail">
+            <h2 class="post-title">服务器端搭建ss</h2>
+            <div class="post-date">2019-05-23</div>
             
+            <div class="post-content">
+              <p>新买的服务器安装ss</p>
+<!-- more-->
+<h2 id="安装ss">安装ss</h2>
+<blockquote>
+<p>sudo apt install python3-pip</p>
+<p>pip3 install shadowsocks</p>
+</blockquote>
+<h2 id="启动">启动</h2>
+<p>2.1直接启动</p>
+<blockquote>
+<p>ssserver -p 8388 -k password -m rc4-md5 -d start</p>
+</blockquote>
+<p>2.2配置文件启动</p>
+<p>新建/etc/shadowsocks.json文件并写入</p>
+<pre><code>{
+    &quot;server&quot;:&quot;xxxxxx&quot;,
+    &quot;server_port&quot;:xxxx,
+    &quot;local_address&quot;:&quot;127.0.0.1&quot;,
+    &quot;local_port&quot;:1080,
+    &quot;password&quot;:&quot;xxxxx&quot;,
+    &quot;timeout&quot;:300,
+    &quot;method&quot;:&quot;rc4-md5&quot;
+}
+</code></pre>
+<p>使用命令启动</p>
+<blockquote>
+<p>ssserver -c /etc/shadowsocks.json -d start</p>
+</blockquote>
+<h2 id="开机自启动">开机自启动</h2>
+<p>新建 /etc/ss.conf并写入：</p>
+<pre><code>[program:shadowsocks]
+command=ssserver -c /etc/shadowsocks.json
+autostart=true
+autorestart=true
+user=root
+log_stderr=true
+logfile=/var/log/shadowsocks.log
+</code></pre>
+<p>打开/etc/rc.local并添加一行：</p>
+<blockquote>
+<p>service ss start</p>
+</blockquote>
+<h2 id="备注">备注</h2>
+<p>启动ss出现undefined symbol: EVP_CIPHER_CTX_cleanup错误。</p>
+<p>修改方法：</p>
+<ol>
+<li>用vim打开文件：vim /PYTHON_PATH/dist-packages/shadowsocks/crypto/openssl.py (该路径请根据自己的系统情况自行修改，如果不知道该文件在哪里的话，可以使用find命令查找文件位置)</li>
+<li>跳转到52行（shadowsocks2.8.2版本，其他版本搜索一下cleanup）</li>
+<li>进入编辑模式</li>
+<li>将第52行libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)<br>
+改为libcrypto.EVP_CIPHER_CTX_reset.argtypes = (c_void_p,)</li>
+<li>再次搜索cleanup（全文件共2处，此处位于111行），将libcrypto.EVP_CIPHER_CTX_cleanup(self._ctx)<br>
+改为libcrypto.EVP_CIPHER_CTX_reset(self._ctx)</li>
+<li>保存并退出</li>
+<li>启动shadowsocks服务：service shadowsocks start 或 sslocal -c ss配置文件目录</li>
+<li>问题解决</li>
+</ol>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://fqzhanghao.github.io//post/l4d2-fang-d-zhi-nan">
+                  <h3 class="post-title">
+                    L4D2防D指南
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
           </div>
+
         </div>
       </div>
     </div>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>服务器搭建aira2和webui | 浩浩的博客</title>
+<meta name="description" content="记录日常生活">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://fqzhanghao.github.io//favicon.ico?v=1569998937266">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://fqzhanghao.github.io/">
+        <img src="https://fqzhanghao.github.io//images/avatar.png?v=1569998937266" class="site-logo">
+        <h1 class="site-title">浩浩的博客</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      记录日常生活
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://fqzhanghao.github.io//atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">服务器搭建aira2和webui</h2>
+            <div class="post-date">2019-05-23</div>
+            
+            <div class="post-content">
+              <p>新买的服务器安装下载服务器</p>
+<!-- more-->
+<h3 id="基础软件的安装">基础软件的安装</h3>
+<p>在下载Aria2之前先安装一些基础必备的软件：git、screen、nodejs</p>
+<blockquote>
+<p>sudo apt-get install git screen nodejs</p>
+</blockquote>
+<p>如果有些软件已经安装过了就不用再安装</p>
+<h3 id="在命令行中安装aria2">在命令行中安装aria2</h3>
+<p>在Ubuntu 18.04操作系统命令行中运行以下命令：</p>
+<blockquote>
+<p>sudo apt-get install aria2</p>
+</blockquote>
+<p>以下是安装aria2后的一些基本常识：</p>
+<pre><code>sudo mkdir /etc/aria2　#新建文件夹 
+
+sudo touch /etc/aria2/aria2.session　#新建session文件
+
+sudo chmod 777 /etc/aria2/aria2.session　#设置aria2.session可写 
+
+sudo vi /etc/aria2/aria2.conf　#创建配置文件
+</code></pre>
+<h3 id="aria2conf文件配置">aria2.conf文件配置</h3>
+<pre><code>dir=/home/ye/download
+
+disable-ipv6=true
+
+#打开rpc的目的是为了给web管理端用
+
+enable-rpc=true
+
+rpc-allow-origin-all=true
+
+rpc-listen-all=true
+
+#rpc-listen-port=6800
+
+#断点续传
+
+continue=true
+
+input-file=/etc/aria2/aria2.session
+
+save-session=/etc/aria2/aria2.session
+
+#最大同时下载任务数
+
+max-concurrent-downloads=20
+
+save-session-interval=120
+
+# Http/FTP 相关
+
+connect-timeout=120
+
+#lowest-speed-limit=10K
+
+#同服务器连接数
+
+max-connection-per-server=10
+
+#max-file-not-found=2
+
+#最小文件分片大小, 下载线程数上限取决于能分出多少片, 对于小文件重要
+
+min-split-size=10M
+
+#单文件最大线程数, 路由建议值: 5
+
+split=10
+
+check-certificate=false
+
+#http-no-cache=true
+</code></pre>
+<h3 id="下载aria2webui">下载Aria2WebUI</h3>
+<p>首先切换到用户目录下</p>
+<blockquote>
+<p>cd /home/ye</p>
+</blockquote>
+<p>同样也是一行命令：</p>
+<blockquote>
+<p>git clone https://github.com/ziahamza/webui-aria2.git</p>
+</blockquote>
+<p>下载完之后会在当前目录下创建一个webui-aria2目录。</p>
+<h3 id="设置aria2监听rpc启动webui">设置Aria2监听rpc，启动WebUI</h3>
+<blockquote>
+<p>screen -S aria2</p>
+</blockquote>
+<p>新建一个名为aria2的会话</p>
+<p><strong>注意那个S是大写！S是大写！S是大写！</strong></p>
+<p>在新的会话中输入：</p>
+<pre><code class="language-undefined">aria2c --conf-path=/etc/aria2/aria2.conf --enable-rpc --rpc-listen-all --rpc-secret xxxxxxx
+</code></pre>
+<p>注意：参数–rpc-secret 后面的字符串是自己自定义的token密码，要记住！要记住！要记住！</p>
+<p>执行后会显示：</p>
+<pre><code class="language-undefined">root@ubuntu:~# aria2c --conf-path=/etc/aria2/aria2.conf --enable-rpc --rpc-listen-all --rpc-secret xxxxxxx
+
+08/01 15:42:28 [NOTICE] IPv4 RPC: listening on TCP port 6800
+
+08/01 15:42:28 [NOTICE] IPv6 RPC: listening on TCP port 6800root@ubuntu:~# aria2c --enable-rpc --rpc-listen-all --rpc-secret asdfghjkl
+
+08/01 15:42:28 [NOTICE] IPv4 RPC: listening on TCP port 6800
+
+08/01 15:42:28 [NOTICE] IPv6 RPC: listening on TCP port 6800
+</code></pre>
+<p>记住port后面的端口号“6800”</p>
+<p>然后依次按下键盘的ctrl、A、D 这三个键，回到前一个会话，输入</p>
+<pre><code class="language-undefined">screen -S webui
+</code></pre>
+<p>新建一个名为webui的会话</p>
+<p>在新的会话中，先跳转到上面说的webui-aria2目录中，再输入启动命令</p>
+<pre><code>cd /home/ye/webui-aria2
+node node-server.js
+</code></pre>
+<p>显示如下:</p>
+<pre><code class="language-undefined">root@ubuntu:~/webui-aria2# node node-server.js
+WebUI Aria2 Server is running on http://localhost:8888
+</code></pre>
+<p>出现<code>WebUI Aria2 Server is running on http://localhost:8888</code>说明WebUI已经启动成功，访问 http://YourIP:8888 即可进入Web界面</p>
+<p>还是依次按下键盘的ctrl、A、D 这三个键，回到前一个会话，如果是用ssh客户端（如Putty）登陆的会话，这个时候就可以关闭这个会话了。</p>
+<h3 id="进入webui界面通过rpc接口连接aria2">进入WebUI界面，通过rpc接口连接Aria2</h3>
+<p>如果你是在有公网ip的vps上搭建的，访问“公网ip:8888/”就行了。</p>
+<p>进入WebUI界面后可能会提示</p>
+<pre><code class="language-undefined">糟糕！ 连接到 Aria2 RPC 服务器时认证失败，将在10秒后重试。
+您可能需要确认您的身份验证信息，请前往 设置 &gt; 连接设置
+</code></pre>
+<p>这个时候在设置&gt;连接设置里设置一下RPC服务</p>
+<p>主机后面填写Aria2服务所在的主机的ip，端口就是第四步中启动Aria2 监听RPC的端口6800，密码令牌就是参数**–rpc-secret 后面的字符串，**第四步中让你记住的那个。这三个填完点最下面的“保存连接配置”即可。只要配置填对了就能连接到Aria2了</p>
+<p>教程到此结束了,其余的设置可参考下面的链接,里面有具体的用法和具体含义</p>
+<h3 id="参考链接">参考链接:</h3>
+<p><a href="https://blog.sunriseydy.top/technology/server-blog/server/zaiubuntushangyongaria2hearia2webuishixianyuanchengduoxianchengxiazai/">ubuntu上安装aria2及webui</a></p>
+<p><a href="https://ywnz.com/linuxjc/2686.html">在Ubuntu 18.04系统下安装配置和使用aria2</a></p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-ftp">
+                  <h3 class="post-title">
+                    服务器搭建ftp
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

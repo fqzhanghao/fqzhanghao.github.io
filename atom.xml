@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fqzhanghao.github.io/</id>
     <title>浩浩的博客</title>
-    <updated>2019-10-02T06:30:22.383Z</updated>
+    <updated>2019-10-02T06:49:17.410Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fqzhanghao.github.io/"/>
     <link rel="self" href="https://fqzhanghao.github.io//atom.xml"/>
@@ -65,12 +65,451 @@ your\path\Gridea\themes\simple\templates_blocks\head.ejs</p>
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[开始记录]]></title>
-        <id>https://fqzhanghao.github.io//post/kai-shi-ji-lu</id>
-        <link href="https://fqzhanghao.github.io//post/kai-shi-ji-lu">
+        <title type="html"><![CDATA[V2Ray WebSocket实现外网访问]]></title>
+        <id>https://fqzhanghao.github.io//post/v2ray-websocket-shi-xian-wai-wang-fang-wen</id>
+        <link href="https://fqzhanghao.github.io//post/v2ray-websocket-shi-xian-wai-wang-fang-wen">
         </link>
-        <updated>2019-07-10T08:14:41.000Z</updated>
-        <content type="html"><![CDATA[<p>从今天开始，写一写文字，防止每天过的都一样，记录日常生活。</p>
+        <updated>2019-06-07T06:41:17.000Z</updated>
+        <summary type="html"><![CDATA[<p>使用 V2Ray 的 WebSocket 传输协议 + Cloudflare 可以访问无法ping通的ip.简单说就是使用 V2Ray 的 WebSocket + TLS 传输协议，使用Cloudflare 中转。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>使用 V2Ray 的 WebSocket 传输协议 + Cloudflare 可以访问无法ping通的ip.简单说就是使用 V2Ray 的 WebSocket + TLS 传输协议，使用Cloudflare 中转。</p>
+<!--more-->
+<h3 id="准备工作">准备工作</h3>
+<p>去<a href="https://my.freenom.com">freenom</a>注册一个免费域名.</p>
+<p>去<a href="https://dash.cloudflare.com">cloudflare</a>注册一个账户</p>
+<h3 id="开始工作">开始工作</h3>
+<ol>
+<li>先去cloudflare的DNS配置页配置如下</li>
+</ol>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607101504.png" alt=""></figure>
+<p>加密选项配置如下</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607101620.png" alt=""></figure>
+<ol start="2">
+<li>去免费域名处,将第一步的DNS解析填入</li>
+</ol>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607101750.png" alt=""></figure>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607104552.png" alt=""></figure>
+<p>3.完成以后,就可以去你的IDC服务商后台,使用webshell安装V2ray.配置成websocket+ssl模式.域名填写为准备工作的免费域名.自己搞太麻烦了,我这边用的是一键脚本.</p>
+<blockquote>
+<p>bash &lt;(curl -s -L https://233v2.com/v2ray.sh)</p>
+</blockquote>
+<p>这一步会自动配置v2ray参数,并生成ssl证书,如果自己搞的话,还需要在nginx里面配置,自己创建证书.(当然也可以用cloudflare的,免费15年,一劳永逸)</p>
+<p>4.再到cloudflare网站去,将dns选项中的灰色云朵,点黄即可.状态为DNS and HTTP proxy(CDN)</p>
+<h3 id="备注">备注</h3>
+<p>无限域名模式.万一上面的操作完成以后,还是有问题.可以在cloudflare使用如下配置.</p>
+<p>WebSocket 协议，80 端口，Cloudflare 的 Crypto 选项卡 SSL 为 Flexible</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[服务器搭建aira2和webui]]></title>
+        <id>https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-aira2-he-webui</id>
+        <link href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-aira2-he-webui">
+        </link>
+        <updated>2019-05-23T06:47:31.000Z</updated>
+        <summary type="html"><![CDATA[<p>新买的服务器安装下载服务器</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>新买的服务器安装下载服务器</p>
+<!-- more-->
+<h3 id="基础软件的安装">基础软件的安装</h3>
+<p>在下载Aria2之前先安装一些基础必备的软件：git、screen、nodejs</p>
+<blockquote>
+<p>sudo apt-get install git screen nodejs</p>
+</blockquote>
+<p>如果有些软件已经安装过了就不用再安装</p>
+<h3 id="在命令行中安装aria2">在命令行中安装aria2</h3>
+<p>在Ubuntu 18.04操作系统命令行中运行以下命令：</p>
+<blockquote>
+<p>sudo apt-get install aria2</p>
+</blockquote>
+<p>以下是安装aria2后的一些基本常识：</p>
+<pre><code>sudo mkdir /etc/aria2　#新建文件夹 
+
+sudo touch /etc/aria2/aria2.session　#新建session文件
+
+sudo chmod 777 /etc/aria2/aria2.session　#设置aria2.session可写 
+
+sudo vi /etc/aria2/aria2.conf　#创建配置文件
+</code></pre>
+<h3 id="aria2conf文件配置">aria2.conf文件配置</h3>
+<pre><code>dir=/home/ye/download
+
+disable-ipv6=true
+
+#打开rpc的目的是为了给web管理端用
+
+enable-rpc=true
+
+rpc-allow-origin-all=true
+
+rpc-listen-all=true
+
+#rpc-listen-port=6800
+
+#断点续传
+
+continue=true
+
+input-file=/etc/aria2/aria2.session
+
+save-session=/etc/aria2/aria2.session
+
+#最大同时下载任务数
+
+max-concurrent-downloads=20
+
+save-session-interval=120
+
+# Http/FTP 相关
+
+connect-timeout=120
+
+#lowest-speed-limit=10K
+
+#同服务器连接数
+
+max-connection-per-server=10
+
+#max-file-not-found=2
+
+#最小文件分片大小, 下载线程数上限取决于能分出多少片, 对于小文件重要
+
+min-split-size=10M
+
+#单文件最大线程数, 路由建议值: 5
+
+split=10
+
+check-certificate=false
+
+#http-no-cache=true
+</code></pre>
+<h3 id="下载aria2webui">下载Aria2WebUI</h3>
+<p>首先切换到用户目录下</p>
+<blockquote>
+<p>cd /home/ye</p>
+</blockquote>
+<p>同样也是一行命令：</p>
+<blockquote>
+<p>git clone https://github.com/ziahamza/webui-aria2.git</p>
+</blockquote>
+<p>下载完之后会在当前目录下创建一个webui-aria2目录。</p>
+<h3 id="设置aria2监听rpc启动webui">设置Aria2监听rpc，启动WebUI</h3>
+<blockquote>
+<p>screen -S aria2</p>
+</blockquote>
+<p>新建一个名为aria2的会话</p>
+<p><strong>注意那个S是大写！S是大写！S是大写！</strong></p>
+<p>在新的会话中输入：</p>
+<pre><code class="language-undefined">aria2c --conf-path=/etc/aria2/aria2.conf --enable-rpc --rpc-listen-all --rpc-secret xxxxxxx
+</code></pre>
+<p>注意：参数–rpc-secret 后面的字符串是自己自定义的token密码，要记住！要记住！要记住！</p>
+<p>执行后会显示：</p>
+<pre><code class="language-undefined">root@ubuntu:~# aria2c --conf-path=/etc/aria2/aria2.conf --enable-rpc --rpc-listen-all --rpc-secret xxxxxxx
+
+08/01 15:42:28 [NOTICE] IPv4 RPC: listening on TCP port 6800
+
+08/01 15:42:28 [NOTICE] IPv6 RPC: listening on TCP port 6800root@ubuntu:~# aria2c --enable-rpc --rpc-listen-all --rpc-secret asdfghjkl
+
+08/01 15:42:28 [NOTICE] IPv4 RPC: listening on TCP port 6800
+
+08/01 15:42:28 [NOTICE] IPv6 RPC: listening on TCP port 6800
+</code></pre>
+<p>记住port后面的端口号“6800”</p>
+<p>然后依次按下键盘的ctrl、A、D 这三个键，回到前一个会话，输入</p>
+<pre><code class="language-undefined">screen -S webui
+</code></pre>
+<p>新建一个名为webui的会话</p>
+<p>在新的会话中，先跳转到上面说的webui-aria2目录中，再输入启动命令</p>
+<pre><code>cd /home/ye/webui-aria2
+node node-server.js
+</code></pre>
+<p>显示如下:</p>
+<pre><code class="language-undefined">root@ubuntu:~/webui-aria2# node node-server.js
+WebUI Aria2 Server is running on http://localhost:8888
+</code></pre>
+<p>出现<code>WebUI Aria2 Server is running on http://localhost:8888</code>说明WebUI已经启动成功，访问 http://YourIP:8888 即可进入Web界面</p>
+<p>还是依次按下键盘的ctrl、A、D 这三个键，回到前一个会话，如果是用ssh客户端（如Putty）登陆的会话，这个时候就可以关闭这个会话了。</p>
+<h3 id="进入webui界面通过rpc接口连接aria2">进入WebUI界面，通过rpc接口连接Aria2</h3>
+<p>如果你是在有公网ip的vps上搭建的，访问“公网ip:8888/”就行了。</p>
+<p>进入WebUI界面后可能会提示</p>
+<pre><code class="language-undefined">糟糕！ 连接到 Aria2 RPC 服务器时认证失败，将在10秒后重试。
+您可能需要确认您的身份验证信息，请前往 设置 &gt; 连接设置
+</code></pre>
+<p>这个时候在设置&gt;连接设置里设置一下RPC服务</p>
+<p>主机后面填写Aria2服务所在的主机的ip，端口就是第四步中启动Aria2 监听RPC的端口6800，密码令牌就是参数**–rpc-secret 后面的字符串，**第四步中让你记住的那个。这三个填完点最下面的“保存连接配置”即可。只要配置填对了就能连接到Aria2了</p>
+<p>教程到此结束了,其余的设置可参考下面的链接,里面有具体的用法和具体含义</p>
+<h3 id="参考链接">参考链接:</h3>
+<p><a href="https://blog.sunriseydy.top/technology/server-blog/server/zaiubuntushangyongaria2hearia2webuishixianyuanchengduoxianchengxiazai/">ubuntu上安装aria2及webui</a></p>
+<p><a href="https://ywnz.com/linuxjc/2686.html">在Ubuntu 18.04系统下安装配置和使用aria2</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[服务器搭建ftp]]></title>
+        <id>https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-ftp</id>
+        <link href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-ftp">
+        </link>
+        <updated>2019-05-23T06:47:03.000Z</updated>
+        <summary type="html"><![CDATA[<p>新买的服务器安装ftp服务器</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>新买的服务器安装ftp服务器</p>
+<!-- more-->
+<p>1、使用命令安装</p>
+<blockquote>
+<p>sudo apt install vsftpd</p>
+</blockquote>
+<p>2、为FTP添加用户</p>
+<blockquote>
+<p>sudo useradd -m ye</p>
+</blockquote>
+<p>3、为ye用户设置密码</p>
+<blockquote>
+<p>sudo passwd ye</p>
+</blockquote>
+<p>4、在/home/ye/目录中创建一个download目录用于作为ftp的根目录</p>
+<blockquote>
+<p>cd /home/ye</p>
+<p>mkdir download</p>
+</blockquote>
+<p>5、使用 sudo vim /etc/vsftpd.conf编辑配置文件，用于配置目录信息</p>
+<pre><code>local_root=/home/sunftp/ftpdir
+allow_writeable_chroot=YES
+chroot_local_user=YES
+</code></pre>
+<p>6、其他选择默认，保存退出，然后启动</p>
+<blockquote>
+<p>sudo service vsftpd start</p>
+</blockquote>
+<p>备注:</p>
+<ol>
+<li>
+<p><a href="https://blog.csdn.net/liwb94/article/details/80090082">vsftpd参数参考</a></p>
+</li>
+<li>
+<p>第五步中的配置: 如果不进行参数配置也是可以的.用户的根目录为/home/ye.即当前登录用户的根目录.对于我们来说够用了,不用配置太多</p>
+</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[服务器搭建http服务]]></title>
+        <id>https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-http-fu-wu</id>
+        <link href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-http-fu-wu">
+        </link>
+        <updated>2019-05-23T06:46:34.000Z</updated>
+        <summary type="html"><![CDATA[<p>新买的服务器安装http服务器</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>新买的服务器安装http服务器</p>
+<!-- more-->
+<p>首先安装Apache</p>
+<blockquote>
+<p>sudo apt-get install apache2</p>
+</blockquote>
+<p>Apache2的默认访问端口为80，当端口被占用时需要更改其访问端口</p>
+<p>进入apache2的安装目录  /etc/apache2/，修改器ports.conf文件</p>
+<pre><code># If you just change the port or add more ports here, you will likely also
+# have to change the VirtualHost statement in
+# /etc/apache2/sites-enabled/000-default.conf
+
+#Listen 80
+Listen 8001
+
+&lt;IfModule ssl_module&gt;
+        Listen 443
+&lt;/IfModule&gt;
+
+&lt;IfModule mod_gnutls.c&gt;
+        Listen 443
+&lt;/IfModule&gt;
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+</code></pre>
+<p>进入 目录 /etc/apache2/sites-available， 修改000-default.conf文件</p>
+<pre><code>#&lt;VirtualHost *:80&gt;
+&lt;VirtualHost *:8001&gt;
+        # The ServerName directive sets the request scheme, hostname and port that
+        # the server uses to identify itself. This is used when creating
+        # redirection URLs. In the context of virtual hosts, the ServerName
+        # specifies what hostname must appear in the request's Host: header to
+        # match this virtual host. For the default virtual host (this file) this
+        # value is not decisive as it is used as a last resort host regardless.
+        # However, you must set it for any further virtual host explicitly.
+        #ServerName www.example.com
+
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html
+
+        # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+        # error, crit, alert, emerg.
+        # It is also possible to configure the loglevel for particular
+        # modules, e.g.
+        #LogLevel info ssl:warn
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        # For most configuration files from conf-available/, which are
+        # enabled or disabled at a global level, it is possible to
+        # include a line for only one particular virtual host. For example the
+        # following line enables the CGI configuration for this host only
+        # after it has been globally disabled with &quot;a2disconf&quot;.
+        #Include conf-available/serve-cgi-bin.conf
+&lt;/VirtualHost&gt;
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+</code></pre>
+<p>然后重启apache服务器</p>
+<blockquote>
+<p>sudo /etc/init.d/apache2 restart</p>
+</blockquote>
+<p>apache服务器的默认目录在/var/www/html，如果想利用http服务器下载文件，需要删除其index.html文件，然后把文件放在该目录即可.</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[服务器端搭建ss]]></title>
+        <id>https://fqzhanghao.github.io//post/fu-wu-qi-duan-da-jian-ss</id>
+        <link href="https://fqzhanghao.github.io//post/fu-wu-qi-duan-da-jian-ss">
+        </link>
+        <updated>2019-05-23T06:43:53.000Z</updated>
+        <summary type="html"><![CDATA[<p>新买的服务器安装ss</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>新买的服务器安装ss</p>
+<!-- more-->
+<h2 id="安装ss">安装ss</h2>
+<blockquote>
+<p>sudo apt install python3-pip</p>
+<p>pip3 install shadowsocks</p>
+</blockquote>
+<h2 id="启动">启动</h2>
+<p>2.1直接启动</p>
+<blockquote>
+<p>ssserver -p 8388 -k password -m rc4-md5 -d start</p>
+</blockquote>
+<p>2.2配置文件启动</p>
+<p>新建/etc/shadowsocks.json文件并写入</p>
+<pre><code>{
+    &quot;server&quot;:&quot;xxxxxx&quot;,
+    &quot;server_port&quot;:xxxx,
+    &quot;local_address&quot;:&quot;127.0.0.1&quot;,
+    &quot;local_port&quot;:1080,
+    &quot;password&quot;:&quot;xxxxx&quot;,
+    &quot;timeout&quot;:300,
+    &quot;method&quot;:&quot;rc4-md5&quot;
+}
+</code></pre>
+<p>使用命令启动</p>
+<blockquote>
+<p>ssserver -c /etc/shadowsocks.json -d start</p>
+</blockquote>
+<h2 id="开机自启动">开机自启动</h2>
+<p>新建 /etc/ss.conf并写入：</p>
+<pre><code>[program:shadowsocks]
+command=ssserver -c /etc/shadowsocks.json
+autostart=true
+autorestart=true
+user=root
+log_stderr=true
+logfile=/var/log/shadowsocks.log
+</code></pre>
+<p>打开/etc/rc.local并添加一行：</p>
+<blockquote>
+<p>service ss start</p>
+</blockquote>
+<h2 id="备注">备注</h2>
+<p>启动ss出现undefined symbol: EVP_CIPHER_CTX_cleanup错误。</p>
+<p>修改方法：</p>
+<ol>
+<li>用vim打开文件：vim /PYTHON_PATH/dist-packages/shadowsocks/crypto/openssl.py (该路径请根据自己的系统情况自行修改，如果不知道该文件在哪里的话，可以使用find命令查找文件位置)</li>
+<li>跳转到52行（shadowsocks2.8.2版本，其他版本搜索一下cleanup）</li>
+<li>进入编辑模式</li>
+<li>将第52行libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)<br>
+改为libcrypto.EVP_CIPHER_CTX_reset.argtypes = (c_void_p,)</li>
+<li>再次搜索cleanup（全文件共2处，此处位于111行），将libcrypto.EVP_CIPHER_CTX_cleanup(self._ctx)<br>
+改为libcrypto.EVP_CIPHER_CTX_reset(self._ctx)</li>
+<li>保存并退出</li>
+<li>启动shadowsocks服务：service shadowsocks start 或 sslocal -c ss配置文件目录</li>
+<li>问题解决</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[L4D2防D指南]]></title>
+        <id>https://fqzhanghao.github.io//post/l4d2-fang-d-zhi-nan</id>
+        <link href="https://fqzhanghao.github.io//post/l4d2-fang-d-zhi-nan">
+        </link>
+        <updated>2019-05-20T06:42:08.000Z</updated>
+        <summary type="html"><![CDATA[<p>最近一年来,求生之路2自建的服务器一直处于被DDOS的状态,没有办法玩.</p>
+<p>可能触及到了某些人的利益,想围城.但是我自己的服务器,我又不出售,就被D了,真是太不道德了.</p>
+<p>各种爬贴,总结了以下知识点.</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>最近一年来,求生之路2自建的服务器一直处于被DDOS的状态,没有办法玩.</p>
+<p>可能触及到了某些人的利益,想围城.但是我自己的服务器,我又不出售,就被D了,真是太不道德了.</p>
+<p>各种爬贴,总结了以下知识点.</p>
+<!-- more-->
+<h3 id="d的原理">D的原理:</h3>
+<p>从steam上可以索引到亚洲的服务器,找到你的私服真实ip.然后进行针对性的DDOS.</p>
+<p>那么我们怎么防范呢.其实很简单,只需要隐藏自己的私服ip就可以.</p>
+<p>有以下两种方式,我们以前采用的是方式1,但是后来又被D了,目前正在使用方式2.</p>
+<h3 id="方式1">方式1</h3>
+<p>在server.cfg里面,添加sv_tags &quot;hidden&quot;.这个指的是不把当前服务器加到steam大厅,那么steam索引不到该ip就不会被发现.</p>
+<p>但是后来还是被D了,怎么回事呢.原因如下:hidden可以通过匹配进，说到底其实hidden还是会连接steam服务器的，有人点快速加入的时候会被steam服务器分配到hidden的服务器，我们以前就加过hidden,要么是被steam分配过,要么就是我们群里有内鬼,ip暴露了.</p>
+<h3 id="方式2">方式2</h3>
+<p>启动时添加-nomaster参数.</p>
+<p>./srcds_run -game left4dead2  +exec server.cfg -console -insecure +hostport 27015 +map c2m1_highway  +ip 0.0.0.0 tcp -nomaster -tickrate 60<br>
+-nomaster(这一句是防止ddos用)</p>
+<p>这句话就是真正的不被steam索引</p>
+<p>以上两种方式,玩游戏的时候均需要使用connect xxx使用ip进.</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[五月日记]]></title>
+        <id>https://fqzhanghao.github.io//post/wu-yue-ri-ji</id>
+        <link href="https://fqzhanghao.github.io//post/wu-yue-ri-ji">
+        </link>
+        <updated>2019-05-05T06:48:02.000Z</updated>
+        <summary type="html"><![CDATA[<p>又是新的一个月,五一假期连上一带一路会议,美滋滋的在家歇了8天,嘿嘿嘿</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>又是新的一个月,五一假期连上一带一路会议,美滋滋的在家歇了8天,嘿嘿嘿</p>
+<!--more-->
+<h3 id="2019-05-03">2019-05-03</h3>
+<p>放假在家装灯,可以省去200块钱安装费,真的是费劲.不过装完感觉挺漂亮的,good job!贴两张图片.</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190528103427.jpg" alt=""></figure>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190528103506.jpg" alt=""></figure>
+<h3 id="2019-05-16">2019-05-16</h3>
+<p>昨天进行了真人CS活动和烤肉活动.真人CS打的是真疼啊.教练专门说了不让近距离设计+不准打头.可到了实战,大家冲锋起来根本顾不上了.啪啪啪,贼激烈.附上图和视频链接.</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190528103533.jpg" alt=""></figure>
+<p><a href="https://youtu.be/dUbx93h0Fg0">视频1</a></p>
+<p><a href="https://youtu.be/zoSLeRBxDT0">视频2</a></p>
+<h3 id="2019-05-18">2019-05-18</h3>
+<p>今天在家刷了权游第四季,刷完了,这个剧看着真不错,各种伏笔,各种意外发生.可以称为跌宕起伏,曲转通幽.令人厌恶的乔弗里被小指头加荆棘女王毒死了.然后让小恶魔背了锅.小恶魔杀死了自己的雪依,杀死了自己的泰温,不知道下一集怎么发展了,真的是达成了小指头的设想,一切都是乱糟糟的,混乱是上升的阶梯.感觉这个人和全球高武的方平一样,要是写书的话,才想一个主角一样,自己实力并不强大,但是可以算计各种人,然后制造混乱,自己从中获利.2333</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[screen命令速查]]></title>
+        <id>https://fqzhanghao.github.io//post/screen-ming-ling-su-cha</id>
+        <link href="https://fqzhanghao.github.io//post/screen-ming-ling-su-cha">
+        </link>
+        <updated>2019-04-17T06:40:43.000Z</updated>
+        <summary type="html"><![CDATA[<p>系统管理员经常需要SSH 或者telent 远程登录到Linux 服务器，经常运行一些需要很长时间才能完成的任务，比如系统备份、ftp 传输等等。通常情况下我们都是为每一个这样的任务开一个远程终端窗口，因为它们执行的时间太长了。必须等待它们执行完毕，在此期间不能关掉窗口或者断开连接，否则这个任务就会被杀掉，一切半途而废了。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>系统管理员经常需要SSH 或者telent 远程登录到Linux 服务器，经常运行一些需要很长时间才能完成的任务，比如系统备份、ftp 传输等等。通常情况下我们都是为每一个这样的任务开一个远程终端窗口，因为它们执行的时间太长了。必须等待它们执行完毕，在此期间不能关掉窗口或者断开连接，否则这个任务就会被杀掉，一切半途而废了。</p>
+<!-- more-->
+<p>GNU Screen可以看作是窗口管理器的命令行界面版本。它提供了统一的管理多个会话的界面和相应的功能。</p>
+<p>screen -S yourname -&gt; 新建一个叫yourname的session<br>
+screen -ls -&gt; 列出当前所有的session<br>
+screen -r yourname -&gt; 回到yourname这个session<br>
+screen -d yourname -&gt; 远程detach某个session<br>
+screen -d -r yourname -&gt; 结束当前session并回到yourname这个session</p>
+<p>附录:</p>
+<p>问题描述:</p>
+<p>userA首先登录系统，使用screen开启了一个session，然后detach这个窗口。</p>
+<p>userB然后登录系统，通过su - userA 变成userA，然后使用screen -r 恢复之前detached窗口，这时系统报如下错误:</p>
+<p>Cannot open your terminal '/dev/pts/1' - please check.</p>
+<p>解决方法:</p>
+<p>userB在 su - userA以后，执行如下命令即可:</p>
+<p>script /dev/null</p>
+<p>参考链接:</p>
+<p><a href="http://blog.sina.com.cn/s/blog_704836f401010osn.html">解决screen Cannot open your terminal '/dev/pts/1'问题</a></p>
+<p><a href="https://www.cnblogs.com/lpfuture/p/5786843.html">linux screen工具</a></p>
 ]]></content>
     </entry>
 </feed>

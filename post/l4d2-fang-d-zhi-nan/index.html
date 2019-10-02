@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>标签列表 | 浩浩的博客</title>
+<title>L4D2防D指南 | 浩浩的博客</title>
 <meta name="description" content="记录日常生活">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -85,10 +85,46 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="tag-list-title">标签列表</h2>
-          <div class="tags-container">
+          <div class="post-detail">
+            <h2 class="post-title">L4D2防D指南</h2>
+            <div class="post-date">2019-05-20</div>
             
+            <div class="post-content">
+              <p>最近一年来,求生之路2自建的服务器一直处于被DDOS的状态,没有办法玩.</p>
+<p>可能触及到了某些人的利益,想围城.但是我自己的服务器,我又不出售,就被D了,真是太不道德了.</p>
+<p>各种爬贴,总结了以下知识点.</p>
+<!-- more-->
+<h3 id="d的原理">D的原理:</h3>
+<p>从steam上可以索引到亚洲的服务器,找到你的私服真实ip.然后进行针对性的DDOS.</p>
+<p>那么我们怎么防范呢.其实很简单,只需要隐藏自己的私服ip就可以.</p>
+<p>有以下两种方式,我们以前采用的是方式1,但是后来又被D了,目前正在使用方式2.</p>
+<h3 id="方式1">方式1</h3>
+<p>在server.cfg里面,添加sv_tags &quot;hidden&quot;.这个指的是不把当前服务器加到steam大厅,那么steam索引不到该ip就不会被发现.</p>
+<p>但是后来还是被D了,怎么回事呢.原因如下:hidden可以通过匹配进，说到底其实hidden还是会连接steam服务器的，有人点快速加入的时候会被steam服务器分配到hidden的服务器，我们以前就加过hidden,要么是被steam分配过,要么就是我们群里有内鬼,ip暴露了.</p>
+<h3 id="方式2">方式2</h3>
+<p>启动时添加-nomaster参数.</p>
+<p>./srcds_run -game left4dead2  +exec server.cfg -console -insecure +hostport 27015 +map c2m1_highway  +ip 0.0.0.0 tcp -nomaster -tickrate 60<br>
+-nomaster(这一句是防止ddos用)</p>
+<p>这句话就是真正的不被steam索引</p>
+<p>以上两种方式,玩游戏的时候均需要使用connect xxx使用ip进.</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://fqzhanghao.github.io//post/wu-yue-ri-ji">
+                  <h3 class="post-title">
+                    五月日记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
           </div>
+
         </div>
       </div>
     </div>
