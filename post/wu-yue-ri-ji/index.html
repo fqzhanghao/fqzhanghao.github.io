@@ -1,96 +1,48 @@
-<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" >
-
-<title>五月日记 | 浩浩的博客</title>
-<meta name="description" content="记录日常生活">
-
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://fqzhanghao.github.io//favicon.ico?v=1569998937266">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
-<link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
-
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
-
-
-
-  </head>
-  <body>
-    <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://fqzhanghao.github.io/">
-        <img src="https://fqzhanghao.github.io//images/avatar.png?v=1569998937266" class="site-logo">
-        <h1 class="site-title">浩浩的博客</h1>
-      </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
-    </div>
-    <div>
-      
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>五月日记 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
         
-          <a href="/" class="site-nav">
-            首页
-          </a>
-        
-      
-        
-          <a href="/archives" class="site-nav">
-            归档
-          </a>
-        
-      
-        
-          <a href="/post/about" class="site-nav">
-            关于
-          </a>
-        
-      
-    </div>
-  </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      记录日常生活
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://fqzhanghao.github.io//atom.xml" target="_blank">RSS</a>
-    </div>
-  </div>
-</div>
 
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          <div class="post-detail">
-            <h2 class="post-title">五月日记</h2>
-            <div class="post-date">2019-05-05</div>
-            
-            <div class="post-content">
-              <p>又是新的一个月,五一假期连上一带一路会议,美滋滋的在家歇了8天,嘿嘿嘿</p>
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">五月日记</div>
+                           <a  class="index-list-biaoqian ">2019-05-05</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>又是新的一个月,五一假期连上一带一路会议,美滋滋的在家歇了8天,嘿嘿嘿</p>
 <!--more-->
 <h3 id="2019-05-03">2019-05-03</h3>
 <p>放假在家装灯,可以省去200块钱安装费,真的是费劲.不过装完感觉挺漂亮的,good job!贴两张图片.</p>
@@ -103,47 +55,108 @@
 <p><a href="https://youtu.be/zoSLeRBxDT0">视频2</a></p>
 <h3 id="2019-05-18">2019-05-18</h3>
 <p>今天在家刷了权游第四季,刷完了,这个剧看着真不错,各种伏笔,各种意外发生.可以称为跌宕起伏,曲转通幽.令人厌恶的乔弗里被小指头加荆棘女王毒死了.然后让小恶魔背了锅.小恶魔杀死了自己的雪依,杀死了自己的泰温,不知道下一集怎么发展了,真的是达成了小指头的设想,一切都是乱糟糟的,混乱是上升的阶梯.感觉这个人和全球高武的方平一样,要是写书的话,才想一个主角一样,自己实力并不强大,但是可以算计各种人,然后制造混乱,自己从中获利.2333</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io//post/l4d2-fang-d-zhi-nan">L4D2防D指南</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io//post/screen-ming-ling-su-cha">screen命令速查</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
 
-            </div>
-            
-            
-              <div class="next-post">
-                <div class="next">下一篇</div>
-                <a href="https://fqzhanghao.github.io//post/screen-ming-ling-su-cha">
-                  <h3 class="post-title">
-                    screen命令速查
-                  </h3>
-                </a>
-              </div>
-            
+<script>
+      new Valine({
+            el: '.comment',
 
-            
 
-          </div>
 
-        </div>
-      </div>
-    </div>
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
-
-hljs.initHighlightingOnLoad()
-
-var app = new Vue({
-  el: '#app',
-  data: {
-    menuVisible: false,
-  },
-})
-
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
 </script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#2019-05-03">2019-05-03</a></li>
+<li><a href="#2019-05-16">2019-05-16</a></li>
+<li><a href="#2019-05-18">2019-05-18</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
+              </div>
 
-
-
-  </body>
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
 </html>

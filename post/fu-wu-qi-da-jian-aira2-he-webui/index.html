@@ -1,96 +1,48 @@
-<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" >
-
-<title>服务器搭建aira2和webui | 浩浩的博客</title>
-<meta name="description" content="记录日常生活">
-
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://fqzhanghao.github.io//favicon.ico?v=1569998937266">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
-<link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
-
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
-
-
-
-  </head>
-  <body>
-    <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://fqzhanghao.github.io/">
-        <img src="https://fqzhanghao.github.io//images/avatar.png?v=1569998937266" class="site-logo">
-        <h1 class="site-title">浩浩的博客</h1>
-      </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
-    </div>
-    <div>
-      
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>服务器搭建aira2和webui | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
         
-          <a href="/" class="site-nav">
-            首页
-          </a>
-        
-      
-        
-          <a href="/archives" class="site-nav">
-            归档
-          </a>
-        
-      
-        
-          <a href="/post/about" class="site-nav">
-            关于
-          </a>
-        
-      
-    </div>
-  </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      记录日常生活
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://fqzhanghao.github.io//atom.xml" target="_blank">RSS</a>
-    </div>
-  </div>
-</div>
 
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          <div class="post-detail">
-            <h2 class="post-title">服务器搭建aira2和webui</h2>
-            <div class="post-date">2019-05-23</div>
-            
-            <div class="post-content">
-              <p>新买的服务器安装下载服务器</p>
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">服务器搭建aira2和webui</div>
+                           <a  class="index-list-biaoqian ">2019-05-23</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>新买的服务器安装下载服务器</p>
 <!-- more-->
 <h3 id="基础软件的安装">基础软件的安装</h3>
 <p>在下载Aria2之前先安装一些基础必备的软件：git、screen、nodejs</p>
@@ -223,47 +175,112 @@ WebUI Aria2 Server is running on http://localhost:8888
 <h3 id="参考链接">参考链接:</h3>
 <p><a href="https://blog.sunriseydy.top/technology/server-blog/server/zaiubuntushangyongaria2hearia2webuishixianyuanchengduoxianchengxiazai/">ubuntu上安装aria2及webui</a></p>
 <p><a href="https://ywnz.com/linuxjc/2686.html">在Ubuntu 18.04系统下安装配置和使用aria2</a></p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io//post/v2ray-websocket-shi-xian-wai-wang-fang-wen">V2Ray WebSocket实现外网访问</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-ftp">服务器搭建ftp</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
 
-            </div>
-            
-            
-              <div class="next-post">
-                <div class="next">下一篇</div>
-                <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-ftp">
-                  <h3 class="post-title">
-                    服务器搭建ftp
-                  </h3>
-                </a>
-              </div>
-            
+<script>
+      new Valine({
+            el: '.comment',
 
-            
 
-          </div>
 
-        </div>
-      </div>
-    </div>
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
-
-hljs.initHighlightingOnLoad()
-
-var app = new Vue({
-  el: '#app',
-  data: {
-    menuVisible: false,
-  },
-})
-
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
 </script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%9F%BA%E7%A1%80%E8%BD%AF%E4%BB%B6%E7%9A%84%E5%AE%89%E8%A3%85">基础软件的安装</a></li>
+<li><a href="#%E5%9C%A8%E5%91%BD%E4%BB%A4%E8%A1%8C%E4%B8%AD%E5%AE%89%E8%A3%85aria2">在命令行中安装aria2</a></li>
+<li><a href="#aria2conf%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE">aria2.conf文件配置</a></li>
+<li><a href="#%E4%B8%8B%E8%BD%BDaria2webui">下载Aria2WebUI</a></li>
+<li><a href="#%E8%AE%BE%E7%BD%AEaria2%E7%9B%91%E5%90%ACrpc%E5%90%AF%E5%8A%A8webui">设置Aria2监听rpc，启动WebUI</a></li>
+<li><a href="#%E8%BF%9B%E5%85%A5webui%E7%95%8C%E9%9D%A2%E9%80%9A%E8%BF%87rpc%E6%8E%A5%E5%8F%A3%E8%BF%9E%E6%8E%A5aria2">进入WebUI界面，通过rpc接口连接Aria2</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
+              </div>
 
-
-
-  </body>
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
 </html>

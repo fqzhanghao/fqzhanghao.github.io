@@ -1,248 +1,298 @@
-<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" >
-
-<title>文章归档 | 浩浩的博客</title>
-<meta name="description" content="记录日常生活">
-
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://fqzhanghao.github.io//favicon.ico?v=1569998937266">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
-<link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
-
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
-
-
-
-  </head>
-  <body>
-    <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://fqzhanghao.github.io/">
-        <img src="https://fqzhanghao.github.io//images/avatar.png?v=1569998937266" class="site-logo">
-        <h1 class="site-title">浩浩的博客</h1>
-      </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
-    </div>
-    <div>
-      
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
         
-          <a href="/" class="site-nav">
-            首页
-          </a>
-        
-      
-        
-          <a href="/archives" class="site-nav">
-            归档
-          </a>
-        
-      
-        
-          <a href="/post/about" class="site-nav">
-            关于
-          </a>
-        
-      
-    </div>
-  </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      记录日常生活
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://fqzhanghao.github.io//atom.xml" target="_blank">RSS</a>
-    </div>
-  </div>
-</div>
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="header mdui-m-b-3">
+                          <button class="mdui-btn daohang mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu " id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+                      <div class="mdui-text-center">
+                      <div class="mdui-typo-display-4 mdui-m-b-3 index-title">浩浩的博客</div>
+                      <div class="mdui-typo-headline">记录日常生活</div>
+                      </div>
+
+        </header>
+        <div class="mdui-container">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-10 mdui-col-offset-md-1 ">
+ 
+                           
+  
+   
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          
 
-          <h2 class="archives-title">文章归档</h2>
-          <div class="archives-container">
+                               <div class="mdui-typo-display-1 mdui-m-b-2 mdui-m-l-1">
+                               <div class="mdui-row"><div class="mdui-col-xs-12">2019</div>
+                               </div>
+                                <div class="mdui-row-md-3 mdui-row-xs-1">
+                               
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/you-hua-gridea-wang-zhan-jia-zai-su-du">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">优化Gridea网站加载速度</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-10-02</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
             
-              <h2 class="year" data-aos="fade-in" data-aos-delay="500">2019</h2>
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/you-hua-gridea-wang-zhan-jia-zai-su-du">
-                      <h2 class="post-title">
-                        优化Gridea网站加载速度
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/kai-shi-jian-zhi-ji-hua">
-                      <h2 class="post-title">
-                        兼职计划
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/v2ray-websocket-shi-xian-wai-wang-fang-wen">
-                      <h2 class="post-title">
-                        V2Ray WebSocket实现外网访问
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-aira2-he-webui">
-                      <h2 class="post-title">
-                        服务器搭建aira2和webui
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-ftp">
-                      <h2 class="post-title">
-                        服务器搭建ftp
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-http-fu-wu">
-                      <h2 class="post-title">
-                        服务器搭建http服务
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/fu-wu-qi-duan-da-jian-ss">
-                      <h2 class="post-title">
-                        服务器端搭建ss
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/l4d2-fang-d-zhi-nan">
-                      <h2 class="post-title">
-                        L4D2防D指南
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/wu-yue-ri-ji">
-                      <h2 class="post-title">
-                        五月日记
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/screen-ming-ling-su-cha">
-                      <h2 class="post-title">
-                        screen命令速查
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/picgo-ce-shi">
-                      <h2 class="post-title">
-                        picgo测试
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://fqzhanghao.github.io//post/4-yue-ri-ji">
-                      <h2 class="post-title">
-                        4月日记
-                      </h2>
-                    </a>
-                  </article>
-                
-              
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/kai-shi-jian-zhi-ji-hua">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">兼职计划</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-07-11</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
             
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/v2ray-websocket-shi-xian-wai-wang-fang-wen">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">V2Ray WebSocket实现外网访问</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-06-07</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-aira2-he-webui">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">服务器搭建aira2和webui</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-05-23</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-ftp">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">服务器搭建ftp</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-05-23</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/fu-wu-qi-da-jian-http-fu-wu">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">服务器搭建http服务</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-05-23</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/fu-wu-qi-duan-da-jian-ss">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">服务器端搭建ss</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-05-23</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/l4d2-fang-d-zhi-nan">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">L4D2防D指南</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-05-20</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/wu-yue-ri-ji">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">五月日记</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-05-05</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/screen-ming-ling-su-cha">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">screen命令速查</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-04-17</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/picgo-ce-shi">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">picgo测试</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-04-08</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+        
+                                    <div class="mdui-col mdui-p-a-1">
+                                       <article class="archives-list mdui-shadow-15  mdui-hoverable ">
+                                           <a href="https://fqzhanghao.github.io//post/4-yue-ri-ji">
+                                           <div class="archives-img" >
+                                           </div>
+                                           <div class="mdui-p-a-2">
+                                           <div class="mdui-typo-headline mdui-text-truncate index-list-title">4月日记</div>
+                                           <div class="mdui-typo-title mdui-m-t-1 mdui-text-color-blue-grey-200">2019-04-07</div>
+                                           </div>
+                                        </a>
+                                       </article> 
+                                    </div>
+                                    
+             
+            
+              
+                                  </div>
+                                    <nav class="mdui-m-y-3">
+                         
+                         
+                         </nav>
+                         
+                        </div>
+                 </div>
           </div>
-
-          <div class="pagination-container">
-  
-  
-</div>
-
+          </div>
         </div>
-      </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
-
-hljs.initHighlightingOnLoad()
-
-var app = new Vue({
-  el: '#app',
-  data: {
-    menuVisible: false,
-  },
-})
-
-</script>
-
-
-
-
-  </body>
+         </div>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
 </html>
