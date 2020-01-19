@@ -3,7 +3,7 @@
         <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
         <meta charset="utf-8">
         <meta name="referrer" content="never">
-        <title>五月日记 | 浩浩的博客</title>
+        <title>安卓自定义View基础 - 坐标系 | 浩浩的博客</title>
         <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
         <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
         <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
@@ -40,26 +40,75 @@
                 <div class="mdui-row">
                         <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
                          <article class="mdui-shadow-10 mdui-p-a-2 post-list">
-                           <div class="mdui-typo-display-1 mdui-m-b-3">五月日记</div>
-                           <a  class="index-list-biaoqian ">2019-05-05</a>
-                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>又是新的一个月,五一假期连上一带一路会议,美滋滋的在家歇了8天,嘿嘿嘿</p>
+                           <div class="mdui-typo-display-1 mdui-m-b-3">安卓自定义View基础 - 坐标系</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><h1 id="一屏幕坐标系和数学坐标系的区别">一.屏幕坐标系和数学坐标系的区别</h1>
+<p>由于移动设备一般定义屏幕左上角为坐标原点，向右为x轴增大方向，向下为y轴增大方向， 所以在手机屏幕上的坐标系与数学中常见的坐标系是稍微有点差别的，详情如下：</p>
 <!--more-->
-<h3 id="2019-05-03">2019-05-03</h3>
-<p>放假在家装灯,可以省去200块钱安装费,真的是费劲.不过装完感觉挺漂亮的,good job!贴两张图片.</p>
-<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190528103427.jpg" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190528103506.jpg" alt="" loading="lazy"></figure>
-<h3 id="2019-05-16">2019-05-16</h3>
-<p>昨天进行了真人CS活动和烤肉活动.真人CS打的是真疼啊.教练专门说了不让近距离设计+不准打头.可到了实战,大家冲锋起来根本顾不上了.啪啪啪,贼激烈.附上图和视频链接.</p>
-<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190528103533.jpg" alt="" loading="lazy"></figure>
-<p><a href="https://youtu.be/dUbx93h0Fg0">视频1</a></p>
-<p><a href="https://youtu.be/zoSLeRBxDT0">视频2</a></p>
-<h3 id="2019-05-18">2019-05-18</h3>
-<p>今天在家刷了权游第四季,刷完了,这个剧看着真不错,各种伏笔,各种意外发生.可以称为跌宕起伏,曲转通幽.令人厌恶的乔弗里被小指头加荆棘女王毒死了.然后让小恶魔背了锅.小恶魔杀死了自己的雪依,杀死了自己的泰温,不知道下一集怎么发展了,真的是达成了小指头的设想,一切都是乱糟糟的,混乱是上升的阶梯.感觉这个人和全球高武的方平一样,要是写书的话,才想一个主角一样,自己实力并不强大,但是可以算计各种人,然后制造混乱,自己从中获利.2333</p>
+<blockquote>
+<p>（PS：其中的∠a 是对应的，注意y轴方向！）</p>
+</blockquote>
+<p><img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f1qygzfvhoj308c0dwglr.jpg" alt="" loading="lazy"><br>
+<img src="http://ww1.sinaimg.cn/large/005Xtdi2jw1f1qyhbqvihj308c0dwjrh.jpg" alt="" loading="lazy"></p>
+<h3 id="实际屏幕上的默认坐标系如下">实际屏幕上的默认坐标系如下：</h3>
+<blockquote>
+<p>PS: 假设其中棕色部分为手机屏幕</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="http://ww3.sinaimg.cn/large/005Xtdi2jw1f1qyhjy7h8j308c0dwq32.jpg" alt="" loading="lazy"></figure>
+<h1 id="二view的坐标系">二.View的坐标系</h1>
+<h3 id="注意view的坐标系统是相对于父控件而言的">注意：View的坐标系统是相对于父控件而言的.</h3>
+<pre><code class="language-java">getTop();       //获取子View左上角距父View顶部的距离
+getLeft();      //获取子View左上角距父View左侧的距离
+getBottom();    //获取子View右下角距父View顶部的距离
+getRight();     //获取子View右下角距父View左侧的距离
+</code></pre>
+<h3 id="如下图所示">如下图所示：</h3>
+<figure data-type="image" tabindex="2"><img src="http://ww2.sinaimg.cn/large/005Xtdi2gw1f1qzqwvkkbj308c0dwgm9.jpg" alt="" loading="lazy"></figure>
+<h1 id="三motionevent中-get-和-getraw-的区别">三.MotionEvent中 get 和 getRaw 的区别</h1>
+<pre><code class="language-java">event.getX();       //触摸点相对于其所在组件坐标系的坐标
+event.getY();
+
+event.getRawX();    //触摸点相对于屏幕默认坐标系的坐标
+event.getRawY();
+</code></pre>
+<h3 id="如下图所示-2">如下图所示：</h3>
+<blockquote>
+<p>PS:其中相同颜色的内容是对应的，其中为了显示方便，蓝色箭头向左稍微偏移了一点.</p>
+</blockquote>
+<figure data-type="image" tabindex="3"><img src="http://ww1.sinaimg.cn/large/005Xtdi2jw1f1r2bdlqhbj308c0dwwew.jpg" alt="" loading="lazy"></figure>
+<h1 id="四核心要点">四.核心要点</h1>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">序号</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td>在数学中常见的坐标系与屏幕默认坐标系的差别</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td>View的坐标系是相对于父控件而言的</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td>MotionEvent中get和getRaw的区别</td>
+</tr>
+</tbody>
+</table>
+<h1 id="五参考文章">五.参考文章</h1>
+<ul>
+<li><a href="http://blog.csdn.net/wangjinyu501/article/details/21827341" title="Android 屏幕（View）坐标系统">Android 屏幕（View）坐标系统</a></li>
+</ul>
+<p>转自 : <a href="http://www.gcssloop.com/customview/CoordinateSystem/">http://www.gcssloop.com/customview/CoordinateSystem/</a></p>
 </div>
                               <div class="mdui-divider mdui-m-t-3"></div>
                               <div class="mdui-row-xs-2 mdui-m-t-2">
-  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/l4d2-fang-d-zhi-nan">L4D2防D指南</a></div></div>
- <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/screen-ming-ling-su-cha">screen命令速查</a></div> </div>
+  <div class="mdui-col"> </div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/gei-chu-xue-zhe-de-rxjava20-jiao-cheng-er">给初学者的RxJava2.0教程(二)</a></div> </div>
                                 </div>
                                 <div class="mdui-divider mdui-m-t-2"></div>
    
@@ -91,17 +140,27 @@
                          </article>
                  <div class="toc-container mdui-float-right">
                 <ul class="markdownIt-TOC">
-<li>
+<li><a href="#%E4%B8%80%E5%B1%8F%E5%B9%95%E5%9D%90%E6%A0%87%E7%B3%BB%E5%92%8C%E6%95%B0%E5%AD%A6%E5%9D%90%E6%A0%87%E7%B3%BB%E7%9A%84%E5%8C%BA%E5%88%AB">一.屏幕坐标系和数学坐标系的区别</a><br>
+*
 <ul>
-<li>
-<ul>
-<li><a href="#2019-05-03">2019-05-03</a></li>
-<li><a href="#2019-05-16">2019-05-16</a></li>
-<li><a href="#2019-05-18">2019-05-18</a></li>
+<li><a href="#%E5%AE%9E%E9%99%85%E5%B1%8F%E5%B9%95%E4%B8%8A%E7%9A%84%E9%BB%98%E8%AE%A4%E5%9D%90%E6%A0%87%E7%B3%BB%E5%A6%82%E4%B8%8B">实际屏幕上的默认坐标系如下：</a></li>
 </ul>
 </li>
+<li><a href="#%E4%BA%8Cview%E7%9A%84%E5%9D%90%E6%A0%87%E7%B3%BB">二.View的坐标系</a><br>
+*
+<ul>
+<li><a href="#%E6%B3%A8%E6%84%8Fview%E7%9A%84%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F%E6%98%AF%E7%9B%B8%E5%AF%B9%E4%BA%8E%E7%88%B6%E6%8E%A7%E4%BB%B6%E8%80%8C%E8%A8%80%E7%9A%84">注意：View的坐标系统是相对于父控件而言的.</a></li>
+<li><a href="#%E5%A6%82%E4%B8%8B%E5%9B%BE%E6%89%80%E7%A4%BA">如下图所示：</a></li>
 </ul>
 </li>
+<li><a href="#%E4%B8%89motionevent%E4%B8%AD-get-%E5%92%8C-getraw-%E7%9A%84%E5%8C%BA%E5%88%AB">三.MotionEvent中 get 和 getRaw 的区别</a><br>
+*
+<ul>
+<li><a href="#%E5%A6%82%E4%B8%8B%E5%9B%BE%E6%89%80%E7%A4%BA-2">如下图所示：</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B%E6%A0%B8%E5%BF%83%E8%A6%81%E7%82%B9">四.核心要点</a></li>
+<li><a href="#%E4%BA%94%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0">五.参考文章</a></li>
 </ul>
 
               </div>

@@ -1,0 +1,370 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>给初学者的RxJava2.0教程(一) | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">给初学者的RxJava2.0教程(一)</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><h3 id="前言">前言</h3>
+<p>上个月RxJava2正式版发布了，但目前国内的资料还比较少，以前使用过RxJava1只需要看看更新文档就知道怎么使用了，但还有一些以前没用过RxJava的朋友可能就不知道怎么办了，不知道该看RxJava1还是直接跳到RxJava2。所以写下这个教程， 帮助那些没有用过RxJava的朋友入门。</p>
+<p>我先回答这个问题：学习RxJava2需要先学习RxJava1吗？</p>
+<p>这个问题就像论坛经常问学Java前需要先学习C语言吗，这里就不引战了！（PHP是世界上最好的语言！！）</p>
+<p>答案明显不是，如果你以前学过RxJava1，那么对于RxJava2只需要看看更新了哪些东西就行了，其最核心的思想并没有变化，如果你没学过RxJava1，没有关系，直接学习RxJava2。所以作为一个RxJava2的教程，本文中所有的名词都属于RxJava2中，并不涉及RxJava1。</p>
+<p>要在Android中使用RxJava2, 先添加Gradle配置:</p>
+<pre><code class="language-java">    compile 'io.reactivex.rxjava2:rxjava:2.0.1'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+</code></pre>
+<h3 id="正题">正题</h3>
+<p>在开始学习之前，先来介绍点原理性的东西。</p>
+<p>网上也有很多介绍RxJava原理的文章，通常这些文章都从观察者模式开始，先讲观察者，被观察者，订阅关系巴拉巴拉一大堆，说实话，当我第一次看到这些文章的时候已经被这些名词给绕晕了，用了很长的时间才理清楚它们之间的关系。可能是我太蠢了，境界不够，领会不到那么多高大上的名词.</p>
+<p>今天我用两根水管代替观察者和被观察者, 试图用通俗易懂的话把它们的关系解释清楚, 在这里我将从事件流这个角度来说明RxJava的基本工作原理。</p>
+<p>先假设有两根水管：</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119184528.png" alt="" loading="lazy"></figure>
+<p>上面一根水管为事件产生的水管，叫它上游吧，下面一根水管为事件接收的水管叫它下游吧。</p>
+<p>两根水管通过一定的方式连接起来，使得上游每产生一个事件，下游就能收到该事件。注意这里和官网的事件图是反过来的, 这里的事件发送的顺序是先1,后2,后3这样的顺序, 事件接收的顺序也是先1,后2,后3的顺序, 我觉得这样更符合我们普通人的思维, 简单明了.</p>
+<p>这里的上游和下游就分别对应着RxJava中的Observable和Observer，它们之间的连接就对应着subscribe()，因此这个关系用RxJava来表示就是：</p>
+<pre><code class="language-java">        //创建一个上游 Observable：
+        Observable&lt;Integer&gt; observable = Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {
+            @Override
+            public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {
+                emitter.onNext(1);
+                emitter.onNext(2);
+                emitter.onNext(3);
+                emitter.onComplete();
+            }
+        });
+        //创建一个下游 Observer
+        Observer&lt;Integer&gt; observer = new Observer&lt;Integer&gt;() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d(TAG, &quot;subscribe&quot;);
+            }
+
+            @Override
+            public void onNext(Integer value) {
+                Log.d(TAG, &quot;&quot; + value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, &quot;error&quot;);
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, &quot;complete&quot;);
+            }
+        };
+        //建立连接
+        observable.subscribe(observer);
+</code></pre>
+<p>这个运行的结果就是:</p>
+<pre><code>12-02 03:37:17.818 4166-4166/zlc.season.rxjava2demo D/TAG: subscribe
+12-02 03:37:17.819 4166-4166/zlc.season.rxjava2demo D/TAG: 1
+12-02 03:37:17.819 4166-4166/zlc.season.rxjava2demo D/TAG: 2
+12-02 03:37:17.819 4166-4166/zlc.season.rxjava2demo D/TAG: 3
+12-02 03:37:17.819 4166-4166/zlc.season.rxjava2demo D/TAG: complete
+</code></pre>
+<pre><code>注意: 只有当上游和下游建立连接之后, 上游才会开始发送事件. 也就是调用了subscribe() 方法之后才开始发送事件.
+</code></pre>
+<p>把这段代码连起来写就成了RxJava引以为傲的链式操作：</p>
+<pre><code>Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {
+            @Override
+            public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {
+                emitter.onNext(1);
+                emitter.onNext(2);
+                emitter.onNext(3);
+                emitter.onComplete();
+            }
+        }).subscribe(new Observer&lt;Integer&gt;() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d(TAG, &quot;subscribe&quot;);
+            }
+
+            @Override
+            public void onNext(Integer value) {
+                Log.d(TAG, &quot;&quot; + value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, &quot;error&quot;);
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, &quot;complete&quot;);
+            }
+        });
+</code></pre>
+<p>接下来解释一下其中两个陌生的玩意：ObservableEmitter和Disposable.</p>
+<p>ObservableEmitter： Emitter是发射器的意思，那就很好猜了，这个就是用来发出事件的，它可以发出三种类型的事件，通过调用emitter的onNext(T value)、onComplete()和onError(Throwable error)就可以分别发出next事件、complete事件和error事件。</p>
+<p>但是，请注意，并不意味着你可以随意乱七八糟发射事件，需要满足一定的规则：</p>
+<ul>
+<li>
+<p>上游可以发送无限个onNext, 下游也可以接收无限个onNext.</p>
+</li>
+<li>
+<p>当上游发送了一个onComplete后, 上游onComplete之后的事件将会继续发送-, 而下游收到onComplete事件之后将不再继续接收事件.</p>
+</li>
+<li>
+<p>当上游发送了一个onError后, 上游onError之后的事件将继续发送, 而下游收到onError事件之后将不再继续接收事件.</p>
+</li>
+<li>
+<p>上游可以不发送onComplete或onError.</p>
+</li>
+<li>
+<p>最为关键的是onComplete和onError必须唯一并且互斥, 即不能发多个onComplete, 也不能发多个onError, 也不能先发一个onComplete, 然后再发一个onError, 反之亦然</p>
+<p>注: 关于onComplete和onError唯一并且互斥这一点, 是需要自行在代码中进行控制, 如果你的代码逻辑中违背了这个规则, **并不一定会导致程序崩溃. ** 比如发送多个onComplete是可以正常运行的, 依然是收到第一个onComplete就不再接收了, 但若是发送多个onError, 则收到第二个onError事件会导致程序会崩溃.</p>
+</li>
+</ul>
+<p>以上几个规则用示意图表示如下:</p>
+<p>只发送onNext事件</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119184547.png" alt="" loading="lazy"></figure>
+<p>发送onComplete事件</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119184606.png" alt="" loading="lazy"></figure>
+<p>发送onError事件</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119184623.png" alt="" loading="lazy"></figure>
+<p>介绍了ObservableEmitter, 接下来介绍Disposable, 这个单词的字面意思是一次性用品,用完即可丢弃的. 那么在RxJava中怎么去理解它呢, 对应于上面的水管的例子, 我们可以把它理解成两根管道之间的一个机关, 当调用它的dispose()方法时, 它就会将两根管道切断, 从而导致下游收不到事件.</p>
+<pre><code>注意: 调用dispose()并不会导致上游不再继续发送事件, 上游会继续发送剩余的事件.
+</code></pre>
+<p>来看个例子, 我们让上游依次发送1,2,3,complete,4,在下游收到第二个事件之后, 切断水管, 看看运行结果:</p>
+<pre><code>        Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {
+            @Override
+            public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {
+                Log.d(TAG, &quot;emit 1&quot;);
+                emitter.onNext(1);
+                Log.d(TAG, &quot;emit 2&quot;);
+                emitter.onNext(2);
+                Log.d(TAG, &quot;emit 3&quot;);
+                emitter.onNext(3);
+                Log.d(TAG, &quot;emit complete&quot;);
+                emitter.onComplete();
+                Log.d(TAG, &quot;emit 4&quot;);
+                emitter.onNext(4);
+            }
+        }).subscribe(new Observer&lt;Integer&gt;() {
+            private Disposable mDisposable;
+            private int i;
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d(TAG, &quot;subscribe&quot;);
+                mDisposable = d;
+            }
+
+            @Override
+            public void onNext(Integer value) {
+                Log.d(TAG, &quot;onNext: &quot; + value);
+                i++;
+                if (i == 2) {
+                    Log.d(TAG, &quot;dispose&quot;);
+                    mDisposable.dispose();
+                    Log.d(TAG, &quot;isDisposed : &quot; + mDisposable.isDisposed());
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, &quot;error&quot;);
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, &quot;complete&quot;);
+            }
+        });
+</code></pre>
+<p>运行结果为:</p>
+<pre><code>12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: subscribe
+12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit 1
+12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: onNext: 1
+12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit 2
+12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: onNext: 2
+12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: dispose
+12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: isDisposed : true
+12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit 3
+12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit complete
+12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit 4
+</code></pre>
+<p>从运行结果我们看到, 在收到onNext 2这个事件后, 切断了水管, 但是上游仍然发送了3, complete, 4这几个事件, 而且上游并没有因为发送了onComplete而停止. 同时可以看到下游的onSubscribe()方法是最先调用的.</p>
+<p>Disposable的用处不止这些, 后面讲解到了线程的调度之后, 我们会发现它的重要性. 随着后续深入的讲解, 我们会在更多的地方发现它的身影.</p>
+<p>另外, subscribe()有多个重载的方法:</p>
+<pre><code>    public final Disposable subscribe() {}
+    public final Disposable subscribe(Consumer&lt;? super T&gt; onNext) {}
+    public final Disposable subscribe(Consumer&lt;? super T&gt; onNext, Consumer&lt;? super Throwable&gt; onError) {} 
+    public final Disposable subscribe(Consumer&lt;? super T&gt; onNext, Consumer&lt;? super Throwable&gt; onError, Action onComplete) {}
+    public final Disposable subscribe(Consumer&lt;? super T&gt; onNext, Consumer&lt;? super Throwable&gt; onError, Action onComplete, Consumer&lt;? super Disposable&gt; onSubscribe) {}
+    public final void subscribe(Observer&lt;? super T&gt; observer) {}
+</code></pre>
+<p>最后一个带有Observer参数的我们已经使用过了,这里对其他几个方法进行说明.</p>
+<ul>
+<li>不带任何参数的subscribe() 表示下游不关心任何事件,你上游尽管发你的数据去吧, 老子可不管你发什么.</li>
+<li>带有一个Consumer参数的方法表示下游只关心onNext事件, 其他的事件我假装没看见, 因此我们如果只需要onNext事件可以这么写:</li>
+</ul>
+<pre><code>        Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {
+            @Override
+            public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {
+                Log.d(TAG, &quot;emit 1&quot;);
+                emitter.onNext(1);
+                Log.d(TAG, &quot;emit 2&quot;);
+                emitter.onNext(2);
+                Log.d(TAG, &quot;emit 3&quot;);
+                emitter.onNext(3);
+                Log.d(TAG, &quot;emit complete&quot;);
+                emitter.onComplete();
+                Log.d(TAG, &quot;emit 4&quot;);
+                emitter.onNext(4);
+            }
+        }).subscribe(new Consumer&lt;Integer&gt;() {
+            @Override
+            public void accept(Integer integer) throws Exception {
+                Log.d(TAG, &quot;onNext: &quot; + integer);
+            }
+        });
+</code></pre>
+<ul>
+<li>其他几个方法同理, 这里就不一一解释了.</li>
+</ul>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/gei-chu-xue-zhe-de-rxjava20-jiao-cheng-er">给初学者的RxJava2.0教程(二)</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/you-hua-gridea-wang-zhan-jia-zai-su-du">优化Gridea网站加载速度</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E6%AD%A3%E9%A2%98">正题</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>
