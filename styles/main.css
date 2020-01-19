@@ -3181,3 +3181,11 @@ ul {
     -webkit-line-clamp: 1;
   }
 }
+
+    .header {background-image: url(https://yeqiling.github.io/images/header-sagiri.jpg);}
+    .index-img{ background-image: url(https://yeqiling.github.io/images/header-sagiri.jpg);}
+    
+      .v {
+        display: none;
+      }
+    
