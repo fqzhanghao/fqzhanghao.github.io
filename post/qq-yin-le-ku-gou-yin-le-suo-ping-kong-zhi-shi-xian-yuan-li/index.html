@@ -1,0 +1,255 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>QQ音乐-酷狗音乐锁屏控制实现原理 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">QQ音乐-酷狗音乐锁屏控制实现原理</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>实现效果</p>
+<!--more-->
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119201321.png" alt="" loading="lazy"></figure>
+<h2 id="混乱的锁屏控制">混乱的锁屏控制</h2>
+<p>Android自4.0版本, 也就是API level 14开始, 加入了锁屏控制的功能, 相关的类是RemoteControlClient, 这个类在API level 21中被标记为deprecated, 被新的类MediaSession所替代. 我们的音乐App中最开始使用的是原生锁屏控制API, 说实话这个API不好用, 遇到了一些小坑, 最要命的是不同品牌的手机, 锁屏界面长的还不一样, 就连我自己都没见过原生4.0的锁屏控制界面是什么样的. 国内的手机厂商都自以为自己的审美很强, 设计了千奇百怪的锁屏控制界面, MIUI更奇怪, MIUI 6是在原生4.4.4的基础上改的, 竟然有一段时间都没有锁屏控制界面, 后来更新才有. 而原生Android在5.0时, 将锁屏和通知栏控制合并, 整个逻辑非常混乱. 我们还是决定像QQ音乐/酷狗音乐那样, 自己做一个锁屏控制页面</p>
+<pre><code>题外话: 给RemoteControlClient设置封面时, 参数是一个Bitmap, 这个参数传入后, 千万不要在其他地方使用这个Bitmap, 也不要持有它的引用, 更不要自作聪明调用它的recycle方法.
+</code></pre>
+<h2 id="实现思路">实现思路</h2>
+<ul>
+<li>
+<h3 id="锁屏应用-大炮打蚊子">锁屏应用: 大炮打蚊子</h3>
+</li>
+</ul>
+<p>首先想到的因该是做一个锁屏, 也就是使用Android的API, 做一个锁屏应用, 和输入法等应用一样, 但这个方法成本很高. 国内的那些锁屏应用, 首先要做的就是引导用户设置锁屏应用, 步骤相当繁杂, 只是为了一个播放控制就用一个锁屏应用, 没有哪个用户会这么有耐心.</p>
+<ul>
+<li>
+<h3 id="悬浮窗-黑魔法">悬浮窗: 黑魔法</h3>
+</li>
+</ul>
+<p>得益于我国程序员的脑洞, 我们有了第二种思路: 悬浮窗.<br>
+悬浮窗的一个比较严谨的名字叫系统警告窗口, 国内外的一些流氓厂商, 经常用悬浮窗弹一些广告, 这个悬浮窗是浮在正常的app的上面的, 所以如果它不消失, 很可能你连正常使用手机都有问题.<br>
+这是一个比较打扰用户的东西, 而且也有一定的安全风险. MIUI的权限管理默认是将悬浮窗关闭的, 而有道词典的复制查词功能, 就是用悬浮窗做的, 如果你没给有道词典打开这个权限, 复制查词这个功能就废了.</p>
+<ul>
+<li>
+<h3 id="普通activity伪造锁屏">普通Activity伪造锁屏</h3>
+</li>
+</ul>
+<p>文章开头的GIF图片展示的效果, 就是用一个普通Activity做的.<br>
+国内的app们, 最终都选择了这条道路, 不知道他们是谁抄的谁, 第一个想到使用普通Activity伪造一个锁屏的开发者, 我只能说非常有创造力.</p>
+<h2 id="实现方法">实现方法</h2>
+<h3 id="监听锁屏事件">监听锁屏事件</h3>
+<p>准确来说我们监听的是屏幕熄灭事件, 关屏事件的Intent是Intent.ACTION_SCREEN_OFF, 不需要任何权限就可以监听, 但是必须使用代码注册, 也就是说我们必须有一个Service在后台监听才行, 对音乐类app来说, 这不是问题, 音乐app本身就是使用Service来控制MediaPlayer的. 只需要在Service中注册监听Intent.ACTION_SCREEN_OFF就行. 监听到这个事件, 我们就启动一个Activity, 这就是我们的锁屏Activity.</p>
+<pre><code class="language-java">@Override
+public void onReceive(Context context, Intent intent) {
+    String action = intent.getAction();
+    if (action.equals(Intent.ACTION_SCREEN_OFF)) {
+        Intent lockscreen = new Intent(PlaybackService.this, LockScreenActivity.class);
+        lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(lockscreen);
+    }
+}
+</code></pre>
+<p>注意我们在Service中启动一个Activity, 需要加上Intent.FLAG_ACTIVITY_NEW_TASK这个flag才行.</p>
+<h3 id="透明背景">透明背景</h3>
+<p>要想做到锁屏那样滑动解锁, 比如像图中的样子, 我们除了要根据手势移动View以外, 还要让Activity的背景透明, 比如将theme设置成下面这样.</p>
+<pre><code class="language-xml">&lt;style name=&quot;LockScreenBase&quot; parent=&quot;AppBaseTheme&quot;&gt;
+    &lt;item name=&quot;android:windowIsTranslucent&quot;&gt;true&lt;/item&gt;
+    &lt;item name=&quot;android:windowBackground&quot;&gt;@android:color/transparent&lt;/item&gt;
+    &lt;item name=&quot;android:colorBackgroundCacheHint&quot;&gt;@null&lt;/item&gt;
+    &lt;item name=&quot;android:windowNoTitle&quot;&gt;true&lt;/item&gt;
+    &lt;item name=&quot;android:backgroundDimEnabled&quot;&gt;false&lt;/item&gt;
+    &lt;item name=&quot;android:windowAnimationStyle&quot;&gt;@null&lt;/item&gt;
+    &lt;item name=&quot;android:windowContentOverlay&quot;&gt;@null&lt;/item&gt;
+&lt;/style&gt;
+</code></pre>
+<p>这个style其实做了很多东西, 大家根据自己的需要可以删减一部分, 比如状态栏透明, 不使用TitleBar之类的.</p>
+<h3 id="解锁屏幕与显示在锁屏之上">解锁屏幕与显示在锁屏之上</h3>
+<p>在显示我们的假锁屏的时候, 我们应当帮用户解锁, 这样我们才能冒充锁屏, 而不会出现用户”解锁”两次的情况, 但我们只能要求系统解锁没有密码的锁屏, 有密码的情况下, 我们是不能解锁屏幕的, 这时我们应该覆盖在锁屏界面上, 幸好, 在API level 5中就引入了两个Flag, FLAG_DISMISS_KEYGUARD和FLAG_SHOW_WHEN_LOCKED<br>
+在锁屏Activity的onCreate方法中给Activity加上两个Flag</p>
+<pre><code class="language-java">this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+</code></pre>
+<p>一定要两个一起用, 否则效果不大好, 当时测试了好久, 后来看了一下QQ音乐的实现, 才发现两个一起用效果才好, 否则会有一些奇怪的问题.</p>
+<h3 id="隐藏踪迹与独立的task">隐藏踪迹与独立的Task</h3>
+<p>作为一个锁屏界面, 应当是独立的, 也就是说, 我们这个Activity应当独立于我们的App存在, 至少看起来是这样. 从Android的角度来看, 我们app的主界面里的所有Activity, 应当在一个Task里, 而锁屏Activity, 应当在一个独立的Task里, 因此我们需要给锁屏Activity一个独立的Task, 而且无论何时, 都只有一个锁屏Activity实例存在.<br>
+另外, Android有查看近期任务的功能, 我们不希望锁屏界面这个独立的Task显示在里面, 所以锁屏Activity不能显示在近期任务中.<br>
+说了这么多, 要做很简单, 只需要在Manifest里面声明Activity时加入几个属性即可</p>
+<pre><code class="language-xml">&lt;activity android:excludeFromRecents=&quot;true&quot;
+    android:exported=&quot;false&quot;
+    android:launchMode=&quot;singleInstance&quot;
+    android:name=&quot;.view.lockscreen.LockScreenActivity&quot;
+    android:screenOrientation=&quot;portrait&quot;
+    android:taskAffinity=&quot;com.package.name.lockscreen&quot;
+    android:theme=&quot;@style/LockScreenTheme&quot;&gt;
+&lt;/activity&gt;
+</code></pre>
+<p>上面的属性中android:excludeFromRecents=&quot;true&quot;让锁屏Activity不显示在近期任务中, android:launchMode=&quot;singleInstance&quot;和android:taskAffinity=&quot;com.package.name.lockscreen&quot;保证锁屏Activity有一个单独的Task, 且这个Task里永远只有它一个实例.</p>
+<h3 id="不响应back按键">不响应Back按键</h3>
+<p>锁屏界面当然不响应Back按键, 只需要重写Activity的onBackPressed方法即可</p>
+<pre><code class="language-java">@Override
+public void onBackPressed() {
+    // do nothing
+}
+</code></pre>
+<h3 id="对home按键的处理">对Home按键的处理</h3>
+<p>我们无法监听Home按键, 但是可以改变因Home进入后台时的处理, 比如在Manifest的activity声明中加上</p>
+<pre><code class="language-xml">android:noHistory=&quot;true&quot;
+</code></pre>
+<p>这样如果用户通过Home按键让我们的应用进入后台, 我们会让这个activity销毁, 就像我们被滑动关闭一样.<br>
+如果不加, 最好重写Activity的onNewIntent来应对因Home进入后台, 然后Service再次启动锁屏Activity的情况.</p>
+<h3 id="处理黑色闪屏">处理黑色闪屏</h3>
+<p>我们的锁屏Activity在滑动”解锁”之后, 理论上是直接进入下面的界面, 但有时如果下面不是launcher, 而是一个app, 有可能会闪一下黑屏, 这个其实是底下activity的入场动画导致的, 某些Android版本会对顶部activity透明时处理有些奇怪, 我们不能保证其他的应用不闪黑屏, 但是对自己的的应用还是可以的, 只需要在我们的主体activity的style中加上</p>
+<pre><code class="language-xml">&lt;item name=&quot;android:windowAnimationStyle&quot;&gt;@null&lt;/item&gt;
+</code></pre>
+<p>就不会有这种情况发生了, 但是这样的话入场动画也没了, 总之如何取舍看大家了.</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/react-native-pei-zhi-hou-yi-zhi-installing-react-native-package-from-npm">React native配置后，一直&#39;Installing react-native package from npm...&#39;</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/intellij-idea-zi-dong-sheng-cheng-serialversionuid">Intellij IDEA 自动生成 serialVersionUID</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E6%B7%B7%E4%B9%B1%E7%9A%84%E9%94%81%E5%B1%8F%E6%8E%A7%E5%88%B6">混乱的锁屏控制</a></li>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF">实现思路</a>
+<ul>
+<li><a href="#%E9%94%81%E5%B1%8F%E5%BA%94%E7%94%A8-%E5%A4%A7%E7%82%AE%E6%89%93%E8%9A%8A%E5%AD%90">锁屏应用: 大炮打蚊子</a></li>
+<li><a href="#%E6%82%AC%E6%B5%AE%E7%AA%97-%E9%BB%91%E9%AD%94%E6%B3%95">悬浮窗: 黑魔法</a></li>
+<li><a href="#%E6%99%AE%E9%80%9Aactivity%E4%BC%AA%E9%80%A0%E9%94%81%E5%B1%8F">普通Activity伪造锁屏</a></li>
+</ul>
+</li>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%B3%95">实现方法</a>
+<ul>
+<li><a href="#%E7%9B%91%E5%90%AC%E9%94%81%E5%B1%8F%E4%BA%8B%E4%BB%B6">监听锁屏事件</a></li>
+<li><a href="#%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF">透明背景</a></li>
+<li><a href="#%E8%A7%A3%E9%94%81%E5%B1%8F%E5%B9%95%E4%B8%8E%E6%98%BE%E7%A4%BA%E5%9C%A8%E9%94%81%E5%B1%8F%E4%B9%8B%E4%B8%8A">解锁屏幕与显示在锁屏之上</a></li>
+<li><a href="#%E9%9A%90%E8%97%8F%E8%B8%AA%E8%BF%B9%E4%B8%8E%E7%8B%AC%E7%AB%8B%E7%9A%84task">隐藏踪迹与独立的Task</a></li>
+<li><a href="#%E4%B8%8D%E5%93%8D%E5%BA%94back%E6%8C%89%E9%94%AE">不响应Back按键</a></li>
+<li><a href="#%E5%AF%B9home%E6%8C%89%E9%94%AE%E7%9A%84%E5%A4%84%E7%90%86">对Home按键的处理</a></li>
+<li><a href="#%E5%A4%84%E7%90%86%E9%BB%91%E8%89%B2%E9%97%AA%E5%B1%8F">处理黑色闪屏</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

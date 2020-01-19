@@ -1,0 +1,236 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Android6.0系统适配桌面歌词效果 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Android6.0系统适配桌面歌词效果</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>在360手机助手及各家的音乐播放器软件上，都使用了桌面浮动窗功能，桌面歌词都是在音乐客户端显示在前台时隐藏，在用户把软件切换到后台后显示出来，此效果在Android 6.0以前，大部分都是使用系统的ActivityManager系统类的getRunningAppProcesses或getRunningTasks（Android5.0需要多判断一步）来进行软件前后台状态的判断，然后使用WindowManager进行浮动窗控件的增加和删除实现桌面歌词的显示与隐藏。但在Android6.0后，如果是使用SDK中6.0的编译工具编译的App，ActivityManager的方法和WindowManager的方法都有权限问题，不能简单直接的使用了。下面通过一个模仿桌面歌词效果的例子，来说明6.0上的实现。</p>
+<!--more-->
+<p>首先讲一下6.0以前版本判断前后台状态方式：</p>
+<pre><code class="language-java">private static void UpdateForgroundState() {
+        boolean isForground = IS_FORGROUND;
+        Context ctx = App.getInstance().getApplicationContext();
+        ActivityManager activityManager = (ActivityManager)ctx.getSystemService(Context.ACTIVITY_SERVICE);
+        String packageName = ctx.getPackageName();
+        List&lt;RunningAppProcessInfo&gt; appProcesses = activityManager.getRunningAppProcesses();
+        if (appProcesses == null) {         
+            return;
+        }
+        for (RunningAppProcessInfo appProcess : appProcesses) {
+            if (!appProcess.processName.equals(packageName)) {
+                continue; //不是本程序的包名，跳过
+            }
+            isForground = CompatibleCheckAppState(ctx,activityManager,appProcess);
+            break;
+        }       
+        if (IS_FORGROUND == isForground) {
+            return;
+        }
+        IS_FORGROUND = isForground;
+        if (isForground) {
+            //通知程序桌面歌词类，当前是前台状态，你要隐藏起来
+        } else {
+            //通知桌面歌词类，当前是后台运行中，你要出来显示了
+        }
+    }
+
+    private static boolean CompatibleCheckAppState(Context ctx,ActivityManager am,RunningAppProcessInfo pInfo){
+        if (android.os.Build.VERSION.SDK_INT &gt; android.os.Build.VERSION_CODES.KITKAT){  //Android5.0的判断前后台和以前版本不一样。要通过topActivity找包名判断，
+            if(am==null){
+                return false;
+            }
+            List&lt;RunningTaskInfo&gt; tasks = am.getRunningTasks(1);
+            if (!tasks.isEmpty()) {
+                ComponentName topActivity = tasks.get(0).topActivity;
+                if (topActivity!=null&amp;&amp;ctx!=null&amp;&amp;topActivity.getPackageName().equals(ctx.getPackageName())) {
+                    return true;
+                }
+            }
+            return false;
+        }else{
+            //5.0以前的系统，可以直接通过RunningAppProcessInfo类的importance属性判断前后台状态
+            return pInfo.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+        }
+    }
+</code></pre>
+<p>Android4.0–Android6.0可通用的判断前台后的方法</p>
+<p>首先要自定义Application类，在类中进行ActivityLifecycleCallbacks的接口实现类进行注册与反注册</p>
+<pre><code class="language-java">@Override
+    public void onCreate() {
+        super.onCreate();
+        this.registerActivityLifecycleCallbacks(callbacks);
+    }
+
+    @Override
+    public void onTerminate() {
+        this.unregisterActivityLifecycleCallbacks(callbacks);
+        super.onTerminate();
+    }
+</code></pre>
+<p>然后在接口实现类中，实现如下代码，在全局进行状态标识更新</p>
+<pre><code class="language-java">private Application.ActivityLifecycleCallbacks callbacks = new ActivityLifecycleCallbacks() {
+        @Override
+        public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+        }
+
+        @Override
+        public void onActivityStarted(Activity activity) {
+            activityShowingCount++;
+            changeActivityFlag(activity,activityShowingCount&gt;0);
+        }
+
+        @Override
+        public void onActivityResumed(Activity activity) {         
+        }
+
+        @Override
+        public void onActivityPaused(Activity activity) {
+        }
+
+        @Override
+        public void onActivityStopped(Activity activity) {
+            activityShowingCount--;
+            changeActivityFlag(activity,activityShowingCount&gt;0);            
+        }
+
+        @Override
+        public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+        }
+
+        @Override
+        public void onActivityDestroyed(Activity activity) {
+        }
+    };
+</code></pre>
+<p>上面需要注意的是，一定要把判断逻辑放到started和stopped回调事件中，而不能放到Resumed和paused事件中，因为这二个事件在应用有多个Activity进行交替打开时，桌面歌词会显一下。<br>
+上面这种方法不需要申请权限，简单安全。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/androidm-yi-shang-huo-qu-mac-di-zhi-bu-zhun-que-de-jie-jue-fang-an">androidM以上获取MAC地址不准确的解决方案</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/android-suo-ping-yan-jiu">android 锁屏研究</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

@@ -1,0 +1,173 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>坚果云+git，有效管理您的代码 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">坚果云+git，有效管理您的代码</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>不少程序员用户，直接将自己的代码放在坚果云同步文件夹中，每次修改自动同步，这样做有几个问题：</p>
+<!--more-->
+<ul>
+<li>坚果云的版本历史是自动保存的，不能添加版本信息。对于代码而言，不方便找回和比对历史代码；</li>
+<li>专业的代码管理工具（Git/Hg）能够很容易查看用户对所有代码进行的每次修改，易于分析bug的来源。而坚果云不能提供这样的功能。</li>
+<li>如果将eclipse, Visual Studio等IDE的workspace直接放于坚果云中，假如同步不及时造成冲突，而IDE自动生成文件的冲突无法解决，可能导致IDE无法正常打开。</li>
+<li>编译，重构等自动化工作引发的同步，容易导致大量的带宽占用。</li>
+</ul>
+<p>幸运的是，我们推荐用如下的方法利用坚果云同步代码，可以完全保留代码管理工具的长处，同时利用坚果云提供的自动同步和备份功能。 对于初学者，我们推荐使用hg管理代码，因为其更简单易学。</p>
+<hr>
+<p>假设你用的是Git，当前的开发目录叫“<sub>/projects”，而坚果云路径为“</sub>/Nutstore”，进行如下操作：</p>
+<ol>
+<li>~/projects $&gt;git init            （注释：初始化git repository）</li>
+<li>~/projects $&gt; git add .</li>
+<li>~/projects $&gt; git commit -m “first commit”</li>
+<li>~/projects $&gt; mkdir -p ~/Nutstore/git/project.git  （注释：在坚果云中创建bare git repository）</li>
+<li>~/projects $&gt; cd ~/Nutstore/git/project.git</li>
+<li>~/Nutstore/git/project.git $&gt; git init –bare</li>
+<li>~/Nutstore/git/project $&gt; cd ~/project   （注释：push代码到坚果云中）</li>
+<li>~/project $&gt; git remote add orig ~/Nutstore/git/project.git</li>
+<li>~/project $&gt; git push orig master</li>
+</ol>
+<p>这样在所有电脑上都可以正常的进行git pull &amp; git push，以后每次修改代码只需commit，然后将代码push到~/Nutstore/git/project即可享受到git+坚果云的所有好处。如下：</p>
+<ul>
+<li>~/project $&gt; git push orig master</li>
+</ul>
+<p>你也可以在~/Nutstore/git/project.git 下定期运行GC(垃圾回收），减少文件数目和节约空间，如下：</p>
+<ul>
+<li>~/Nutstore/git/project.git&gt; git gc</li>
+</ul>
+<p>上面是坚果云官网写的如何同步,那么接下来我写下如何在其他电脑上使用.假如你的坚果云路径为“<sub>/Nutstore”,而你的开发目录为“</sub>/projects”.</p>
+<ol>
+<li>~/projects $&gt;git clone ~/Nutstore/project.git</li>
+</ol>
+<p>然后就可以用各种各样的git操作了.相当于你有两个本地服务器.每次都提交到本地服务器了,然后坚果云来保持你这两个服务器文件一致性.</p>
+<p>我感觉这同步盘的想法真是nice.这样我们就可以自己搭建私有服务器了.</p>
+<p>最近360云盘已经不行了,数据都需要自己备份.而同步盘则不需要担心数据备份的问题.因为数据你自己本地就有一份.唯一需要担心的是同步功能什么时候会收费或者取消.23333</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/duo-tai-ji-zi-gong-tong-wei-hu-hexo-bo-ke">多台机子共同维护hexo博客</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/guan-yu-na-xie-android-zhong-bu-chang-yong-de-she-zhi-shu-xing">关于那些Android中不常用的设置属性</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

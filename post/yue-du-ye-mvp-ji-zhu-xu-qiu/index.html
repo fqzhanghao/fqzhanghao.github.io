@@ -1,0 +1,264 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>阅读页mvp技术需求 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">阅读页mvp技术需求</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p><strong>需求</strong>：</p>
+<p>阅读页功能多，代码逻辑复杂，使用mvp改造解耦，利于后期维护</p>
+<p><strong>任务拆分</strong>：</p>
+<ul>
+<li>删除冗余代码，封装方法，可读性优化</li>
+<li>将阅读页UI与业务逻辑分层，进行解耦</li>
+<li>结合RxJava，优化消息分发逻辑</li>
+</ul>
+<h1 id="二-业务时序图流程图">二、业务时序图/流程图</h1>
+<p>阅读页核心业务流程图</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205102254.png" alt="" loading="lazy"></figure>
+<p>阅读页核心业务时序图<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205102355.jpg" alt="" loading="lazy"></p>
+<h1 id="三-mvp一期类结构设计">三、MVP一期类结构设计</h1>
+<p>ReaderPagePresenter类结构：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205114733.jpg" alt="" loading="lazy"></p>
+<h1 id="四-mvp一期操作步骤与注意点">四、MVP一期操作步骤与注意点</h1>
+<h2 id="1操作步骤">1.操作步骤</h2>
+<p>遵循V-&gt;P-&gt;M的顺序逐步剥离代码</p>
+<ol>
+<li>修改View层继承的接口，改为内部实现，方便转移到P层</li>
+<li>剥离打开书籍业务到P层</li>
+<li>剥离各类handler消息到P层</li>
+<li>剥离各类控制业务到P层</li>
+<li>剥离P层的数据请求到M层</li>
+</ol>
+<h2 id="2注意点">2.注意点</h2>
+<h3 id="1-广播多放在v层还是放在p层">1. 广播多，放在V层还是放在P层？</h3>
+<p>有多个业务使用广播，方法很长，查看都是业务相关，故放在P层</p>
+<h3 id="2-handler怎么处理">2. Handler怎么处理？</h3>
+<p>查看剥离后的P层代码，很多成员变量都会牵扯到Handler，这个怎么处理呢？</p>
+<p>网上大部分的代码均使用回调的方式处理数据。即V-P-M-P-V</p>
+<p>而我们的代码，拿到Handler以后，发送msg到V层处理，即V-P-M-V.</p>
+<p>我们的Handler较多，处理起来难度较大，仿照书架P的处理方式，在P层获取到V的handler。</p>
+<h3 id="3-空安全内存泄漏">3. 空安全，内存泄漏？</h3>
+<p>MVP并非无缺点，空安全和内存泄漏需要注意。及时销毁PM,断开引用</p>
+<h1 id="五-mvp二期类结构设计">五、MVP二期类结构设计</h1>
+<p>ReaderPagePresenter类结构：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205113159.png" alt="" loading="lazy"></p>
+<h1 id="六-mvp二期工作">六、MVP二期工作</h1>
+<p>一期可以先将V中的逻辑转移到P层中，二期可以对大P层进行拆分</p>
+<h3 id="1-拆分多个pm层">1. 拆分多个PM层</h3>
+<p>借鉴网上开源项目思路，复杂的业务需求可拆分为多个PM,即一个V持有N个P,一个P持有多个M.进一步解耦庞大的P层代码。</p>
+<p>目前耦合有三类,解耦思路为单例设计模式</p>
+<p>1&gt; 书籍信息类信息：即CurBook，autoBookmark。</p>
+<p>1.当前书籍类型类（文本书，精排书），CurBook,<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205105822.png" alt="" loading="lazy"></p>
+<p>此变量维护当前书籍类型，并转型为各类书籍调用各自的方法，做成单例类，减少单个变量传递，这样就可解耦到M层获取</p>
+<p>2.当前书籍类，autoBookmark</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205105804.png" alt="" loading="lazy"></figure>
+<p>以前是一个字段autoBookmark来回修改传递，拆分多个M可以在用到这个mark的时候，用一个单例类解耦</p>
+<p>2&gt; 服务器书籍信息类：即OnlineChapterHandle，LocalChapterHandle。这两个在MVP其实充当的是M</p>
+<p>1.OnlineChapterHandle负责在线书的书籍信息，章节解析等功能<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205105904.png" alt="" loading="lazy"><br>
+这个类是比较复杂的一个类，充当为M类。作用有4，获取书籍类型（下载时使用），获取书籍信息和章节信息（保存到OnlineBookOperator中的OnlineBook对象中，包含整本书的信息+章节信息），获取书籍购买类型（查询书籍信息是前置条件，从内部的ob对象中直接拿即可），检测章节一致性<br>
+备注：获取书籍信息和章节信息前，还获取了批量购买协议内容，都保存到了OB对象中，此处可以使用rxjava的merge合并两次请求</p>
+<p>2.LocalChapterHandle负责精排试读书的书籍信息等</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205105835.png" alt="" loading="lazy"></figure>
+<p>内部维护了一个handler的注册表，初始化的时候注册到这个地方。查询完成后，通过handler把查询结果发送出去<br>
+一共有两个方法，获取书籍类型（在下载时使用），获取书籍信息（查询精排限免期）</p>
+<p>3&gt; 书籍下载类：即OnlineProvider，这个在MVP中也是M，负责下载章节</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205112738.png" alt="" loading="lazy"></figure>
+<p>此类维护了两个对象，书籍下载的章节，和正在预取的章节。作用有2，获取章节（下载章节），维护下载章节队列</p>
+<p><strong>困难点</strong>：上述三个类考虑到复用问题（新增类还是复用，复用的话handler+听书如何复用），仍有待商榷<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205114240.png" alt="" loading="lazy"></p>
+<p>4&gt;非耦合类ReaderPageModel<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205112925.png" alt="" loading="lazy"></p>
+<p>这个类，用来负责阅读页其他网络请求，比如广告，付费等</p>
+<h3 id="2-rxjava引入与handler">2. rxjava引入与handler</h3>
+<p>目前数据的处理散布在N个类内，比如OnlineProvider，OnlineChapterHandle，LocalChapterHandle等，这类数据相关的类，可以考虑移动到M层。</p>
+<p>对V的所有操作，都是P层在控制，PM之间通过回调进行。可以逐步去掉handler的使用。</p>
+<p>rxjava的引入。rxjava流式处理较好用，可以无缝切换线程。在项目中的体现就是：子线程拿数据（M）--&gt; 切换--&gt; 主线程展示UI（V).我们可以把rxjava运用到P层，来处理P层中涉及到这个操作的逻辑。</p>
+<h1 id="七-一期改造效果">七、一期改造效果</h1>
+<p>仓库地址：http://git.code.oa.com/book_cooperate_client/cooperate-baseline.git （feature_p_haoizhang_20181122_readerpage_mvp）</p>
+<p>删减ReaderPageActivity类 初始行数13102，抽取结束后4853，代码减少63%，包含View交互。</p>
+<p>新增ReaderPagePresenter类 行数6170，包含书籍加载+书籍控制+付费</p>
+<p>新增ReaderPageModel类  行数231，包含数据请求</p>
+<h1 id="八-三期类结构设计">八、三期类结构设计</h1>
+<p>二期设计因为单例设计模式，在多个阅读页同时存在的情况下，会有实例问题。比如当前在读书籍Mark， 打开新阅读页的时候，会把老阅读页的单例Mark更新，导致老阅读页的书籍信息被修改。<br>
+所以对二期的设计进行了下修改，解决多阅读页问题。同时引入代理模式和观察者模式，解决多P协作，多P数据统一等问题。</p>
+<p>ReaderPagePresenter类结构如下：</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200109181855.jpg" alt="" loading="lazy"></figure>
+<p>以下：ReaderPageActivity简称V，ReadpagePresenterImpl简称代理P，CommonPresenter等简称业务P，ReaderPageModel等简称M</p>
+<h2 id="代理模式">代理模式</h2>
+<p>V持有代理P的引用，通过调用代理P的方法，完成P层逻辑。<br>
+引入代理P，一共有两个作用：<br>
+1.隐藏业务P的业务实现，可以进行后续业务扩展，不用更改V层代码<br>
+2.解决多P协作问题，如遇到多P才能完成的业务，可以写在代理P中，不用在V中进行周转</p>
+<h2 id="观察者模式">观察者模式</h2>
+<p>代理P是被观察者，业务P是观察者。代理P中持有一个观察者队列，ArrayList<ReadpageObserver>，通过业务P的observe(ReadpageObservable observable)方法，注册到观察者队列中。<br>
+当业务P中，某些需要同步的对象（如Mark）更新时，可以通知被观察者，更新观察者队列，做到了多P数据统一。</p>
+<p>备注：因为业务涉及到多阅读页形式，无法使用EventBus，RxBus之类类库添加全局观察者，所以就实现了一个有局限性的观察者模式。如果以后无此类多阅读页需求，可以修改为三方类库实现，业务逻辑更加清晰一些。</p>
+<h2 id="疑问">疑问</h2>
+<p>通过拆分成不同的Iview，和Ipresenter.可以合理的规划业务边界，编写业务代码。但是也会引入两个新的问题<br>
+1.如果业务边界不清晰，怎么划分。即如何避免代理P增大的问题<br>
+2.如果业务变动频繁，怎么快速完成，改动量最小。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/an-zhuo-qia-dun-pai-cha-bu-zou">安卓卡顿排查步骤</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/pip-wang-luo-chao-shi-jie-jue-ban-fa">pip网络超时解决办法</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E4%BA%8C-%E4%B8%9A%E5%8A%A1%E6%97%B6%E5%BA%8F%E5%9B%BE%E6%B5%81%E7%A8%8B%E5%9B%BE">二、业务时序图/流程图</a></li>
+<li><a href="#%E4%B8%89-mvp%E4%B8%80%E6%9C%9F%E7%B1%BB%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1">三、MVP一期类结构设计</a></li>
+<li><a href="#%E5%9B%9B-mvp%E4%B8%80%E6%9C%9F%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4%E4%B8%8E%E6%B3%A8%E6%84%8F%E7%82%B9">四、MVP一期操作步骤与注意点</a>
+<ul>
+<li><a href="#1%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4">1.操作步骤</a></li>
+<li><a href="#2%E6%B3%A8%E6%84%8F%E7%82%B9">2.注意点</a>
+<ul>
+<li><a href="#1-%E5%B9%BF%E6%92%AD%E5%A4%9A%E6%94%BE%E5%9C%A8v%E5%B1%82%E8%BF%98%E6%98%AF%E6%94%BE%E5%9C%A8p%E5%B1%82">1. 广播多，放在V层还是放在P层？</a></li>
+<li><a href="#2-handler%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86">2. Handler怎么处理？</a></li>
+<li><a href="#3-%E7%A9%BA%E5%AE%89%E5%85%A8%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F">3. 空安全，内存泄漏？</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E4%BA%94-mvp%E4%BA%8C%E6%9C%9F%E7%B1%BB%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1">五、MVP二期类结构设计</a></li>
+<li><a href="#%E5%85%AD-mvp%E4%BA%8C%E6%9C%9F%E5%B7%A5%E4%BD%9C">六、MVP二期工作</a><br>
+*
+<ul>
+<li><a href="#1-%E6%8B%86%E5%88%86%E5%A4%9A%E4%B8%AApm%E5%B1%82">1. 拆分多个PM层</a></li>
+<li><a href="#2-rxjava%E5%BC%95%E5%85%A5%E4%B8%8Ehandler">2. rxjava引入与handler</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%83-%E4%B8%80%E6%9C%9F%E6%94%B9%E9%80%A0%E6%95%88%E6%9E%9C">七、一期改造效果</a></li>
+<li><a href="#%E5%85%AB-%E4%B8%89%E6%9C%9F%E7%B1%BB%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1">八、三期类结构设计</a>
+<ul>
+<li><a href="#%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F">代理模式</a></li>
+<li><a href="#%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F">观察者模式</a></li>
+<li><a href="#%E7%96%91%E9%97%AE">疑问</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

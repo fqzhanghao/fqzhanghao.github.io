@@ -1,0 +1,194 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>浮窗开发之窗口层级 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">浮窗开发之窗口层级</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>转载自:<a href="http://www.liuguangli.win/archives/476">http://www.liuguangli.win/archives/476</a></p>
+<!--more-->
+<p>最近在项目中遇到了这样的需求：需要在特定的其他应用之上悬浮自己的UI交互（拖动、输入等复杂的UI交互），和九游的浮窗类似，不过我们的比九游的体验更好，我们越过了很多授权的限制。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119202822.png" alt="" loading="lazy"></figure>
+<p>很多人都知道如何去实现一个简单的浮窗，但是却很少有人去深入的研究背后的流程机制，由于项目中浮窗交互比较复杂，遇到了些坑查看了很多资料，故总结浮窗涉及到的知识点：</p>
+<ul>
+<li>窗口层级关系（浮窗是如何“浮”的）？</li>
+<li>浮窗有哪些限制，如何越过用户授权实现浮窗功能？</li>
+<li>窗口与用户输入系统（Activity是如何接收到touch事件?）。</li>
+</ul>
+<p>本章我们来研究第一个问题:浮窗为何会浮。浮窗之所以叫浮窗，是因为它能悬浮于应用或者桌面窗口之上，能脱离Activity而存在。为了研究其中区别，我们先来看看我们最熟悉的Activity是怎么显示出来的。</p>
+<h3 id="activity是怎么显示出来的">Activity是怎么显示出来的？</h3>
+<p>要弄清这个问题答案，我们先从Activity的setContentView()这个方法的源码开始找起，在Activity中看到setCententView的源码：</p>
+<pre><code class="language-java">public void setContentView(int layoutResID) {
+        getWindow().setContentView(layoutResID);
+        initWindowDecorActionBar();
+}
+</code></pre>
+<p>getWindow是返回返回Activity的mWindow变量，指向一个Window的对象，Window是一个抽象类，这里返回的是PhoneWindow对象（PhoneWindow是Window的子类），PhoneWindow中有一个DecorView对象，decorView成员，这是一个FrameLayout，setContentView的子布局最终会添加到decorView中,这个decorView就是当前窗口的根视图,这个根视图是如何最终被绘制出来的？在ActivityThread中有这样一段代码：</p>
+<pre><code class="language-java">l.type = WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
+l.softInputMode |= forwardBit;
+if (a.mVisibleFromClient) {
+    a.mWindowAdded = true;
+    wm.addView(decor, l);
+}
+</code></pre>
+<p>这个decorView，最终会被WindowManager.addView添加到绘制系统中,并类型是WindowManager.LayoutParams.TYPE_BASE_APPLICATION，这个参数决定了要绘制的窗口的z轴层次，为了避免思维栈过深，这里就不贴出详细的源码跟踪过程了，直接给结论。</p>
+<p>先来看看Activity和window的关系：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119202835.png" alt="" loading="lazy"></p>
+<p>再来window和View的关系：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119202848.png" alt="" loading="lazy"></p>
+<p>Activity窗口显示过程：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119202949.png" alt="" loading="lazy"></p>
+<p>说Activity是怎么显示出来的，其实是说Activity管理的View是怎么显示出来的。最后再来总结一下：</p>
+<ol>
+<li>Activity通过setContentView设置的视图是添加到PhoneWindow的根视图decor中。</li>
+<li>Window是一个抽象的概念，Window关了了一个View（根视图），最终被WindowManager管理的还是一个View（根视图）和它的LayoutParams，视图绘制刷新都是通过WindowManager（WindowManagerGlobal）与WindowManagerServiceIPC交互调用底层绘制的。</li>
+<li>Activity是四大组件中唯一和窗体紧密联系的组件（这是为什么会有初学者把Activity直接理解为绘制界面的原因），所有掌管的视图只不过是一种window和Dialog、Toast、墙纸所掌管的Window类型不一样。</li>
+</ol>
+<h3 id="浮窗为什么会浮">浮窗为什么会“浮”？</h3>
+<p>上面讲到Activity的显示过程其实已经揭示了通用界面的显示过程，浮窗的显示过程更为简单：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119202958.png" alt="" loading="lazy"><br>
+做过浮窗的同学应该都明白了，为啥浮窗能脱离Activity而显示，本质上我们是把一个View交给WindowManager来管理了，LayoutParams.type类型决定了这个View显示窗口的类型，不同类型显示的窗口层次（z轴）是不一样的。大方面来讲可以分为应用窗口（APPLICATION_WINDOW）、子窗口（SUB_WINDOW）、系统窗口（SYSTEM_WINDOW）三种类型，应用窗口z轴范围是1～99，子窗口的范围是1001～1999，系统窗口是（2000～2999），所以要实现浮动窗口我们只能在系统窗口范围中实现。<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203007.png" alt="" loading="lazy"><br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203018.png" alt="" loading="lazy"></p>
+<p>到这里我们对Android系统的窗口层次有个大致的了解了，Activity是Android应用的四大组件之一，描述的是应用的活动状态和周期，受ActivityManagerService的管理；Window／View是图形窗口的抽象模型，描述的是窗口的绘制信息，受WindowManagerService的管理；Activity聚合Window来和图形窗口产生联系。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/ying-jian-jia-su-setlayertype">硬件加速 setlayertype</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/mei-ge-cheng-xu-yuan-du-bi-du-de-10-pian-wen-zhang">每个程序员都必读的10篇文章</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#activity%E6%98%AF%E6%80%8E%E4%B9%88%E6%98%BE%E7%A4%BA%E5%87%BA%E6%9D%A5%E7%9A%84">Activity是怎么显示出来的？</a></li>
+<li><a href="#%E6%B5%AE%E7%AA%97%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E6%B5%AE">浮窗为什么会“浮”？</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

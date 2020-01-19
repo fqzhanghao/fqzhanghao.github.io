@@ -1,0 +1,225 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>安卓卡顿排查步骤 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">安卓卡顿排查步骤</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>接到组长下发的书城卡顿排查任务，学习了两个工具，记录一下排查过程，以后可以模仿此步骤，进行页面卡顿检测</p>
+<p>下面两个工具地址，都在DDMS中，位置如下：your\way\to\androidsdk\tools\monitor.bat,双击即可打开</p>
+<h2 id="一-systrace">一、Systrace</h2>
+<p>Systrace 允许您在系统级别收集和检查设备上运行的所有进程的计时信息。 它将来自Android内核的数据（例如CPU调度程序，磁盘活动和应用程序线程）组合起来，以生成HTML报告。</p>
+<h3 id="抓取systrace的方法">抓取Systrace的方法</h3>
+<p>1.连接手机，勾选需要分析的进程，点击右侧箭头处的图标<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204611.png" alt="" loading="lazy"></p>
+<p>2.弹框中，勾选需要分析的参数，点击OK，操作app中感觉卡顿的部分，5秒钟后，可以在弹框中配置的地方，找到生成的trace.html<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204620.png" alt="" loading="lazy"></p>
+<p>还有一种使用命令行的方式进行抓取，大家可能会碰到某些问题，我这边已经踩过坑了，按照链接步骤操作即可<br>
+<a href="https://www.jianshu.com/p/e73768e66b8d">命令行方式抓取Systrace</a></p>
+<h3 id="分析systrace的方法">分析Systrace的方法</h3>
+<p>使用Chrome打开trace.html文件，有几处需要关注，1.Alerts，2.Frames<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204629.png" alt="" loading="lazy"><br>
+控制键如下：</p>
+<blockquote>
+<p>g键，可开启60fps的红色参考线。<br>
+w键，放大<br>
+s键，缩小<br>
+a键，左移<br>
+d键，右移<br>
+f键，放大选中的帧</p>
+</blockquote>
+<p>Frames中可以看到一个个F，代表了每一帧。绿色代表了16ms中绘制了一帧，黄色和红色代表了超过16ms，发生了丢帧。</p>
+<p>我们可以先看Alert框中的内容，这里面是系统给我们分析出所有超时帧的问题<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204639.png" alt="" loading="lazy"><br>
+可以看出，7帧发生了测量布局超时，17帧发生了延时，10帧发生了saveLayer超时，3帧draw超时，72帧设置了Alpha</p>
+<p>一般我们会分析红色的帧。我们选一个比较有特点的帧看一下，依次按下m键，f键。屏幕上可以看到下图<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204648.png" alt="" loading="lazy"><br>
+最上面可以看到这一帧耗时39.789ms,差不多3帧的时间，下方Alert提示，这一帧中发生了4次saveLayer操作。这个可能是发生在CoverImageView的draw方法中</p>
+<pre><code class="language-java">        canvas.getClipBounds(bounds);
+        boundsf.set(bounds);
+        super.onDraw(canvas);
+        canvas.saveLayer(boundsf, maskXferPaint, Canvas.ALL_SAVE_FLAG);
+        canvas.drawARGB(0, 0, 0, 0);
+        canvas.drawRoundRect(boundsf, radius, radius, canvasPaint);
+        canvas.restore();
+</code></pre>
+<p>谷歌大会时开发人员讲到，Flutter中不建议用clipPath,saveLayer的，他们优化掉了这个操作。我们换成了Glide,可以研究一下，去掉CoverImageView这个耗时的类</p>
+<p>还有一个被我优化掉的点是，双排10书封。发现DrawFrame时间超长。猜测可能是加载图片导致。修改为，滑动列表时，暂停图片加载，列表暂停时，加载图片。解决了问题。</p>
+<p>从这个烽火图上还可以看出很多问题建议。<br>
+比如：在动画过程中避免进行layout操作<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204901.png" alt="" loading="lazy"></p>
+<p>比如：因耗时操作导致的丢帧，这个可以结合第二部分的TraceView一起看<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204930.png" alt="" loading="lazy"></p>
+<p>可以看出，在这一帧中，上方的cpu模块，有很多beacon线程在做操作，推测可能是在进行曝光上报。尤其是多书封的上报，代码中整了个for循环，一本发一次。可以考虑优化成一次上报，不过这个需要数据和后台同学的共同努力。暂时只能这样了。<br>
+从烽火图中可以看到很多问题，需要逐帧的进行查看，具体问题具体分析。</p>
+<h2 id="二-traceview">二、TraceView</h2>
+<p>TraceView 是 Android SDK 中内置的一个工具，它可以加载 trace 文件，用图形的形式展示代码的执行时间、次数及调用栈，便于我们分析。</p>
+<p>附上参考文章<br>
+<a href="https://cloud.tencent.com/developer/article/1014620">TraceView是啥</a></p>
+<h3 id="抓取trace的方法">抓取Trace的方法</h3>
+<p>有多种抓Trace的方法，当然是介绍最简单的方式。</p>
+<p>1.连接手机，勾选需要分析的进程，点击左侧箭头处的图标开始抓<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204941.png" alt="" loading="lazy"></p>
+<p>2.操作app中感觉卡顿的部分，然后再次点击图标，暂停抓取。几秒后会展示出trace的图形化界面</p>
+<h3 id="分析trace的方法">分析Trace的方法</h3>
+<p>先用网上的一个图介绍下参数都是什么意思<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204952.png" alt="" loading="lazy"></p>
+<p>使用TraceView查看耗时，主要关注Calls+Recur Calls/Total和Cpu Time/Call这两个值，关注调用次数多和耗时久的方法</p>
+<p>程序优化两点要素：<br>
+一是调用次数不多，但每次调用却需要花费很长时间的函数。这个可以从Cpu Time / Call反映出来。<br>
+一个是那些自身占用时间不长，但调用却非常频繁的函数。这个可以从Calls + Recur Calls / Total反映出来。</p>
+<p>浩哥还介绍了一个适应我们自己程序的点，就是直接搜索attachView，分析我们card列表中的耗时操作有哪些。放个图看看<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119205020.png" alt="" loading="lazy"></p>
+<p>从图上可以看出，attachView方法被调用23次，总时长230ms，每个方法稳定在10ms左右。log.d调用次数最多，其次是单书封BaseXLCover，单书封card,点击条目可以查看具体的内容<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119205028.png" alt="" loading="lazy"></p>
+<p>可以看出，我们整体的性能还是比较好的，大家都很棒。如果有性能问题的话，可以参考下面的链接，学习寻找的方法<a href="https://www.jianshu.com/p/388c693c1b58">Trace图怎么看</a></p>
+<h2 id="备注">备注</h2>
+<p>还有很多没有写的性能学习资料，大家有时间可以去官网看看<a href="https://developer.android.com/topic/performance/tracing/">谷歌官网Trace</a>,学习一下AS中的Profile,以及SysTrace的替代品Perfetto</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/an-zhuo-zhui-zong-fang-fa-diao-yong-dui-zhan">安卓追踪方法调用堆栈</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/yue-du-ye-mvp-ji-zhu-xu-qiu">阅读页mvp技术需求</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%B8%80-systrace">一、Systrace</a>
+<ul>
+<li><a href="#%E6%8A%93%E5%8F%96systrace%E7%9A%84%E6%96%B9%E6%B3%95">抓取Systrace的方法</a></li>
+<li><a href="#%E5%88%86%E6%9E%90systrace%E7%9A%84%E6%96%B9%E6%B3%95">分析Systrace的方法</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%8C-traceview">二、TraceView</a>
+<ul>
+<li><a href="#%E6%8A%93%E5%8F%96trace%E7%9A%84%E6%96%B9%E6%B3%95">抓取Trace的方法</a></li>
+<li><a href="#%E5%88%86%E6%9E%90trace%E7%9A%84%E6%96%B9%E6%B3%95">分析Trace的方法</a></li>
+</ul>
+</li>
+<li><a href="#%E5%A4%87%E6%B3%A8">备注</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

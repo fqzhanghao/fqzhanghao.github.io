@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fqzhanghao.github.io/</id>
     <title>浩浩的博客</title>
-    <updated>2020-01-19T10:47:56.077Z</updated>
+    <updated>2020-01-19T12:54:38.866Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fqzhanghao.github.io/"/>
     <link rel="self" href="https://fqzhanghao.github.io/atom.xml"/>
@@ -11,975 +11,2162 @@
     <icon>https://fqzhanghao.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 浩浩的博客</rights>
     <entry>
-        <title type="html"><![CDATA[安卓自定义View基础 - 坐标系]]></title>
-        <id>https://fqzhanghao.github.io/post/an-zhuo-zi-ding-yi-view-ji-chu-zuo-biao-xi</id>
-        <link href="https://fqzhanghao.github.io/post/an-zhuo-zi-ding-yi-view-ji-chu-zuo-biao-xi">
+        <title type="html"><![CDATA[组件化集成]]></title>
+        <id>https://fqzhanghao.github.io/post/zu-jian-hua-ji-cheng</id>
+        <link href="https://fqzhanghao.github.io/post/zu-jian-hua-ji-cheng">
         </link>
-        <updated>2020-01-19T10:46:59.000Z</updated>
-        <summary type="html"><![CDATA[<h1 id="一屏幕坐标系和数学坐标系的区别">一.屏幕坐标系和数学坐标系的区别</h1>
-<p>由于移动设备一般定义屏幕左上角为坐标原点，向右为x轴增大方向，向下为y轴增大方向， 所以在手机屏幕上的坐标系与数学中常见的坐标系是稍微有点差别的，详情如下：</p>
-]]></summary>
-        <content type="html"><![CDATA[<h1 id="一屏幕坐标系和数学坐标系的区别">一.屏幕坐标系和数学坐标系的区别</h1>
-<p>由于移动设备一般定义屏幕左上角为坐标原点，向右为x轴增大方向，向下为y轴增大方向， 所以在手机屏幕上的坐标系与数学中常见的坐标系是稍微有点差别的，详情如下：</p>
-<!--more-->
-<blockquote>
-<p>（PS：其中的∠a 是对应的，注意y轴方向！）</p>
-</blockquote>
-<p><img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f1qygzfvhoj308c0dwglr.jpg" alt="" loading="lazy"><br>
-<img src="http://ww1.sinaimg.cn/large/005Xtdi2jw1f1qyhbqvihj308c0dwjrh.jpg" alt="" loading="lazy"></p>
-<h3 id="实际屏幕上的默认坐标系如下">实际屏幕上的默认坐标系如下：</h3>
-<blockquote>
-<p>PS: 假设其中棕色部分为手机屏幕</p>
-</blockquote>
-<figure data-type="image" tabindex="1"><img src="http://ww3.sinaimg.cn/large/005Xtdi2jw1f1qyhjy7h8j308c0dwq32.jpg" alt="" loading="lazy"></figure>
-<h1 id="二view的坐标系">二.View的坐标系</h1>
-<h3 id="注意view的坐标系统是相对于父控件而言的">注意：View的坐标系统是相对于父控件而言的.</h3>
-<pre><code class="language-java">getTop();       //获取子View左上角距父View顶部的距离
-getLeft();      //获取子View左上角距父View左侧的距离
-getBottom();    //获取子View右下角距父View顶部的距离
-getRight();     //获取子View右下角距父View左侧的距离
-</code></pre>
-<h3 id="如下图所示">如下图所示：</h3>
-<figure data-type="image" tabindex="2"><img src="http://ww2.sinaimg.cn/large/005Xtdi2gw1f1qzqwvkkbj308c0dwgm9.jpg" alt="" loading="lazy"></figure>
-<h1 id="三motionevent中-get-和-getraw-的区别">三.MotionEvent中 get 和 getRaw 的区别</h1>
-<pre><code class="language-java">event.getX();       //触摸点相对于其所在组件坐标系的坐标
-event.getY();
+        <updated>2020-01-19T12:53:01.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="组件化集成">组件化集成</h1>
+<p>上半年的技术需求,是做白牌组件集成,就是将白牌独立出来的组件,集成到腾讯视频,腾讯新闻,腾讯新闻极速版中.</p>
+<p>看起来很简单,就像我们使用okhttp,只要导入一句**compile 'com.squareup.okhttp3:okhttp:3.4.1'**即可.</p>
+<p>但是事与愿违.过程充满了艰辛,下面记录一下这次集成中的总结.</p>
+<h3 id="项目背景">项目背景</h3>
+<p>首先明确一下项目的背景.</p>
+<p>在腾讯视频项目中,小说使用replugin形式集成,表现为一个插件apk.我们称之为壳app,这个app是一个壳,他的实际入口为壳app中依赖的读书aar.</p>
+<p>我们所要做的,就是在这个aar中集成白牌组件.即<strong>插件apk--&gt;读书aar--&gt;白牌组件.</strong></p>
+<p>以下所有均围绕这个过程准备.在此之前我们需要做一个依赖统一管理,如果不做这个,那么各个版本依赖冲突起来,简直解决到怀疑人生.</p>
+<h3 id="依赖统一">依赖统一</h3>
+<p>在项目根目录新建config.gradle文件,配置如下</p>
+<pre><code class="language-groovy">ext {
+    android = [
+            minSdkVersion    : 15,
+            targetSdkVersion : 25,
+            compileSdkVersion: 25,
+            buildToolsVersion: &quot;25.0.3&quot;
+    ]
 
-event.getRawX();    //触摸点相对于屏幕默认坐标系的坐标
-event.getRawY();
+    dependencies = [
+            &quot;support-v4&quot;          : 'com.android.support:support-v4:25.3.1',
+            &quot;appcompat-v7&quot;        : 'com.android.support:appcompat-v7:25.3.1',
+            &quot;okhttp3&quot;             : 'com.squareup.okhttp3:okhttp:3.4.1',
+            &quot;xlog&quot;                : 'com.yuewen.cooperate.xlog:xlog-common:1.0.0',
+            &quot;mmkv&quot;                : 'com.tencent:mmkv:1.0.10',
+            &quot;android-gif-drawable&quot;: 'pl.droidsonroids.gif:android-gif-drawable:1.2.6'
+    ]
+}
 </code></pre>
-<h3 id="如下图所示-2">如下图所示：</h3>
+<p>然后在项目根目录的build.gradle中引入,</p>
+<pre><code class="language-groovy">apply from: &quot;config.gradle&quot;
+</code></pre>
+<p>就可以在任意子moudle中使用了</p>
+<pre><code class="language-groovy"> compileSdkVersion       rootProject.ext.android.compileSdkVersion
+ buildToolsVersion       rootProject.ext.android.buildToolsVersion
+ 
+ compile rootProject.ext.dependencies[&quot;appcompat-v7&quot;]
+</code></pre>
+<p>回到我们具体项目里面,白牌组件目前需要接入的有两个,一个是common模块,一个是core模块.这两个模块也有依赖关系,表现为common依赖core.core模块依赖三方模块.</p>
+<p>那么具体到项目表现为</p>
+<pre><code>SDK		---&gt;commom,core,三方
+common	---&gt;core,三方
+core	---&gt;三方
+</code></pre>
+<p>针对上面复杂的依赖关系,总结了四种依赖集成方式.</p>
+<h3 id="使用源码依赖">使用源码依赖</h3>
+<p>对项目而言,我们集成三方依赖是为了使用它的代码,完成某些任务,那么最简单的集成方式,就是将源码拷贝过来,进行项目集成.</p>
+<p>我们可以做如下方式集成:</p>
+<p>1.将common和core模块下载到本地,并拷贝到视频壳项目中</p>
+<p>2.在setting.gradle中引入项目,':CooperateCommonModule',':CooperateCoreModule'</p>
+<p>3.调整项目依赖.</p>
+<p>core中如下:</p>
+<pre><code class="language-groovy">dependencies {
+    compile fileTree(include: ['*.so', '*.jar'], dir: 'libs')
+    compile rootProject.ext.dependencies[&quot;appcompat-v7&quot;]
+    compile rootProject.ext.dependencies[&quot;okhttp3&quot;]
+    compile rootProject.ext.dependencies[&quot;xlog&quot;]
+    compile rootProject.ext.dependencies[&quot;mmkv&quot;]
+    compile rootProject.ext.dependencies[&quot;android-gif-drawable&quot;]
+}
+</code></pre>
+<p>common中如下:</p>
+<pre><code class="language-groovy">dependencies {
+    compile  fileTree(dir: 'libs/main', include: ['*.jar'])
+    compile  fileTree(include: ['*.jar'], dir: 'libs')
+    compile  project( ':CooperateCoreModule')
+}
+</code></pre>
+<p>SDK中如下:</p>
+<pre><code class="language-groovy">dependencies {
+    FileTree tree = fileTree(dir: 'libs', includes: ['*.so', '*.jar'])
+    compile tree
+    provided fileTree(include: ['*.jar'], dir: 'providedlib')
+    compile  project( ':CooperateCommonModule')
+}
+</code></pre>
+<p>这样就可以正常使用白牌组件了.当然这中间还有很多冲突问题需要解决.我会写在最后的备注中.</p>
+<h3 id="使用aar集成">使用aar集成</h3>
+<p>有了上一步源码集成成功的前提,我们下一步改造为aar集成.aar集成有三种方式,我们使用第一种,单aar集成.</p>
+<p>因为我们的项目是层层依赖的,那我们先从最底层的core模块处理.</p>
+<p>对core模块进行assembleRelease命令,会在build/output文件夹获得一个aar文件.</p>
+<p>这种build方式打出的aar,只包含模块本身的代码,不包含三方依赖.</p>
+<p>打开<a href="http://dev.inner.yuewen.local/nexus/">内网maven</a>,登陆后使用upload功能,上传此aar.然后配置如下</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190527105140.png" alt="" loading="lazy"></figure>
+<p>接着我们就可以使用compile ''com.yuewen.cooperate.core:core-thirdpart:1.0.2&quot;使用此aar了.</p>
+<p>我们提一个知识点,就是maven仓库中的某aar的pom.xml文件.这个文件记录了aar的描述,声明,依赖等.</p>
+<p>观察这个aar的pom.xml文件,可以看到</p>
+<pre><code class="language-xml">&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.yuewen.cooperate.core&lt;/groupId&gt;
+    &lt;artifactId&gt;core-thirdpart&lt;/artifactId&gt;
+    &lt;version&gt;1.0.2&lt;/version&gt;
+    &lt;packaging&gt;aar&lt;/packaging&gt;
+&lt;/project&gt;
+</code></pre>
+<p>只有aar自身的描述,没有包含的三方依赖声明.这就和前面的<strong>只包含模块本身的代码,不包含三方依赖</strong>一致.</p>
+<p>同理,打出common模块的aar,遵循上面的描述,我们需要配置下core模块的引用,及core模块的三方引用.</p>
+<pre><code class="language-groovy">dependencies {
+    compile  fileTree(dir: 'libs/main', include: ['*.jar'])
+    compile  fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.yuewen.cooperate.core:core-thirdpart:1.0.2'
+    compile rootProject.ext.dependencies[&quot;appcompat-v7&quot;]
+    compile rootProject.ext.dependencies[&quot;okhttp3&quot;]
+    compile rootProject.ext.dependencies[&quot;xlog&quot;]
+    compile rootProject.ext.dependencies[&quot;mmkv&quot;]
+    compile rootProject.ext.dependencies[&quot;android-gif-drawable&quot;]
+}
+</code></pre>
+<p>上传并得到使用方式compile 'com.yuewen.cooperate.common:common-thirdpart:1.0.2'</p>
+<p>同理在SDK中使用common,core的远程依赖.</p>
+<pre><code class="language-groovy">dependencies {
+    FileTree tree = fileTree(dir: 'libs', includes: ['*.so', '*.jar'])
+    compile tree
+    provided fileTree(include: ['*.jar'], dir: 'providedlib')
+    compile 'com.yuewen.cooperate.common:common-thirdpart:1.0.2'
+    compile 'com.yuewen.cooperate.core:core-thirdpart:1.0.2'
+    compile rootProject.ext.dependencies[&quot;appcompat-v7&quot;]
+    compile rootProject.ext.dependencies[&quot;okhttp3&quot;]
+    compile rootProject.ext.dependencies[&quot;xlog&quot;]
+    compile rootProject.ext.dependencies[&quot;mmkv&quot;]
+    compile rootProject.ext.dependencies[&quot;android-gif-drawable&quot;]
+}
+</code></pre>
+<p>这样就可以正常使用白牌组件了.</p>
+<h3 id="使用fat-aar集成">使用fat-aar集成</h3>
+<p>从上面的集成方式可以看到这么搞起来好像很复杂啊,有没有简单一点的方式呢.</p>
+<p>我们可以使用fat-aar技术,官网这么解释的.</p>
 <blockquote>
-<p>PS:其中相同颜色的内容是对应的，其中为了显示方便，蓝色箭头向左稍微偏移了一点.</p>
+<p>Gradle script that allows you to merge and embed dependencies in generated aar file.</p>
 </blockquote>
-<figure data-type="image" tabindex="3"><img src="http://ww1.sinaimg.cn/large/005Xtdi2jw1f1r2bdlqhbj308c0dwwew.jpg" alt="" loading="lazy"></figure>
-<h1 id="四核心要点">四.核心要点</h1>
+<p>它是一个gradle脚本,会把各个模块合并到一起,打成一个胖aar.这个aar里面包含了各个模块的所有东西,java文件,res文件等.</p>
+<p>实话讲,这种方式我研究了一阵子,因为涉及到脚本的修改以及各种版本库的冲突,我放弃了这种方案.此处提供一些资料,供有兴趣的同学研究一下.</p>
+<p><a href="https://www.jianshu.com/p/57024509b1d6">fat-aar实践及原理分享</a></p>
+<p><a href="https://github.com/adwiv/android-fat-aar">android-fat-aar github</a></p>
+<p>这项技术对比下面的maven远程依赖技术有优点与缺点.</p>
+<p>优点:如果使用方无法访问我们的maven库,那可以把所有模块资源打成fat-aar,提供一个aar供依赖方使用.</p>
+<p>缺点:这个库已经不维护了,需要使用特定版本的gradle编译,并需要修改脚本,适应自己的项目.</p>
+<h3 id="使用maven远程依赖集成">使用maven远程依赖集成</h3>
+<p>探索到了现在我一直在思考一个问题,github上有很多组件供大家使用,他们是怎么完成这个依赖的问题呢?</p>
+<p>比如我们使用的okhttp,它依赖okio,但是我们使用的时候,只需要compile okhttp就行了.</p>
+<p>以前也在网上搜过相应的文章,但是只是简单的提到,需要把三方库变成maven远程依赖.对于我们项目,方式二已经变成了远程依赖,但是为什么做不到呢?</p>
+<p>其实,很简单,和库的pom.xml有关.我们方式二打包出来的pom.xml,是在网页生成的,并没有这个类的远程依赖描述.我们观察下别人家的库pom.xml</p>
+<pre><code class="language-xml">&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.tencent.news&lt;/groupId&gt;
+    &lt;artifactId&gt;plugin-lib&lt;/artifactId&gt;
+    &lt;version&gt;2.7.20&lt;/version&gt;
+    &lt;packaging&gt;aar&lt;/packaging&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.android.support&lt;/groupId&gt;
+            &lt;artifactId&gt;appcompat-v7&lt;/artifactId&gt;
+            &lt;version&gt;25.2.0&lt;/version&gt;
+            &lt;scope&gt;compile&lt;/scope&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.tencent.news&lt;/groupId&gt;
+            &lt;artifactId&gt;tn-plugin-interface&lt;/artifactId&gt;
+            &lt;version&gt;2.7.20&lt;/version&gt;
+            &lt;scope&gt;compile&lt;/scope&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.tencent.news&lt;/groupId&gt;
+            &lt;artifactId&gt;tn-report&lt;/artifactId&gt;
+            &lt;version&gt;2.7.20&lt;/version&gt;
+            &lt;scope&gt;compile&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/project&gt;	
+</code></pre>
+<p>这里面有一个节点dependencies描述了当前库的远程依赖.如何生成这个pom.xml文件就和我们的打包方式有关了.</p>
+<p>方式二中我们使用assembleRelease方式打包,这种方式打出来的包,只是简单的压缩了下代码.我们需要引入maven打包方式.</p>
+<p>1.在core模块下新建upload.gradle文件</p>
+<pre><code class="language-groovy">// 指定编码
+tasks.withType(JavaCompile) {
+    options.encoding = &quot;UTF-8&quot;
+}
+
+apply plugin: 'maven'
+
+// 对应的仓库地址
+def URL_PUCBLIC = &quot;http://dev.inner.yuewen.local/nexus/repository/maven-releases/&quot;
+def USERNAME = &quot;dev&quot;
+def PASSWORD = &quot;dev&quot;
+def GROUP_ID = &quot;com.yuewen.cooperate.core&quot;
+def ARTIFACT_ID = &quot;core-thirdpart&quot;
+def VERSION = &quot;1.0.5&quot;
+// 上传到公共仓库
+task uploadToPublic(type: Upload) {
+    group = 'upload'
+    configuration = configurations.archives
+    uploadDescriptor = true
+    repositories{
+        mavenDeployer {
+            repository(url: URL_PUCBLIC) {
+                authentication(userName: USERNAME, password: PASSWORD)
+            }
+            pom.version = VERSION
+            pom.artifactId = ARTIFACT_ID
+            pom.groupId = GROUP_ID
+        }
+    }
+}
+</code></pre>
+<p>2.在core的build.gradle中引入</p>
+<pre><code class="language-groovy">// 引用上传脚本
+apply from: &quot;./upload.gradle&quot;
+</code></pre>
+<p>3.刷新项目,就可以再gradle的任务中看到uploadToPublic,双击执行这个task.就可以在maven库中看到当前aar已上传.我们观察下它的pom.xml</p>
+<pre><code class="language-xml">&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.yuewen.cooperate.core&lt;/groupId&gt;
+    &lt;artifactId&gt;core-thirdpart&lt;/artifactId&gt;
+    &lt;version&gt;1.0.5&lt;/version&gt;
+    &lt;packaging&gt;aar&lt;/packaging&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.android.support&lt;/groupId&gt;
+            &lt;artifactId&gt;appcompat-v7&lt;/artifactId&gt;
+            &lt;version&gt;25.3.1&lt;/version&gt;
+            &lt;scope&gt;compile&lt;/scope&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.squareup.okhttp3&lt;/groupId&gt;
+            &lt;artifactId&gt;okhttp&lt;/artifactId&gt;
+            &lt;version&gt;3.4.1&lt;/version&gt;
+            &lt;scope&gt;compile&lt;/scope&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.yuewen.cooperate.xlog&lt;/groupId&gt;
+            &lt;artifactId&gt;xlog-common&lt;/artifactId&gt;
+            &lt;version&gt;1.0.0&lt;/version&gt;
+            &lt;scope&gt;compile&lt;/scope&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.tencent&lt;/groupId&gt;
+            &lt;artifactId&gt;mmkv&lt;/artifactId&gt;
+            &lt;version&gt;1.0.10&lt;/version&gt;
+            &lt;scope&gt;compile&lt;/scope&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;pl.droidsonroids.gif&lt;/groupId&gt;
+            &lt;artifactId&gt;android-gif-drawable&lt;/artifactId&gt;
+            &lt;version&gt;1.2.6&lt;/version&gt;
+            &lt;scope&gt;compile&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/project&gt;		
+</code></pre>
+<p>可以看到我们已经做到了当前aar的三方远程依赖.</p>
+<p>4.在common中也可以按照上述操作.</p>
+<p>整理完以后我们可以看下依赖如何:</p>
+<p>common中使用</p>
+<pre><code class="language-groovy">dependencies {
+    compile  fileTree(dir: 'libs/main', include: ['*.jar'])
+    compile  fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.yuewen.cooperate.core:core-thirdpart:1.0.5'
+}
+</code></pre>
+<p>在SDK中使用</p>
+<pre><code class="language-groovy">dependencies {
+    FileTree tree = fileTree(dir: 'libs', includes: ['*.so', '*.jar'])
+    compile tree
+    provided fileTree(include: ['*.jar'], dir: 'providedlib')
+    compile 'com.yuewen.cooperate.common:common-thirdpart:1.0.3'
+}
+</code></pre>
+<p>完美!</p>
+<p>这才是我心目中的使用方式,其实我们也可以把sdk的aar做下类似的包装.不过就比较麻烦了,还有一堆provided的依赖需要处理,这个还是暴露给业务方处理比较合适.</p>
+<h3 id="备注">备注</h3>
+<p>冲突问题如何解决.</p>
+<p>在解决aar打包问题前,我使用的是源码依赖.但是这种最简单的方式依旧冲突重重.</p>
+<p>首先提供学习资料</p>
+<p><a href="https://www.jianshu.com/p/82de510b40b9">Gradle 依赖&amp;解决依赖冲突</a></p>
+<p><a href="https://blog.csdn.net/lastsweetop/column/info/18566/1">Gradle学习</a></p>
+<p><a href="https://www.jianshu.com/p/83ddb81e73f9">Gradle3.0新指令api、provided、implementation等对比</a></p>
+<p>只要掌握了exclude,provided的奥义,就能排除问题.我们以wup.jar为例,看下jar类型冲突解决.</p>
+<p>子模块Reader,Jce均使用了wup.jar,如果都使用compile的话,会出现类冲突.所以我们可以在各自模块中,使用</p>
+<pre><code>provided fileTree(include: ['*.jar'], dir: 'providedlib')
+</code></pre>
+<p>只保证编译期通过,不降代码打入各模块</p>
+<p>然后在最顶层的app中,打入wup.jar</p>
+<pre><code>compile fileTree(include: ['*.jar'], dir: 'libs')
+</code></pre>
+<p>这样就解决了类冲突.</p>
+<p>在集成当中,我发现,冲突最多的还是android自身的support包,各种版本号不一致,会导致各种各样的问题.我们尽量使用依赖的统一管理,来统一各模块的库版本号,尽可能的减少冲突发生.</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[安卓追踪方法调用堆栈]]></title>
+        <id>https://fqzhanghao.github.io/post/an-zhuo-zhui-zong-fang-fa-diao-yong-dui-zhan</id>
+        <link href="https://fqzhanghao.github.io/post/an-zhuo-zhui-zong-fang-fa-diao-yong-dui-zhan">
+        </link>
+        <updated>2020-01-19T12:50:56.000Z</updated>
+        <content type="html"><![CDATA[<p>接到组长下发的书城隐私协议问题，记录了一下排查过程，以后可以模仿此步骤，进行隐私协议排查工作</p>
+<p>问题如下图所示：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200103141931.png" alt="" loading="lazy"><br>
+很明显，我们在未被授权获取用户设备信息的情况下，频繁的请求了用户的设备信息。这是不允许的。<br>
+查找资料，如下代码，可以获取用户信息</p>
+<pre><code>TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+imei = telephonyManager.getDeviceId();
+</code></pre>
+<p>那我们可以按照如下逻辑，进行排查工作。<br>
+1.分析我们代码里面的获取逻辑，做权限检查+imei缓存处理<br>
+2.分析三方SDK里面的获取情况</p>
+<p>那么问题来了，检查1，自己的代码我们可以进行检索，排查。三方的SDK我们如何知晓调用情况呢，断点打到系统上？其实方案很简单，就是Hook。<br>
+一方面我们可以使用java的动态代理，Hook本应用获取的系统服务，另一方面我们可以使用Xposed,注入系统进程，Hook所有的系统服务。<br>
+市面上经常有模拟器刷量，他们Hook系统api，返回虚假的IMEI，我们可以如法炮制。条条道路通罗马，我们选择最简单的那条路（Xposed Hook）。</p>
+<p>准备工具如下：<br>
+1.<a href="https://www.ldmnq.com/">雷电模拟器</a><br>
+2.<a href="https://bintray.com/rovo89/de.robv.android.xposed/api/82">Xposed jar</a><br>
+3.<a href="http://deelmind.cn/2018/06/09/%E6%9C%80%E6%96%B0Android-Studio%E6%90%AD%E5%BB%BAXposed-Hook%E7%8E%AF%E5%A2%83/">Xposed开发环境部署</a><br>
+4.<a href="https://github.com/shuihuadx/XposedHook">免重启Xposed模块改进</a></p>
+<p>首先安装雷电模拟器，自带Root权限。启动后，安装Xposed installer（需梯子）。<br>
+然后按照工具3，部署Xposed开发环境。我已在文章末尾附上git地址，大家clone下开箱可用。</p>
+<p>回到我们的主题，我们需要Hook系统的<strong>getSystemService</strong>，咨询了技术部的大佬@杨滨(yangbin)，写出了如下的代码。</p>
+<p>首先，我们Hook <strong>loadClass</strong>.看看是否加载了 <strong>android.content.ContextWrapper</strong>，</p>
+<pre><code class="language-java">XposedHelpers.findAndHookMethod(ClassLoader.class, &quot;loadClass&quot;, String.class, new XC_MethodHook() {
+                // 在类方法loadClass执行之后执行的代码
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                 // 参数的检查
+                    if (param.hasThrowable()) {
+                        return;
+                    }
+                    // 获取指定名称的类加载之后的Class&lt;?&gt;
+                    Class&lt;?&gt; clazz = (Class&lt;?&gt;) param.getResult();
+                    // 获取加载的指定类的名称
+                    String strClazz = clazz.getName();
+                    if (strClazz.startsWith(&quot;android.content.ContextWrapper&quot;)) {
+                        XposedBridge.log(&quot;--------------------LoadClass-------------------------- : &quot; + strClazz);
+                        .......
+                     }
+                }
+          }
+);
+</code></pre>
+<p>然后我们Hook <strong>getSystemService</strong>方法</p>
+<pre><code class="language-java">for (int i = 0; i &lt; m.length; i++) {
+    XposedBridge.log(&quot;--------------HOOKED CLASS-METHOD-------------------: &quot; + strClazz + &quot;-&quot; + m[i].toString());
+    if (m[i].toString().indexOf(&quot;getSystemService&quot;) == -1) {
+        continue;
+    }
+    if (!Modifier.isAbstract(m[i].getModifiers())           // 过滤掉指定名称类中声明的抽象方法
+            // &amp;&amp; !Modifier.isNative(m[i].getModifiers())     // 过滤掉指定名称类中声明的Native方法
+            &amp;&amp; !Modifier.isInterface(m[i].getModifiers())  // 过滤掉指定名称类中声明的接口方法
+    ) {
+            // 对指定名称类中声明的非抽象方法进行java Hook处理
+            XposedBridge.hookMethod(m[i], new XC_MethodHook() {
+
+                // 被java Hook的类方法执行完毕之后，打印log日志
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                   .....
+                }
+             }
+        }
+}       
+</code></pre>
+<p>最后我们Hook 获取<strong>Context.TELEPHONY_SERVICE</strong>服务的调用，打印出调用栈。</p>
+<pre><code class="language-java">// 打印被java Hook的类方法的名称和参数类型等信息
+if ((param.args != null) &amp;&amp; (param.args.length &gt; 0)) {
+    for (int i = 0; i &lt; param.args.length; i++) {
+        if (param.args[i] != null) {
+            String c = param.args[i].toString();
+            if (c.indexOf(&quot;phone&quot;) != -1) {
+                Thread.sleep(100);
+                new Exception(&quot;-------phone---printStackTrace&quot;).printStackTrace();
+            }
+            XposedBridge.log(&quot;---------------xxxxxx-----HOOKED METHOD: -------param-------------&quot; + &quot;-&quot; + &quot;-&quot; + param.method + &quot;-&quot; + i + &quot;:&quot; + param.args[i]);
+        }
+    }
+
+}
+
+// 打印被java Hook的类方法的名称和参数类型等信息
+if (param.getResult() != null) {
+    try {
+        XposedBridge.log(&quot;--------------------HOOKED METHOD: --------------result------&quot; + param.getClass().getName() + &quot;-&quot; + param.method.toString() + &quot;:&quot; + param.getResult().toString());
+    } catch (Throwable e) {
+
+    }
+}
+
+</code></pre>
+<p>这样，我们就可以在所有第三方SDK，调用系统phone服务的时候，打印出当前的调用栈。</p>
+<p>安装好Xposed模块并勾选，因为是免重启模块，杀死宿主和模块，点开我们的书城即可查看。</p>
+<p>在日志中我们可以查看到，广点通服务在频繁的调用，<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200103160807.png" alt="" loading="lazy"><br>
+QM统计在频繁调用<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200103160702.png" alt="" loading="lazy"></p>
+<p>哈哈，是不是原形毕露呢，这样我们不仅可以找到是谁在调用IMEI，还可以有证据证明他们在调用，可以愉快的把图发给他们(三方SDK)，让他们整改了。</p>
+<p>一通操作，可以发现，有很多处地方在频繁获取系统服务，比如phone，网络等。可以针对这种问题，给SDK提出整改意见，进行cache处理，优化执行效率。</p>
+<p>举一反三，我们可以Hook系统的函数，修改系统参数,Hook三方App，修改程序逻辑。仅限学习研究！</p>
+<p>备注：<br>
+Xposed学习链接<br>
+<a href="https://www.cnblogs.com/claireyuancy/p/6962664.html">Xposed编写</a><br>
+<a href="https://www.cnblogs.com/gordon0918/p/6732100.html">Xposed编写</a><br>
+<a href="https://blog.csdn.net/u011956004/article/details/78612502">免重启Xposed原理解析</a><br>
+java动态代理学习链接<br>
+<a href="http://weishu.me/2016/02/16/understand-plugin-framework-binder-hook/">维术大佬系列文章</a><br>
+开箱即用的Xposed开发环境<br>
+http://gitlab.inner.yuewen.local/zhanghao.c/XposedHook.git</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[安卓卡顿排查步骤]]></title>
+        <id>https://fqzhanghao.github.io/post/an-zhuo-qia-dun-pai-cha-bu-zou</id>
+        <link href="https://fqzhanghao.github.io/post/an-zhuo-qia-dun-pai-cha-bu-zou">
+        </link>
+        <updated>2020-01-19T12:45:36.000Z</updated>
+        <content type="html"><![CDATA[<p>接到组长下发的书城卡顿排查任务，学习了两个工具，记录一下排查过程，以后可以模仿此步骤，进行页面卡顿检测</p>
+<p>下面两个工具地址，都在DDMS中，位置如下：your\way\to\androidsdk\tools\monitor.bat,双击即可打开</p>
+<h2 id="一-systrace">一、Systrace</h2>
+<p>Systrace 允许您在系统级别收集和检查设备上运行的所有进程的计时信息。 它将来自Android内核的数据（例如CPU调度程序，磁盘活动和应用程序线程）组合起来，以生成HTML报告。</p>
+<h3 id="抓取systrace的方法">抓取Systrace的方法</h3>
+<p>1.连接手机，勾选需要分析的进程，点击右侧箭头处的图标<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204611.png" alt="" loading="lazy"></p>
+<p>2.弹框中，勾选需要分析的参数，点击OK，操作app中感觉卡顿的部分，5秒钟后，可以在弹框中配置的地方，找到生成的trace.html<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204620.png" alt="" loading="lazy"></p>
+<p>还有一种使用命令行的方式进行抓取，大家可能会碰到某些问题，我这边已经踩过坑了，按照链接步骤操作即可<br>
+<a href="https://www.jianshu.com/p/e73768e66b8d">命令行方式抓取Systrace</a></p>
+<h3 id="分析systrace的方法">分析Systrace的方法</h3>
+<p>使用Chrome打开trace.html文件，有几处需要关注，1.Alerts，2.Frames<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204629.png" alt="" loading="lazy"><br>
+控制键如下：</p>
+<blockquote>
+<p>g键，可开启60fps的红色参考线。<br>
+w键，放大<br>
+s键，缩小<br>
+a键，左移<br>
+d键，右移<br>
+f键，放大选中的帧</p>
+</blockquote>
+<p>Frames中可以看到一个个F，代表了每一帧。绿色代表了16ms中绘制了一帧，黄色和红色代表了超过16ms，发生了丢帧。</p>
+<p>我们可以先看Alert框中的内容，这里面是系统给我们分析出所有超时帧的问题<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204639.png" alt="" loading="lazy"><br>
+可以看出，7帧发生了测量布局超时，17帧发生了延时，10帧发生了saveLayer超时，3帧draw超时，72帧设置了Alpha</p>
+<p>一般我们会分析红色的帧。我们选一个比较有特点的帧看一下，依次按下m键，f键。屏幕上可以看到下图<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204648.png" alt="" loading="lazy"><br>
+最上面可以看到这一帧耗时39.789ms,差不多3帧的时间，下方Alert提示，这一帧中发生了4次saveLayer操作。这个可能是发生在CoverImageView的draw方法中</p>
+<pre><code class="language-java">        canvas.getClipBounds(bounds);
+        boundsf.set(bounds);
+        super.onDraw(canvas);
+        canvas.saveLayer(boundsf, maskXferPaint, Canvas.ALL_SAVE_FLAG);
+        canvas.drawARGB(0, 0, 0, 0);
+        canvas.drawRoundRect(boundsf, radius, radius, canvasPaint);
+        canvas.restore();
+</code></pre>
+<p>谷歌大会时开发人员讲到，Flutter中不建议用clipPath,saveLayer的，他们优化掉了这个操作。我们换成了Glide,可以研究一下，去掉CoverImageView这个耗时的类</p>
+<p>还有一个被我优化掉的点是，双排10书封。发现DrawFrame时间超长。猜测可能是加载图片导致。修改为，滑动列表时，暂停图片加载，列表暂停时，加载图片。解决了问题。</p>
+<p>从这个烽火图上还可以看出很多问题建议。<br>
+比如：在动画过程中避免进行layout操作<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204901.png" alt="" loading="lazy"></p>
+<p>比如：因耗时操作导致的丢帧，这个可以结合第二部分的TraceView一起看<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204930.png" alt="" loading="lazy"></p>
+<p>可以看出，在这一帧中，上方的cpu模块，有很多beacon线程在做操作，推测可能是在进行曝光上报。尤其是多书封的上报，代码中整了个for循环，一本发一次。可以考虑优化成一次上报，不过这个需要数据和后台同学的共同努力。暂时只能这样了。<br>
+从烽火图中可以看到很多问题，需要逐帧的进行查看，具体问题具体分析。</p>
+<h2 id="二-traceview">二、TraceView</h2>
+<p>TraceView 是 Android SDK 中内置的一个工具，它可以加载 trace 文件，用图形的形式展示代码的执行时间、次数及调用栈，便于我们分析。</p>
+<p>附上参考文章<br>
+<a href="https://cloud.tencent.com/developer/article/1014620">TraceView是啥</a></p>
+<h3 id="抓取trace的方法">抓取Trace的方法</h3>
+<p>有多种抓Trace的方法，当然是介绍最简单的方式。</p>
+<p>1.连接手机，勾选需要分析的进程，点击左侧箭头处的图标开始抓<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204941.png" alt="" loading="lazy"></p>
+<p>2.操作app中感觉卡顿的部分，然后再次点击图标，暂停抓取。几秒后会展示出trace的图形化界面</p>
+<h3 id="分析trace的方法">分析Trace的方法</h3>
+<p>先用网上的一个图介绍下参数都是什么意思<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204952.png" alt="" loading="lazy"></p>
+<p>使用TraceView查看耗时，主要关注Calls+Recur Calls/Total和Cpu Time/Call这两个值，关注调用次数多和耗时久的方法</p>
+<p>程序优化两点要素：<br>
+一是调用次数不多，但每次调用却需要花费很长时间的函数。这个可以从Cpu Time / Call反映出来。<br>
+一个是那些自身占用时间不长，但调用却非常频繁的函数。这个可以从Calls + Recur Calls / Total反映出来。</p>
+<p>浩哥还介绍了一个适应我们自己程序的点，就是直接搜索attachView，分析我们card列表中的耗时操作有哪些。放个图看看<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119205020.png" alt="" loading="lazy"></p>
+<p>从图上可以看出，attachView方法被调用23次，总时长230ms，每个方法稳定在10ms左右。log.d调用次数最多，其次是单书封BaseXLCover，单书封card,点击条目可以查看具体的内容<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119205028.png" alt="" loading="lazy"></p>
+<p>可以看出，我们整体的性能还是比较好的，大家都很棒。如果有性能问题的话，可以参考下面的链接，学习寻找的方法<a href="https://www.jianshu.com/p/388c693c1b58">Trace图怎么看</a></p>
+<h2 id="备注">备注</h2>
+<p>还有很多没有写的性能学习资料，大家有时间可以去官网看看<a href="https://developer.android.com/topic/performance/tracing/">谷歌官网Trace</a>,学习一下AS中的Profile,以及SysTrace的替代品Perfetto</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[阅读页mvp技术需求]]></title>
+        <id>https://fqzhanghao.github.io/post/yue-du-ye-mvp-ji-zhu-xu-qiu</id>
+        <link href="https://fqzhanghao.github.io/post/yue-du-ye-mvp-ji-zhu-xu-qiu">
+        </link>
+        <updated>2020-01-19T12:44:41.000Z</updated>
+        <content type="html"><![CDATA[<p><strong>需求</strong>：</p>
+<p>阅读页功能多，代码逻辑复杂，使用mvp改造解耦，利于后期维护</p>
+<p><strong>任务拆分</strong>：</p>
+<ul>
+<li>删除冗余代码，封装方法，可读性优化</li>
+<li>将阅读页UI与业务逻辑分层，进行解耦</li>
+<li>结合RxJava，优化消息分发逻辑</li>
+</ul>
+<h1 id="二-业务时序图流程图">二、业务时序图/流程图</h1>
+<p>阅读页核心业务流程图</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205102254.png" alt="" loading="lazy"></figure>
+<p>阅读页核心业务时序图<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205102355.jpg" alt="" loading="lazy"></p>
+<h1 id="三-mvp一期类结构设计">三、MVP一期类结构设计</h1>
+<p>ReaderPagePresenter类结构：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205114733.jpg" alt="" loading="lazy"></p>
+<h1 id="四-mvp一期操作步骤与注意点">四、MVP一期操作步骤与注意点</h1>
+<h2 id="1操作步骤">1.操作步骤</h2>
+<p>遵循V-&gt;P-&gt;M的顺序逐步剥离代码</p>
+<ol>
+<li>修改View层继承的接口，改为内部实现，方便转移到P层</li>
+<li>剥离打开书籍业务到P层</li>
+<li>剥离各类handler消息到P层</li>
+<li>剥离各类控制业务到P层</li>
+<li>剥离P层的数据请求到M层</li>
+</ol>
+<h2 id="2注意点">2.注意点</h2>
+<h3 id="1-广播多放在v层还是放在p层">1. 广播多，放在V层还是放在P层？</h3>
+<p>有多个业务使用广播，方法很长，查看都是业务相关，故放在P层</p>
+<h3 id="2-handler怎么处理">2. Handler怎么处理？</h3>
+<p>查看剥离后的P层代码，很多成员变量都会牵扯到Handler，这个怎么处理呢？</p>
+<p>网上大部分的代码均使用回调的方式处理数据。即V-P-M-P-V</p>
+<p>而我们的代码，拿到Handler以后，发送msg到V层处理，即V-P-M-V.</p>
+<p>我们的Handler较多，处理起来难度较大，仿照书架P的处理方式，在P层获取到V的handler。</p>
+<h3 id="3-空安全内存泄漏">3. 空安全，内存泄漏？</h3>
+<p>MVP并非无缺点，空安全和内存泄漏需要注意。及时销毁PM,断开引用</p>
+<h1 id="五-mvp二期类结构设计">五、MVP二期类结构设计</h1>
+<p>ReaderPagePresenter类结构：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205113159.png" alt="" loading="lazy"></p>
+<h1 id="六-mvp二期工作">六、MVP二期工作</h1>
+<p>一期可以先将V中的逻辑转移到P层中，二期可以对大P层进行拆分</p>
+<h3 id="1-拆分多个pm层">1. 拆分多个PM层</h3>
+<p>借鉴网上开源项目思路，复杂的业务需求可拆分为多个PM,即一个V持有N个P,一个P持有多个M.进一步解耦庞大的P层代码。</p>
+<p>目前耦合有三类,解耦思路为单例设计模式</p>
+<p>1&gt; 书籍信息类信息：即CurBook，autoBookmark。</p>
+<p>1.当前书籍类型类（文本书，精排书），CurBook,<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205105822.png" alt="" loading="lazy"></p>
+<p>此变量维护当前书籍类型，并转型为各类书籍调用各自的方法，做成单例类，减少单个变量传递，这样就可解耦到M层获取</p>
+<p>2.当前书籍类，autoBookmark</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205105804.png" alt="" loading="lazy"></figure>
+<p>以前是一个字段autoBookmark来回修改传递，拆分多个M可以在用到这个mark的时候，用一个单例类解耦</p>
+<p>2&gt; 服务器书籍信息类：即OnlineChapterHandle，LocalChapterHandle。这两个在MVP其实充当的是M</p>
+<p>1.OnlineChapterHandle负责在线书的书籍信息，章节解析等功能<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205105904.png" alt="" loading="lazy"><br>
+这个类是比较复杂的一个类，充当为M类。作用有4，获取书籍类型（下载时使用），获取书籍信息和章节信息（保存到OnlineBookOperator中的OnlineBook对象中，包含整本书的信息+章节信息），获取书籍购买类型（查询书籍信息是前置条件，从内部的ob对象中直接拿即可），检测章节一致性<br>
+备注：获取书籍信息和章节信息前，还获取了批量购买协议内容，都保存到了OB对象中，此处可以使用rxjava的merge合并两次请求</p>
+<p>2.LocalChapterHandle负责精排试读书的书籍信息等</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205105835.png" alt="" loading="lazy"></figure>
+<p>内部维护了一个handler的注册表，初始化的时候注册到这个地方。查询完成后，通过handler把查询结果发送出去<br>
+一共有两个方法，获取书籍类型（在下载时使用），获取书籍信息（查询精排限免期）</p>
+<p>3&gt; 书籍下载类：即OnlineProvider，这个在MVP中也是M，负责下载章节</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205112738.png" alt="" loading="lazy"></figure>
+<p>此类维护了两个对象，书籍下载的章节，和正在预取的章节。作用有2，获取章节（下载章节），维护下载章节队列</p>
+<p><strong>困难点</strong>：上述三个类考虑到复用问题（新增类还是复用，复用的话handler+听书如何复用），仍有待商榷<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205114240.png" alt="" loading="lazy"></p>
+<p>4&gt;非耦合类ReaderPageModel<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20191205112925.png" alt="" loading="lazy"></p>
+<p>这个类，用来负责阅读页其他网络请求，比如广告，付费等</p>
+<h3 id="2-rxjava引入与handler">2. rxjava引入与handler</h3>
+<p>目前数据的处理散布在N个类内，比如OnlineProvider，OnlineChapterHandle，LocalChapterHandle等，这类数据相关的类，可以考虑移动到M层。</p>
+<p>对V的所有操作，都是P层在控制，PM之间通过回调进行。可以逐步去掉handler的使用。</p>
+<p>rxjava的引入。rxjava流式处理较好用，可以无缝切换线程。在项目中的体现就是：子线程拿数据（M）--&gt; 切换--&gt; 主线程展示UI（V).我们可以把rxjava运用到P层，来处理P层中涉及到这个操作的逻辑。</p>
+<h1 id="七-一期改造效果">七、一期改造效果</h1>
+<p>仓库地址：http://git.code.oa.com/book_cooperate_client/cooperate-baseline.git （feature_p_haoizhang_20181122_readerpage_mvp）</p>
+<p>删减ReaderPageActivity类 初始行数13102，抽取结束后4853，代码减少63%，包含View交互。</p>
+<p>新增ReaderPagePresenter类 行数6170，包含书籍加载+书籍控制+付费</p>
+<p>新增ReaderPageModel类  行数231，包含数据请求</p>
+<h1 id="八-三期类结构设计">八、三期类结构设计</h1>
+<p>二期设计因为单例设计模式，在多个阅读页同时存在的情况下，会有实例问题。比如当前在读书籍Mark， 打开新阅读页的时候，会把老阅读页的单例Mark更新，导致老阅读页的书籍信息被修改。<br>
+所以对二期的设计进行了下修改，解决多阅读页问题。同时引入代理模式和观察者模式，解决多P协作，多P数据统一等问题。</p>
+<p>ReaderPagePresenter类结构如下：</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200109181855.jpg" alt="" loading="lazy"></figure>
+<p>以下：ReaderPageActivity简称V，ReadpagePresenterImpl简称代理P，CommonPresenter等简称业务P，ReaderPageModel等简称M</p>
+<h2 id="代理模式">代理模式</h2>
+<p>V持有代理P的引用，通过调用代理P的方法，完成P层逻辑。<br>
+引入代理P，一共有两个作用：<br>
+1.隐藏业务P的业务实现，可以进行后续业务扩展，不用更改V层代码<br>
+2.解决多P协作问题，如遇到多P才能完成的业务，可以写在代理P中，不用在V中进行周转</p>
+<h2 id="观察者模式">观察者模式</h2>
+<p>代理P是被观察者，业务P是观察者。代理P中持有一个观察者队列，ArrayList<ReadpageObserver>，通过业务P的observe(ReadpageObservable observable)方法，注册到观察者队列中。<br>
+当业务P中，某些需要同步的对象（如Mark）更新时，可以通知被观察者，更新观察者队列，做到了多P数据统一。</p>
+<p>备注：因为业务涉及到多阅读页形式，无法使用EventBus，RxBus之类类库添加全局观察者，所以就实现了一个有局限性的观察者模式。如果以后无此类多阅读页需求，可以修改为三方类库实现，业务逻辑更加清晰一些。</p>
+<h2 id="疑问">疑问</h2>
+<p>通过拆分成不同的Iview，和Ipresenter.可以合理的规划业务边界，编写业务代码。但是也会引入两个新的问题<br>
+1.如果业务边界不清晰，怎么划分。即如何避免代理P增大的问题<br>
+2.如果业务变动频繁，怎么快速完成，改动量最小。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[pip网络超时解决办法]]></title>
+        <id>https://fqzhanghao.github.io/post/pip-wang-luo-chao-shi-jie-jue-ban-fa</id>
+        <link href="https://fqzhanghao.github.io/post/pip-wang-luo-chao-shi-jie-jue-ban-fa">
+        </link>
+        <updated>2020-01-19T12:43:31.000Z</updated>
+        <content type="html"><![CDATA[<p>使用豆瓣源</p>
+<pre><code class="language-bash">pip3 install -i https://pypi.doubanio.com/simple/ 包名
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[从SVN到Git代码迁移]]></title>
+        <id>https://fqzhanghao.github.io/post/cong-svn-dao-git-dai-ma-qian-yi</id>
+        <link href="https://fqzhanghao.github.io/post/cong-svn-dao-git-dai-ma-qian-yi">
+        </link>
+        <updated>2020-01-19T12:43:13.000Z</updated>
+        <content type="html"><![CDATA[<p>准备工作:</p>
+<pre><code>SOURCE        = 源svn分支
+TARGET        = 目的git分支
+NAME          = 当前切换目录
+USER_NAME     = 用户名
+USER_EMAIL    = 用户邮箱
+</code></pre>
+<ol>
+<li>git-svn-clone</li>
+</ol>
+<pre><code>git svn clone ${SOURCE} --no-metadata ${NAME}
+</code></pre>
+<p>此处会让输入三个参数.1.当前密码(可以直接回车)2.svn用户名,3.svn密码.漫长的过程</p>
+<ol start="2">
+<li>push到git仓库</li>
+</ol>
+<pre><code>cd ${NAME}
+git config user.name ${USER_NAME}
+git config user.email ${USER_EMAIL}
+git checkout -b ${NAME}
+git remote add origin ${TARGET}
+git push -u origin ${NAME}
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[阅读类app竞品分析]]></title>
+        <id>https://fqzhanghao.github.io/post/yue-du-lei-app-jing-pin-fen-xi</id>
+        <link href="https://fqzhanghao.github.io/post/yue-du-lei-app-jing-pin-fen-xi">
+        </link>
+        <updated>2020-01-19T12:36:25.000Z</updated>
+        <summary type="html"><![CDATA[<h2 id="一-竞品分析对象选择">一、竞品分析对象选择</h2>
+<p>经过调研，我选取了艾瑞互联网大数据服务平台，电子阅读分类，按月度活跃设备排名靠前的3款app。</p>
+]]></summary>
+        <content type="html"><![CDATA[<h2 id="一-竞品分析对象选择">一、竞品分析对象选择</h2>
+<p>经过调研，我选取了艾瑞互联网大数据服务平台，电子阅读分类，按月度活跃设备排名靠前的3款app。</p>
+<!--more-->
+<p><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203651.png" alt="" loading="lazy"><br>
+确定竞品为：掌阅，QQ阅读，书旗小说，再加上我们的OPPO书城，APP产品共4款。</p>
 <table>
 <thead>
 <tr>
-<th style="text-align:center">序号</th>
-<th>要点</th>
+<th>APP名称</th>
+<th style="text-align:center">掌阅iReader</th>
+<th style="text-align:center">书旗小说</th>
+<th style="text-align:center">QQ阅读</th>
+<th style="text-align:center">OPPO书城</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center">1</td>
-<td>在数学中常见的坐标系与屏幕默认坐标系的差别</td>
-</tr>
-<tr>
-<td style="text-align:center">2</td>
-<td>View的坐标系是相对于父控件而言的</td>
-</tr>
-<tr>
-<td style="text-align:center">3</td>
-<td>MotionEvent中get和getRaw的区别</td>
+<td>版本号</td>
+<td style="text-align:center">7.5.2</td>
+<td style="text-align:center">10.6.8.65</td>
+<td style="text-align:center">6.6.1.888</td>
+<td style="text-align:center">3.0.4.303</td>
 </tr>
 </tbody>
 </table>
-<h1 id="五参考文章">五.参考文章</h1>
-<ul>
-<li><a href="http://blog.csdn.net/wangjinyu501/article/details/21827341" title="Android 屏幕（View）坐标系统">Android 屏幕（View）坐标系统</a></li>
-</ul>
-<p>转自 : <a href="http://www.gcssloop.com/customview/CoordinateSystem/">http://www.gcssloop.com/customview/CoordinateSystem/</a></p>
+<p>数据取自360手机市场，截止2018年5月10日，其中oppo书城取自rdm最新打包</p>
+<h2 id="二-竞品分析">二、竞品分析</h2>
+<p>竞品分析主要包含了以下四个方向<br>
+<strong>基础调研，性能调研，流畅性调研，产品分析</strong></p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203707.png" alt="" loading="lazy"></figure>
+<h3 id="1基础调研">1.基础调研</h3>
+<p>基础调研，主要调研安装包下载量和安装包大小。</p>
+<h4 id="1-下载量">1） 下载量</h4>
+<p>查阅了两个知名的app分发中心，360手机市场和腾讯应用宝。</p>
+<p>其中掌阅app划分为两个：掌阅和爱掌阅读，这个和公司发展战略有关，我们暂时只分析掌阅。</p>
+<p>360市场的下载量如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">APP名称</th>
+<th style="text-align:center">掌阅iReader</th>
+<th style="text-align:center">书旗小说</th>
+<th style="text-align:center">QQ阅读</th>
+<th style="text-align:center">OPPO书城</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">下载量（亿）</td>
+<td style="text-align:center">1.74</td>
+<td style="text-align:center">1.34</td>
+<td style="text-align:center">0.46</td>
+<td style="text-align:center">无</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出掌阅的下载量较书旗小说和qq阅读多，这也和开头的艾瑞数据吻合。</p>
+<p>应用宝的下载量如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">APP名称</th>
+<th style="text-align:center">掌阅iReader</th>
+<th style="text-align:center">书旗小说</th>
+<th style="text-align:center">QQ阅读</th>
+<th style="text-align:center">OPPO书城</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">下载量（亿）</td>
+<td style="text-align:center">1.7</td>
+<td style="text-align:center">1.5</td>
+<td style="text-align:center">3.1</td>
+<td style="text-align:center">无</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出，QQ阅读的下载量与掌阅和书旗加起来相当。</p>
+<h4 id="2-安装包大小">2） 安装包大小</h4>
+<p>安装包大小如下:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">APP名称</th>
+<th style="text-align:center">掌阅iReader</th>
+<th style="text-align:center">书旗小说</th>
+<th style="text-align:center">QQ阅读</th>
+<th style="text-align:center">OPPO书城</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">安装包大小</td>
+<td style="text-align:center">15.99M</td>
+<td style="text-align:center">25.82M</td>
+<td style="text-align:center">22.78M</td>
+<td style="text-align:center">17.63M</td>
+</tr>
+</tbody>
+</table>
+<p>安装包大小是我们技术同学比较关心的一个点，安装包的大小，一方面关系到用户流量问题，越大，用户下载耗费的流量越多。另一方面，因为白牌项目要预装到手机里面出厂，厂商很可能对安装包大小做要求，所以我们要尽量精简安装包的大小。</p>
+<p>下面我们分析下，这几个项目的安装包中包含了些什么，可以从哪些方面进行优化。Android Studio3.x支持分析安装包的资源，直接将安装包拖入AS中，进行观察。</p>
+<p><strong>掌阅</strong></p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203718.png" alt="" loading="lazy"></figure>
+<p>项目中排行较大的文件夹为assets目录，其中包含字体文件和各种插件apk.</p>
+<p>缺点：字体方案方正黝黑1.2M，占很大一部分空间，可能和产品设计有关，默认为此字体，从安装包大小看来，不是一个很好的选择，应该尽量选取较小体积的字体，后期可通过产品内提示用户下载。</p>
+<p>优点：图片资源控制较好。查阅图片资源目录，基本上未见100K以上图片。</p>
+<p><strong>书旗</strong></p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203730.png" alt="" loading="lazy"></figure>
+<p>项目中排行较大的文件夹为assets目录,lib目录</p>
+<p>查阅了这两个目录，对里面包含的内容十分吃惊。assets目录大小8.8M，包含epub文件，字体文件，图片文件，感觉直接把书放到包里面有点问题，不知道他们产品怎么设计的。字体文件方正兰亭黑3.7M，比掌阅的还大。图片文件含有100K以上的。从中还可以看出使用了淘宝的Atlas技术，还是比较先进的。lib目录大小6.3M，这两个文件夹8.8+6.3=15.1M，都快相当于一个掌阅项目了。可以看出书旗app有很大的优化空间。但是为什么要这么做，可能与产品策略有关，我们不得而知。</p>
+<p><strong>qq阅读</strong></p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203740.png" alt="" loading="lazy"></figure>
+<p>项目中排行较大的文件夹为res目录，assets目录。</p>
+<p>res目录中有多张100K左右的图片，assets目录中有一个3.1M的压缩包，搜索到可能与腾讯支付相关。</p>
+<p><strong>oppo书城</strong></p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203750.png" alt="" loading="lazy"></figure>
+<p>项目中排行较大的文件夹为res目录，assets目录。<br>
+res目录中大于100K的图片较多，个别文件接近220K,这其中存在很大的优化空间。assets目录中包含一个apk文件，较大。还有和qq阅读中同名的zip文件.比qq阅读的小上不少，911k。不知道这两者的差距。</p>
+<p><strong>总结：</strong></p>
+<p>从分析结果来看，要控制包体大小，有以下几个要点：</p>
+<ol>
+<li>项目中图片资源应该严格控制，可使用腾讯智图工具或TinyPNG进行图片压缩，对50K以上的图片进行统一处理；</li>
+<li>可以进行lint检测，清除未使用的资源文件；</li>
+<li>使用较小体积的默认字体，如果有切换字体的需求，建议使用远端下载的方式；</li>
+<li>可以精简一些不常用的插件功能，类似字体进行远程下载使用。</li>
+</ol>
+<h3 id="2性能调研">2.性能调研</h3>
+<p>性能分析从五个方面进行分析：启动时间，cpu，内存，流量，电量。<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203759.png" alt="" loading="lazy"></p>
+<h4 id="1-启动时间">1） 启动时间</h4>
+<p>毫无疑问，启动时间越短越好，用户点下桌面上的app图标，就开始走启动流程。这其中流程十分复杂，我们暂时不理会这其中的过程，可以留作以后研究。一般来讲，启动分为三种启动：冷启动，热启动，暖启动。</p>
+<p>冷启动为应用在开机后或者被系统停止后的第一次启动过程。<br>
+热启动为用户退出应用，但随后重新启动它。应用的进程还在运行，但应用必须重新从 onCreate() 开始创建 Activity。<br>
+具体可以参考这篇博文（<a href="https://blog.csdn.net/lgz_ei/article/details/70041663">Android 性能优化——启动时间优化指南</a>），讲解的非常好。</p>
+<p>此次进行竞品分析，我们分析冷启动和热启动。</p>
+<p>使用此命令进行分析,查看 App 启动耗时:</p>
+<blockquote>
+<p>adb shell am start -W packagename/activity</p>
+</blockquote>
+<p>通过反编译，查阅到以下信息：</p>
+<table>
+<thead>
+<tr>
+<th>app名称</th>
+<th>查看方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>掌阅</td>
+<td>adb shell am start -W com.chaozh.iReaderFree/com.chaozh.iReader.ui.activity.WelcomeActivity</td>
+</tr>
+<tr>
+<td>书旗</td>
+<td>adb shell am start -W com.shuqi.controller/com.shuqi.activity.SplashActivity</td>
+</tr>
+<tr>
+<td>QQ阅读</td>
+<td>adb shell am start -W com.qq.reader/com.qq.reader.activity.SplashActivity</td>
+</tr>
+<tr>
+<td>OPPO书城</td>
+<td>adb shell am start -W com.oppo.book/com.qq.reader.activity.SplashActivity</td>
+</tr>
+</tbody>
+</table>
+<p>使用上述代码，进行测试。</p>
+<p><strong>冷启动</strong>，测试方式为，清空程序后台，点击app，记录数据。取五次测试结果的平均值，测试数据如下(测试单位：ms):</p>
+<table>
+<thead>
+<tr>
+<th>App名称</th>
+<th>数据1</th>
+<th>数据2</th>
+<th>数据3</th>
+<th>数据4</th>
+<th>数据5</th>
+<th>均值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>掌阅</td>
+<td>621</td>
+<td>638</td>
+<td>649</td>
+<td>684</td>
+<td>641</td>
+<td>647</td>
+</tr>
+<tr>
+<td>书旗</td>
+<td>628</td>
+<td>622</td>
+<td>598</td>
+<td>603</td>
+<td>629</td>
+<td>616</td>
+</tr>
+<tr>
+<td>QQ阅读</td>
+<td>665</td>
+<td>609</td>
+<td>674</td>
+<td>680</td>
+<td>675</td>
+<td>661</td>
+</tr>
+<tr>
+<td>OPPO书城</td>
+<td>582</td>
+<td>560</td>
+<td>580</td>
+<td>543</td>
+<td>556</td>
+<td>564</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出oppo书城以微弱的优势领先，剩余三款app，启动时间不相伯仲。</p>
+<p><strong>热启动</strong>，测试方式为，打开app并退出，不清理后台，点击app，记录数据。取五次测试结果的平均值，测试数据如下(测试单位：ms):</p>
+<table>
+<thead>
+<tr>
+<th>App名称</th>
+<th>数据1</th>
+<th>数据2</th>
+<th>数据3</th>
+<th>数据4</th>
+<th>数据5</th>
+<th>均值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>掌阅</td>
+<td>607</td>
+<td>582</td>
+<td>576</td>
+<td>590</td>
+<td>570</td>
+<td>585</td>
+</tr>
+<tr>
+<td>书旗</td>
+<td>175</td>
+<td>181</td>
+<td>192</td>
+<td>174</td>
+<td>175</td>
+<td>179</td>
+</tr>
+<tr>
+<td>QQ阅读</td>
+<td>188</td>
+<td>201</td>
+<td>192</td>
+<td>188</td>
+<td>172</td>
+<td>188</td>
+</tr>
+<tr>
+<td>OPPO书城</td>
+<td>184</td>
+<td>179</td>
+<td>181</td>
+<td>179</td>
+<td>184</td>
+<td>181</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出，掌阅的数据比较异常，测试机为oppo手机，每次启动均以冷启动的方式进行启动。猜测，可能掌阅的退出为杀掉应用进程的方式，非destory方式。剩余三款app启动时间差距不大，基本一致。</p>
+<p><strong>总结</strong>：一般成熟的app，都会用一个splash页做启动页，在启动的时候减小黑屏或白屏时间，尽量少的做初始化操作，未使用到的模块或功能进行延迟初始化或延迟加载，尽量减少启动时间。</p>
+<h4 id="2-cpu">2) cpu</h4>
+<p>查看app的cpu使用率，需要使用top命令。首先输入<strong>adb shell</strong>,进入linux的命令行模式。然后输入<strong>top -n 1 -d 5</strong>, 查看手机当前各进程cpu使用情况。 <strong>-n</strong> 代表刷新次数，<strong>-d</strong> 代表刷新间隔，我们在5秒后刷新一次，取出瞬时cpu占用。得出的结果为所有进程，我们只关心当前测试app的cpu情况，所以可以使用管道命令，查询出我们所需的内容，即<strong>top -n 1 -d 5 | grep packagename</strong>，所得结果类似 <strong>18751  7   3% S    61 1754024K 136604K  fg u0_a158  com.chaozh.iReaderFree</strong>，其中18751为进程pid,3%即为cpu占用。</p>
+<p>因为现在app大多使用多进程架构，我们计算所有的进程占用总和。</p>
+<p>测试分为四种典型使用场景：</p>
+<ol>
+<li>主页</li>
+<li>读书界面</li>
+<li>漫画界面</li>
+<li>听书界面</li>
+</ol>
+<p>测试结果如下：</p>
+<p><strong>掌阅</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>场景/进程</th>
+<th>主页</th>
+<th>读书</th>
+<th>漫画</th>
+<th>听书</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>com.chaozh.iReaderFree</td>
+<td>3</td>
+<td>6</td>
+<td>14</td>
+<td>20</td>
+</tr>
+<tr>
+<td>com.chaozh.iReaderFree:channel</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>com.chaozh.iReaderFree:adp</td>
+<td>0</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+</tr>
+<tr>
+<td>com.chaozh.iReaderFree:nocket</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出听书界面cpu占用比较高，可能涉及到编解码操作。adp进程，后期就消失了，具体后文会继续分析。</p>
+<p><strong>书旗</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>场景/进程</th>
+<th>主页</th>
+<th style="text-align:center">主页不显示动画</th>
+<th>读书</th>
+<th>漫画</th>
+<th>听书</th>
+<th style="text-align:center">听书不显示动画</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>com.shuqi.controller</td>
+<td>35</td>
+<td style="text-align:center">11</td>
+<td>9</td>
+<td>7</td>
+<td>23</td>
+<td style="text-align:center">4</td>
+</tr>
+<tr>
+<td>com.shuqi.controller:channel</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td>com.shuqi.controller:pushdaemon</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td>com.shuqi.controller:daemonwatch</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td>com.shuqi.controller:daemonwatch</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+</tr>
+</tbody>
+</table>
+<p>相比于掌阅，书旗多出了两种不同的场景。这是由于书旗阅读在首页和听书页面显示动画时，相比于没有动画时，cpu的占用明显增高。滑动列表使水波纹头部消失，cpu占用就下去了。听书页同理，也有一个动态的背景，导致cpu占用较高。下文的流畅性分析中也有和此处相关的测试。</p>
+<p><strong>QQ阅读</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>场景/进程</th>
+<th>主页</th>
+<th style="text-align:center">主页不显示动画</th>
+<th>读书</th>
+<th>漫画</th>
+<th>听书</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>com.qq.reader</td>
+<td>11</td>
+<td style="text-align:center">1</td>
+<td>8</td>
+<td>4</td>
+<td>1</td>
+</tr>
+<tr>
+<td>com.qq.reader:QS</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>com.qq.reader:game_process</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>com.qq.reader:pushservice</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>com.qq.reader:dl</td>
+<td>0</td>
+<td style="text-align:center">0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>同理，主页头部的水波纹移出屏幕后，cpu占用下降。</p>
+<p><strong>OPPO书城</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>场景/进程</th>
+<th>主页</th>
+<th>读书</th>
+<th>漫画</th>
+<th>听书</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>com.oppo.book</td>
+<td>2</td>
+<td>5</td>
+<td>6</td>
+<td>3</td>
+</tr>
+<tr>
+<td>com.oppo.book:dcs</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出，OPPO书城在这4者中表现最好。</p>
+<p><strong>总结</strong>：从上面四个表格中可以看出，四款app均使用多进程技术，引入原因暂且不表。一般都是主进程在占用CPU时钟，对比来看，OPPO书城性能最好，QQ阅读次之，书旗最差。究其原因，书旗中使用了持续播放的动画，导致一直在占用cpu。这个东西以后在产品设计的时候一定要注意，恰当少量引入，在合适的位置引入，不然会引起耗电量问题和性能问题。</p>
+<h4 id="3内存">3）内存</h4>
+<p>内存指标有 VSS、RSS、PSS、USS，他们的含义分别是：</p>
+<ol>
+<li>VSS：Virtual Set Size 虚拟耗用内存（包含共享库占用的内存）</li>
+<li>RSS：Resident Set Size 实际使用物理内存（包含共享库占用的内存）</li>
+<li>PSS：Proportional Set Size 实际使用的物理内存（按比例分配共享库占用的内存）</li>
+<li>USS：Unique Set Size 进程独自占用的物理内存（不包含共享库占用的内存）</li>
+</ol>
+<p>一般来说内存占用大小有如下规律：VSS &gt;= RSS &gt;= PSS &gt;= USS，一般测试中关注的比较多的是 PSS 这个指标。</p>
+<p>查询程序的内存占用，使用以下步骤:</p>
+<ol>
+<li>adb shell    (进入linux命令行)</li>
+<li>top | grep packagename    (查询关心的进程pid)</li>
+<li>dumpsys meminfo pid   (查询进程的内存信息)</li>
+</ol>
+<p>我们以qq阅读为例，dumpsys meminfo 7872</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203819.png" alt="" loading="lazy"></figure>
+<p>我们关心PSS指标，可以看出TOTAL的第一项数据就是我们关心的结果。可以使用grep命令简化数据，下面的测试数据均使用<strong>dumpsys meminfo pid | grep TOTAL</strong>测出。</p>
+<p>内存测试场景，也分为主页，读书，漫画，听书四部分测试。由于app使用了多进程技术，我们要把所有进程均计算在内。以下数据测试单位均为M。</p>
+<p><strong>掌阅</strong></p>
+<table>
+<thead>
+<tr>
+<th>进程/场景</th>
+<th>主页</th>
+<th>读书</th>
+<th>漫画</th>
+<th>听书</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>com.chaozh.iReaderFree</td>
+<td>108.21</td>
+<td>117.88</td>
+<td>124.75</td>
+<td>159.86</td>
+</tr>
+<tr>
+<td>com.chaozh.iReaderFree:channel</td>
+<td>15.96</td>
+<td>16.43</td>
+<td>13.23</td>
+<td>12.98</td>
+</tr>
+<tr>
+<td>com.chaozh.iReaderFree:nocket</td>
+<td>15.61</td>
+<td>15.56</td>
+<td>15.59</td>
+<td>15.69</td>
+</tr>
+<tr>
+<td>com.chaozh.iReaderFree:adp</td>
+<td>11.50</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+</tr>
+<tr>
+<td>总计</td>
+<td>151.28</td>
+<td>149.87</td>
+<td>153.57</td>
+<td>188.53</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出，主进程内存占用最高，其余进程占用稍小。其中adp进程在进入主界面后消失，猜测这个adp为adprocess,即广告进程，主界面前的开屏广告为单独的进程。个人观点不是太必要，如此设计adp进程的初始化信息后续的主进程无法使用，但是此处的初始化基础信息如屏幕宽高等，后续进程都是需要使用的，不知是何种考虑，以后可以慢慢探讨。</p>
+<p><strong>书旗</strong></p>
+<table>
+<thead>
+<tr>
+<th>场景/进程</th>
+<th>主页</th>
+<th>读书</th>
+<th>漫画</th>
+<th>听书</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>com.shuqi.controller</td>
+<td>180.72</td>
+<td>194.34</td>
+<td>239.08</td>
+<td>214.21</td>
+</tr>
+<tr>
+<td>com.shuqi.controller:channel</td>
+<td>25.94</td>
+<td>22.36</td>
+<td>21.67</td>
+<td>21.16</td>
+</tr>
+<tr>
+<td>com.shuqi.controller:pushdaemon</td>
+<td>11.22</td>
+<td>11.12</td>
+<td>10.77</td>
+<td>10.12</td>
+</tr>
+<tr>
+<td>com.shuqi.controller:daemonwatch</td>
+<td>9.20</td>
+<td>8.70</td>
+<td>8.27</td>
+<td>8.33</td>
+</tr>
+<tr>
+<td>com.shuqi.controller:daemonwatch</td>
+<td>6.13</td>
+<td>6.13</td>
+<td>6.08</td>
+<td>6.06</td>
+</tr>
+<tr>
+<td>com.shuqi.controller:audio</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>15.00</td>
+</tr>
+<tr>
+<td>总计</td>
+<td>233.21</td>
+<td>242.65</td>
+<td>285.87</td>
+<td>274.88</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出，书旗的各场景内存占用均比掌阅的高，而且，书旗在听书界面分出来一个audio进程，这个很有借鉴价值。一般来讲分进程有几种原因：</p>
+<ol>
+<li>分担主进程压力，如推送进程，游戏进程等</li>
+<li>减小产品风险，划分单独进程，出现问题不影响主进程，如web进程，听书进程等</li>
+<li>守护进程，和主进程互相守护，互相保活，如daemon进程</li>
+</ol>
+<p>可以看出，书旗划分的进程贴合了上述几种原因，单独的听书进程，单独的push进程，两个守护进程。当然进程也不是越多越好，多进程之间信息共享与进程开销都比正常单进程应用复杂，都要看产品设计和架构设计。</p>
+<p><strong>QQ阅读</strong></p>
+<table>
+<thead>
+<tr>
+<th>场景/进程</th>
+<th>主页</th>
+<th>读书</th>
+<th>漫画</th>
+<th>听书</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>com.qq.reader</td>
+<td>61.46</td>
+<td>92.92</td>
+<td>134.75</td>
+<td>101.05</td>
+</tr>
+<tr>
+<td>com.qq.reader:QS</td>
+<td>11.61</td>
+<td>10.43</td>
+<td>10.03</td>
+<td>10.97</td>
+</tr>
+<tr>
+<td>com.qq.reader:game_process</td>
+<td>46.01</td>
+<td>36.76</td>
+<td>36.11</td>
+<td>36.73</td>
+</tr>
+<tr>
+<td>com.qq.reader:pushservice</td>
+<td>9.97</td>
+<td>10.34</td>
+<td>10.33</td>
+<td>10.35</td>
+</tr>
+<tr>
+<td>com.qq.reader:dl</td>
+<td>28.72</td>
+<td>19.84</td>
+<td>19.72</td>
+<td>18.85</td>
+</tr>
+<tr>
+<td>总计</td>
+<td>157.78</td>
+<td>170.29</td>
+<td>210.95</td>
+<td>177.94</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出，QQ阅读各场景的内存占用比书旗要好，和掌阅相当。此处唯一有疑问的是game_process进程，一般来讲，进程都是在使用的时候创建，不使用的时候销毁，从字面意义来看，这属于游戏进程，但是我在上述四个场景中，并未使用到任何游戏相关的功能，自始至终游戏进程都存在，占用了一部分内存。后续可以查看下主线代码，看看此进程的用意。</p>
+<p><strong>OPPO书城</strong></p>
+<table>
+<thead>
+<tr>
+<th>场景/进程</th>
+<th>主页</th>
+<th>读书</th>
+<th>漫画</th>
+<th>听书</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>com.oppo.book</td>
+<td>105.31</td>
+<td>144.32</td>
+<td>156.72</td>
+<td>144.54</td>
+</tr>
+<tr>
+<td>com.oppo.book:dcs</td>
+<td>4.79</td>
+<td>4.80</td>
+<td>4.79</td>
+<td>4.77</td>
+</tr>
+<tr>
+<td>总计</td>
+<td>110.10</td>
+<td>149.12</td>
+<td>160.51</td>
+<td>149.31</td>
+</tr>
+</tbody>
+</table>
+<p>直观上可以看出，OPPO书城是四款产品中内存使用情况最少的，表现最好。当然这个和他产品特点有关，进程数量少，猜测push使用系统push，保活有系统保证。漫画界面内存增长较高，可能与图片较多，较大有关。其中dcs进程在测试过程中时有时无。</p>
+<h4 id="4电量和流量">4）电量和流量</h4>
+<p>电量和流量是很重要的两个性能指标，这个十分影响用户体验。耗费流量越少，产生的资费越少；耗费的电量越少，待机时间越长。所以用户肯定喜欢耗流量少，耗电少的应用，这才是用户喜闻乐用的应用。</p>
+<p><strong>流量</strong>：</p>
+<p>流量指标测试比较麻烦，因为时间和设备原因，暂时未能进行详细的测试。在此处可以提出几点测试原则和开发原则。</p>
+<p>测试原则：使用控制变量法，测试4G,WIFI等环境下，各使用场景的流量消耗情况。</p>
+<p>开发原则：4G网络下的流量弹框提醒，网络重试次数时机控制等。分模块划分缓存时长，对于实时性不敏感的数据，进行缓存处理等。</p>
+<p><strong>电量</strong>：</p>
+<p>电量测试也比较麻烦，实际使用中，需要测试同学制定相应的测试用例，测试4G,WIFI等环境下，各使用场景的电量消耗情况。</p>
+<p>此次分析使用了<strong>battery-historian V2.0</strong>，对四款app进行了简要的电量消耗分析。</p>
+<p>Battery historian是一款通过上传bugreport文件分析用户手机中App的电池耗电情况的工具。具体的使用流程可以参考此篇博文（<br>
+<a href="https://blog.csdn.net/liangxy2014/article/details/78311938">battery-historian V2.0的数据获取及参数分析</a>）。由于搭建分析环境比较麻烦，有热心的网友搭建了在线服务，此处提供一下地址（<a href="https://bathist.ef.lc/">在线分析网站</a>），大家可以在线分析了，不用自己搭建，方便省心，再次感谢热心网友。</p>
+<p>测试场景如下：测试时长 10分钟 = app浏览1分钟 + 电子书阅读3分钟 + 漫画浏览3分钟 + 听书3分钟。<br>
+对上述场景，按照上述博文描述，进行电量日志抓取，文末会给出文件，大家也可以拿文件进行分析。</p>
+<p>我们首先拿掌阅的app进行测试，给出一个分析步骤，后续的均按照此步骤分析。</p>
+<p>上传完日志文件，可以生成一个图表，类似下图：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203839.png" alt="" loading="lazy"></p>
+<p>当然此处可以分析的不止箭头指出的那么简单一项，下面还有详细的各项内容，可以参考上述提到的博文中各项参数进行分析。此次我们只关注流量和电量，别的暂时先不分析。app stats选项卡下，有电量信息，如下图：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203856.png" alt="" loading="lazy">可以看出我们使用了2.02%的电量。<br>
+Network Information下有具体的流量消耗，此次测试仅测试WIFI网络，其余环境暂未测试。<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203908.png" alt="" loading="lazy">可以看出我们使用了7.29M的流量。</p>
+<p>测试结果如下表：</p>
+<table>
+<thead>
+<tr>
+<th>APP\电量</th>
+<th>电量(%)</th>
+<th>流量（M）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>掌阅</td>
+<td>2.02</td>
+<td>7.29</td>
+</tr>
+<tr>
+<td>书旗</td>
+<td>2.12</td>
+<td>6.89</td>
+</tr>
+<tr>
+<td>QQ阅读</td>
+<td>2.17</td>
+<td>28.17</td>
+</tr>
+<tr>
+<td>OPPO书城</td>
+<td>1.91</td>
+<td>34.63</td>
+</tr>
+</tbody>
+</table>
+<p>对比来看，电量消耗相当，但是流量情况差距比较大。不知道是我自己测试的问题，还是实际使用情况如此，QQ阅读和OPPO书城的流量使用比掌阅和书旗的大，具体可以问测试同学要详细的测试数据。Battery historian中还有更加详尽的描述，如service，jobservice使用情况，cpu使用情况，alarm使用情况，wifilock，wakelock等。由于电量差距不是很大，此处便不做详尽分析，后续遇见异常情况可以使用此工具分析。</p>
+<h2 id="3流畅性调研">3.流畅性调研</h2>
+<p>流畅性分析主要分为以下两个方面：GPU呈现模式分析和GPU过度绘制<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203920.png" alt="" loading="lazy"></p>
+<h4 id="1gpu呈现模式分析">1）GPU呈现模式分析</h4>
+<p>具体可以参考这篇博文（<a href="https://www.cnblogs.com/ldq2016/p/6667381.html">Android开发者选项——Gpu呈现模式分析</a>），我们此次测试主要关注绿线（16ms线），红色条形（执行任务时间），蓝色条形（测量绘制时间）</p>
+<p><strong>掌阅</strong></p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203932.png" alt="" loading="lazy"></figure>
+<p>掌阅的流畅性方面是4款产品中表现最好的。大部分页面滑动效果流畅，未超过16ms线。</p>
+<p><strong>书旗</strong></p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203950.png" alt="" loading="lazy"></figure>
+<p>书旗这个和CPU测试结果一样，因为在某些页面存在持续性的动画，导致一直在渲染绘制，比如主页头部的水波纹特效。</p>
+<p><strong>QQ阅读</strong></p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204002.png" alt="" loading="lazy"></figure>
+<p>QQ阅读整体表现也很棒，但是有一个界面卡顿状况明显。书库界面，每每滑动，就会出现越过16ms线的部分，从图中可以看出，最底下绿色较多，对照博文中的信息可知，代表Input Handling（事件处理）Misc Time/Vsync Delay（UI渲染跟不上vSync的信号），猜测此处可能执行了大量的主线程任务，有可能和图片处理和图片复用有关，具体的可以对照代码进行分析。</p>
+<p><strong>OPPO书城</strong></p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204022.png" alt="" loading="lazy"></figure>
+<p>对比QQ阅读来看，同样是书城/分类界面，表现就很优异，基本上都在16ms线以下。可能测试的页面较少，未发现有特别卡顿的页面。</p>
+<p><strong>总结</strong>：<br>
+整体来看，OPPO书城表现最优异，其余三者不相伯仲。可以看出动画的使用会影响模式分析结果，如书旗首页头部水波纹动画，QQ阅读、书旗小说、掌阅听书指示动画。</p>
+<h4 id="2gpu过度绘制">2）GPU过度绘制</h4>
+<p>过度绘制（Overdraw）描述的是屏幕上的某个像素在同一帧的时间内被绘制了多次。在多层次重叠的 UI 结构里面，如果不可见的 UI 也在做绘制的操作，会导致某些像素区域被绘制了多次，同时也会浪费大量的 CPU 以及 GPU 资源,所以我们应该避免过度绘制。具体关于过度绘制的知识点可以参考博文<a href="https://blog.csdn.net/a740169405/article/details/53896497">Android性能优化-过度绘制解决方案</a>，然后对照下图进行分析。</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204035.png" alt="" loading="lazy"></figure>
+<p><strong>掌阅</strong><br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204043.png" alt="" loading="lazy"></p>
+<p>毫不夸张的讲，掌阅的过度绘制优化是我见过最好的，做的和系统app一样优秀,他们应该下了不少功夫进行过度绘制优化。只有极少部分有4x的，大部分都是1x,2x,十分优秀。翻页界面，漫画界面等等，表现十分良好，大家可以自己按照博文的步骤，进行测试。有部分界面有1x,应该可以去掉的，有优化空间。</p>
+<p><strong>书旗</strong><br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204054.png" alt="" loading="lazy"></p>
+<p>书旗的书城界面，过度绘制比较严重，存在优化空间。可能是由于控件背景未移除，导致过度绘制严重。大量二级三级页面都是红色的，需要进一步进行优化。值得表扬的是阅读界面，没有过度绘制的现象。</p>
+<p><strong>QQ阅读</strong></p>
+<p>QQ阅读过度绘制问题比较明显，挑几个比较直观的地方说</p>
+<p><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204104.png" alt="" loading="lazy"><br>
+侧栏过度绘制严重，这个上面博文中有解决方案，可以参考下，看下是否能解决。部分二级页网页形式，存在3x重绘。</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204118.png" alt="" loading="lazy"></figure>
+<p>书籍详情页和读书界面有过度绘制情况，具体情况可以以后慢慢分析，逐渐解决。</p>
+<p>对比下QQ阅读的书城和掌阅的书城，如下图（左掌阅，右QQ阅读）</p>
+<p><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204128.png" alt="" loading="lazy"><br>
+可以很直观的看出差距，也许我们与掌阅差了一个背景色的距离。</p>
+<p><strong>OPPO书城</strong></p>
+<p>书城也有部分页面存在过度绘制问题<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204139.png" alt="" loading="lazy"><br>
+可以看出我们的书架页面和QQ阅读书架页面是有差距的，QQ阅读是1X，2X，我们是3X，4X，可以向主线同学学习，进行优化。听书界面也存在过度绘制。</p>
+<p>最严重的问题出现在夜间模式场景下。<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204150.png" alt="" loading="lazy"><br>
+打开夜间模式后，所有界面都增加了1x，漫天绯红，惨不忍睹。现在主流的app夜间模式都是采取控件换肤模式，我们也可以采用这种方案解决这个问题，而不是添加一层半透明遮罩。</p>
+<p><strong>总结</strong></p>
+<p>这一环节掌阅大比分胜出，QQ阅读和OPPO书城表现较差，这方面还有较大的优化空间。</p>
+<h3 id="4产品分析">4.产品分析</h3>
+<p>作为研发同学，也要有一些产品思维，研发可以说是接触产品时间最长的用户，也能代表一部分用户观点。平时有好的用户需求，交互逻辑等，都可以与产品同学交流，共同促进用户体验。因为此前未做过此类产品分析，此次分析主要参考此篇博文（<a href="http://www.woshipm.com/evaluating/654327.html">从阅读、交流场景的功能设计，对四种阅读类APP进行竞品分析</a>）思路，均为个人观点，如果不合理的地方，欢迎批评指正，交流学习。以下所有产品分析，因OPPO书城未在应用市场上线，只参与部分分析。</p>
+<p>产品分析从以下几点进行分析：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204200.png" alt="" loading="lazy"></p>
+<h4 id="1用户与产品定位">1）用户与产品定位</h4>
+<p><strong>用户定位</strong>：</p>
+<p>没有调查就没有发言权，我们首先了解下宏观上的产品定位。拿数据说话，从艾瑞app指数划分用户如下：</p>
+<table>
+<thead>
+<tr>
+<th>App\项目</th>
+<th style="text-align:center">男</th>
+<th style="text-align:center">女</th>
+<th style="text-align:center">35岁以下占比</th>
+<th style="text-align:center">25-30岁占比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>掌阅</td>
+<td style="text-align:center">63.4</td>
+<td style="text-align:center">36.6</td>
+<td style="text-align:center">94.85</td>
+<td style="text-align:center">41.58</td>
+</tr>
+<tr>
+<td>QQ阅读</td>
+<td style="text-align:center">53.91</td>
+<td style="text-align:center">46.09</td>
+<td style="text-align:center">95.06</td>
+<td style="text-align:center">39.59</td>
+</tr>
+<tr>
+<td>书旗</td>
+<td style="text-align:center">42.36</td>
+<td style="text-align:center">57.64</td>
+<td style="text-align:center">93.93</td>
+<td style="text-align:center">39.63</td>
+</tr>
+</tbody>
+</table>
+<p>数据表明：掌阅男性用户较多，书旗女性用户较多，QQ阅读男女用户占比相当。大部分用户为35岁以下，其中25-35岁居多。</p>
+<p><strong>产品定位</strong>：</p>
+<p>一般产品定位可以从企业的slogan看出。我们打开产品的闪屏页一般都会带有这句话。依次打开，发现如下：</p>
+<ol>
+<li>掌阅：引领品质阅读。可以看出，掌阅主打品质阅读，较为关注书籍品质。</li>
+<li>书旗：不一样的阅读。可以看出，应该是较为关注用户阅读体验。</li>
+<li>QQ阅读：海量原著，想读就读。可以看出，QQ阅读较为关注书籍内容广度，体现在于书库资源丰富，从APP内的产品分类详细程度上可以窥见一斑。</li>
+</ol>
+<h4 id="2产品功能分析">2）产品功能分析</h4>
+<p>产品功能分析从以下三个部分进行解读：<strong>阅读需求，产品结构，功能分析</strong>。</p>
+<h4 id="1阅读需求">1.阅读需求</h4>
+<p>阅读分为电子书和纸质书，需求一般分为：</p>
+<ol>
+<li>娱乐爱好：各类网文，男频女频等</li>
+<li>知识积累：专业书籍，各类出版物等</li>
+<li>新型阅读：漫画杂志，听书等</li>
+</ol>
+<p>我们着重分析前两类需求，总结出来的需求大致如下：</p>
+<table>
+<thead>
+<tr>
+<th>KANO模型</th>
+<th style="text-align:center">用户需求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基本型需求</td>
+<td style="text-align:center">阅读稳定性，便捷性等</td>
+</tr>
+<tr>
+<td>期望型需求</td>
+<td style="text-align:center">推书，搜书等</td>
+</tr>
+<tr>
+<td>魅力型需求</td>
+<td style="text-align:center">用户交流，阅读效率等</td>
+</tr>
+</tbody>
+</table>
+<p>三个产品，基本上都实现了以上的需求对应的功能。</p>
+<h4 id="2产品结构">2.产品结构</h4>
+<p>为了给用户提供1中表格的功能，产品设计方面就要围绕此表格进行设计，还有部分扩充。我们一一看下3款产品，提出优点与不足。此次分析的四款产品均为底部多tab结构，清晰明确。体现出了同质化设计，用户切换成本较小。而且此设计经调研，可运营可扩展性强，属于业内主流设计，如微信，QQ等。</p>
+<p><strong>掌阅</strong></p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204210.png" alt="" loading="lazy"></figure>
+<p>优点：</p>
+<ol>
+<li>书城划分合理，分类清晰明确，比较符合直观感受</li>
+<li>发现页面定位为书友交流，其余三款均有此功能，但入口较深。</li>
+</ol>
+<p>缺点： 本地书架缺少书名提示</p>
+<p><strong>书旗</strong></p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204219.png" alt="" loading="lazy"></figure>
+<p>优点： 单独拎出免费专区，方便用户查找。</p>
+<p>缺点： 书城定位模糊，仅突出了4大类，具体分类页放在了精选下一个小条目。</p>
+<p><strong>QQ阅读</strong></p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204228.png" alt="" loading="lazy"></figure>
+<p>优点： 书库页分类详细，种类繁多。用户可挑选自己喜欢的类目进行查阅。</p>
+<p>缺点： 书库页不能滑动切换分类，而且书评广场入口隐藏较深。作为QQ类产品，用户量庞大，应突出书评交流。</p>
+<p><strong>OPPO书城</strong></p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204236.png" alt="" loading="lazy"></figure>
+<p>优点： 分类页既有掌阅的简洁大方，又有QQ阅读的详实充足</p>
+<p>缺点：听书分类和漫画分类不太明显。</p>
+<h4 id="3功能分析">3.功能分析</h4>
+<p>从用户需求出发，阅读的本质就是读书，我们从读书前，读书中，读书后三个部分进行功能分析，看一看三款APP的合理与不合理之处。</p>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119204247.png" alt="" loading="lazy"></figure>
+<p><strong>读书前</strong></p>
+<p>读书前的功能分析主要分为，找书，搜书，推荐。</p>
+<ol>
+<li>推荐方面，均有热门推荐，排行榜，相似推荐等功能</li>
+<li>找书方面，书库目录子条目清晰，分类明确</li>
+<li>搜书方面，搜索页热门推荐，搜索关键字自动补全等。</li>
+</ol>
+<p>三款产品做得中规中矩，可以算是打成平手。值得一提的是，QQ阅读中有阅读基因功能，后期可以让用户指定喜爱的类别，进行修正。掌阅和书旗出现在引导页，app内未发现修改入口。</p>
+<p><strong>读书中</strong></p>
+<p>读书中的功能分析主要分为，阅读功能，段落评论和批注。阅读功能属于阅读类产品特有的功能，三款产品设计也都是大同小异，不做过多评价。值得一提的是段落评论功能，这个设计有失也有得，失在于打破了安静的阅读环境，引诱用户点击，降低用户阅读效率。得在于增进用户交流，深化用户阅读体验，类似于B站弹幕类，体验较好。</p>
+<p><strong>读书后</strong></p>
+<p>读书后，主要分为书评，书友交流。书评功能做得都比较好，在当前阅读页的设置中，都加入了书评入口，方便用户进行阅读评论，掌阅的书评入口在二级设置页，稍微有点深。书友交流功能三款产品设计差异较大，分析如下：</p>
+<ol>
+<li>掌阅，单独划分发现页，对书友交流重视程度较大</li>
+<li>书旗，未见单独的书友交流功能，主页划分出一个原创tab，可能产品侧重点不同</li>
+<li>QQ阅读，包含书友交流，名为书评广场，个人感觉可以单独拎出来做产品方向，值得深入挖掘</li>
+</ol>
+<p><strong>总结</strong></p>
+<p>三款产品在此分析环节，表现均优异，平分秋色。大方向上各有侧重，具体设计上可以看出同质化，猜测产品同学也经常进行竞品分析。此处建议多从阅读本质出发，多从用户角度出发，结合KANO模型，设计出用户喜欢，满意的功能，尽量避免为了需求而需求的伪需求发生。</p>
+<h2 id="总结">总结</h2>
+<p>通过竞品分析，我们可以了解到竞品的优势和劣势，知己知彼，百战不殆，从而更好的去优化我们自己的产品。当然以上只是简单的技术分析，更详细的可以参考以往同学写的内容，进行补充。此次也重温了下许多基础知识，确实是一个快速了解产品的好办法。当然，写的比较仓促，如果有错误的地方，欢迎大家指出问题，进行修改，互相学习。</p>
+<h2 id="附录">附录：</h2>
+<ol>
+<li>竞品分析文件：链接：https://pan.baidu.com/s/1Kx3iR1uzDnHyyo0GziZVuw 密码：s8db 内含apk文件，电量文件，脑图文件</li>
+<li>cpu,内存测试参考博文：三篇app性能测试 <a href="https://blog.csdn.net/heshushun/article/category/7158418">https://blog.csdn.net/heshushun/article/category/7158418</a></li>
+</ol>
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[给初学者的RxJava2.0教程(二)]]></title>
-        <id>https://fqzhanghao.github.io/post/gei-chu-xue-zhe-de-rxjava20-jiao-cheng-er</id>
-        <link href="https://fqzhanghao.github.io/post/gei-chu-xue-zhe-de-rxjava20-jiao-cheng-er">
+        <title type="html"><![CDATA[通过观察者模式监听媒体库的变化实现APP本地数据自动更新]]></title>
+        <id>https://fqzhanghao.github.io/post/tong-guo-guan-cha-zhe-mo-shi-jian-ting-mei-ti-ku-de-bian-hua-shi-xian-app-ben-di-shu-ju-zi-dong-geng-xin</id>
+        <link href="https://fqzhanghao.github.io/post/tong-guo-guan-cha-zhe-mo-shi-jian-ting-mei-ti-ku-de-bian-hua-shi-xian-app-ben-di-shu-ju-zi-dong-geng-xin">
         </link>
-        <updated>2020-01-19T10:24:23.000Z</updated>
-        <content type="html"><![CDATA[<h3 id="前言">前言</h3>
-<p>上一节教程讲解了最基本的RxJava2的使用, 在本节中, 我们将学习RxJava强大的线程控制.</p>
-<h3 id="正题">正题</h3>
-<p>还是以之前的例子, 两根水管:</p>
-<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119182526.png" alt="" loading="lazy"></figure>
-<p>正常情况下, 上游和下游是工作在同一个线程中的, 也就是说上游在哪个线程发事件, 下游就在哪个线程接收事件.</p>
-<p>怎么去理解呢, 以Android为例, 一个Activity的所有动作默认都是在主线程中运行的, 比如我们在onCreate中打出当前线程的名字:</p>
-<pre><code class="language-java">    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Log.d(TAG, Thread.currentThread().getName());
-    }
-</code></pre>
-<p>结果便是:</p>
-<pre><code class="language-java">    D/TAG: main
-</code></pre>
-<p>回到RxJava中, 当我们在主线程中去创建一个上游Observable来发送事件, 则这个上游默认就在主线程发送事件.</p>
-<p>当我们在主线程去创建一个下游Observer来接收事件, 则这个下游默认就在主线程中接收事件, 来看段代码:</p>
-<pre><code class="language-java">    @Override                                                                                      
-    protected void onCreate(Bundle savedInstanceState) {                                            
-        super.onCreate(savedInstanceState);                                                         
-        setContentView(R.layout.activity_main);                                                     
-                                                                              
-        Observable&lt;Integer&gt; observable = Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {   
-            @Override                                                                               
-            public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {            
-                Log.d(TAG, &quot;Observable thread is : &quot; + Thread.currentThread().getName());           
-                Log.d(TAG, &quot;emit 1&quot;);                                                               
-                emitter.onNext(1);                                                                  
-            }                                                                                       
-        });                                                                                         
-                                                                                                    
-        Consumer&lt;Integer&gt; consumer = new Consumer&lt;Integer&gt;() {                                      
-            @Override                                                                               
-            public void accept(Integer integer) throws Exception {                                  
-                Log.d(TAG, &quot;Observer thread is :&quot; + Thread.currentThread().getName());              
-                Log.d(TAG, &quot;onNext: &quot; + integer);                                                   
-            }                                                                                       
-        };                                                                                          
-                                                                                                    
-        observable.subscribe(consumer);                                                             
-}
-</code></pre>
-<p>在主线程中分别创建上游和下游, 然后将他们连接在一起, 同时分别打印出它们所在的线程, 运行结果为:</p>
-<pre><code class="language-java">D/TAG: Observable thread is : main
-D/TAG: emit 1                     
-D/TAG: Observer thread is :main   
-D/TAG: onNext: 1            
-</code></pre>
-<p>这就验证了刚才所说, 上下游默认是在同一个线程工作.</p>
-<p>这样肯定是满足不了我们的需求的, 我们更多想要的是这么一种情况, 在子线程中做耗时的操作, 然后回到主线程中来操作UI, 用图片来描述就是下面这个图片:</p>
-<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119183654.png" alt="" loading="lazy"></figure>
-<p>在这个图中, 我们用黄色水管表示子线程, 深蓝色水管表示主线程.</p>
-<p>要达到这个目的, 我们需要先改变上游发送事件的线程, 让它去子线程中发送事件, 然后再改变下游的线程, 让它去主线程接收事件. 通过RxJava内置的线程调度器可以很轻松的做到这一点. 接下来看一段代码:</p>
-<pre><code class="language-java">@Override                                                                                       
-protected void onCreate(Bundle savedInstanceState) {                                            
-    super.onCreate(savedInstanceState);                                                         
-    setContentView(R.layout.activity_main);                                                     
-                                                                                                
-    Observable&lt;Integer&gt; observable = Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {   
-        @Override                                                                               
-        public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {            
-            Log.d(TAG, &quot;Observable thread is : &quot; + Thread.currentThread().getName());           
-            Log.d(TAG, &quot;emit 1&quot;);                                                               
-            emitter.onNext(1);                                                                  
-        }                                                                                       
-    });                                                                                         
-                                                                                                
-    Consumer&lt;Integer&gt; consumer = new Consumer&lt;Integer&gt;() {                                      
-        @Override                                                                               
-        public void accept(Integer integer) throws Exception {                                  
-            Log.d(TAG, &quot;Observer thread is :&quot; + Thread.currentThread().getName());              
-            Log.d(TAG, &quot;onNext: &quot; + integer);                                                   
-        }                                                                                       
-    };                                                                                          
-                                                                                                
-    observable.subscribeOn(Schedulers.newThread())                                              
-            .observeOn(AndroidSchedulers.mainThread())                                          
-            .subscribe(consumer);                                                               
-}
-</code></pre>
-<p>还是刚才的例子, 只不过我们太添加了一点东西, 先来看看运行结果:</p>
-<pre><code class="language-java">D/TAG: Observable thread is : RxNewThreadScheduler-2  
-D/TAG: emit 1                                         
-D/TAG: Observer thread is :main                       
-D/TAG: onNext: 1
-</code></pre>
-<p>可以看到, 上游发送事件的线程的确改变了, 是在一个叫  RxNewThreadScheduler-2的线程中发送的事件, 而下游仍然在主线程中接收事件, 这说明我们的目的达成了, 接下来看看是如何做到的.</p>
-<p>和上一段代码相比,这段代码只不过是增加了两行代码:</p>
-<pre><code class="language-java">.subscribeOn(Schedulers.newThread())                                              
-.observeOn(AndroidSchedulers.mainThread())   
-</code></pre>
-<p>作为一个初学者的入门教程, 并不会贴出一大堆源码来分析, 因此只需要让大家记住几个要点, 已达到如何正确的去使用这个目的才是我们的目标.</p>
-<p>简单的来说, subscribeOn() 指定的是上游发送事件的线程, observeOn() 指定的是下游接收事件的线程.</p>
-<p>多次指定上游的线程只有第一次指定的有效, 也就是说多次调用subscribeOn() 只有第一次的有效, 其余的会被忽略.</p>
-<p>多次指定下游的线程是可以的, 也就是说每调用一次observeOn() , 下游的线程就会切换一次.</p>
-<p>举个例子:</p>
-<pre><code class="language-java">observable.subscribeOn(Schedulers.newThread())     
-         .subscribeOn(Schedulers.io())              
-         .observeOn(AndroidSchedulers.mainThread()) 
-         .observeOn(Schedulers.io())                
-         .subscribe(consumer);
-</code></pre>
-<p>这段代码中指定了两次上游发送事件的线程, 分别是newThread和IO线程, 下游也指定了两次线程,分别是main和IO线程. 运行结果为:</p>
-<pre><code class="language-java">D/TAG: Observable thread is : RxNewThreadScheduler-3
-D/TAG: emit 1                                       
-D/TAG: Observer thread is :RxCachedThreadScheduler-1
-D/TAG: onNext: 1
-</code></pre>
-<p>可以看到, 上游虽然指定了两次线程, 但只有第一次指定的有效, 依然是在RxNewThreadScheduler 线程中, 而下游则跑到了RxCachedThreadScheduler 中, 这个CacheThread其实就是IO线程池中的一个.</p>
-<p>为了更清晰的看到下游的线程切换过程, 我们加点log:</p>
-<pre><code class="language-java">observable.subscribeOn(Schedulers.newThread())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext(new Consumer&lt;Integer&gt;() {
-                    @Override
-                    public void accept(Integer integer) throws Exception {
-                        Log.d(TAG, &quot;After observeOn(mainThread), current thread is: &quot; + Thread.currentThread().getName());
-                    }
-                })
-                .observeOn(Schedulers.io())
-                .doOnNext(new Consumer&lt;Integer&gt;() {
-                    @Override
-                    public void accept(Integer integer) throws Exception {
-                        Log.d(TAG, &quot;After observeOn(io), current thread is : &quot; + Thread.currentThread().getName());
-                    }
-                })
-                .subscribe(consumer);
-</code></pre>
-<p>我们在下游线程切换之后, 把当前的线程打印出来, 运行结果:</p>
-<pre><code class="language-java">D/TAG: Observable thread is : RxNewThreadScheduler-1                                             
-D/TAG: emit 1                                                                                    
-D/TAG: After observeOn(mainThread), current thread is: main                                      
-D/TAG: After observeOn(io), current thread is : RxCachedThreadScheduler-2                        
-D/TAG: Observer thread is :RxCachedThreadScheduler-2                                             
-D/TAG: onNext: 1
-</code></pre>
-<p>可以看到, 每调用一次observeOn() 线程便会切换一次, 因此如果我们有类似的需求时, 便可知道如何处理了.</p>
-<p>在RxJava中, 已经内置了很多线程选项供我们选择, 例如有</p>
-<ul>
-<li>Schedulers.io() 代表io操作的线程, 通常用于网络,读写文件等io密集型的操作</li>
-<li>Schedulers.computation() 代表CPU计算密集型的操作, 例如需要大量计算的操作</li>
-<li>Schedulers.newThread() 代表一个常规的新线程</li>
-<li>AndroidSchedulers.mainThread() 代表Android的主线程</li>
-</ul>
-<p>这些内置的Scheduler已经足够满足我们开发的需求, 因此我们应该使用内置的这些选项, 在RxJava内部使用的是线程池来维护这些线程, 所有效率也比较高.</p>
-<h3 id="实践">实践</h3>
-<p>对于我们Android开发人员来说, 经常会将一些耗时的操作放在后台, 比如网络请求或者读写文件,操作数据库等等,等到操作完成之后回到主线程去更新UI, 有了上面的这些基础, 那么现在我们就可以轻松的去做到这样一些操作.</p>
-<p>下面来举几个常用的场景.</p>
-<h4 id="网络请求">网络请求</h4>
-<p>Android中有名的网络请求库就那么几个, Retrofit能够从中脱颖而出很大原因就是因为它支持RxJava的方式来调用, 下面简单讲解一下它的基本用法.</p>
-<p>要使用Retrofit,先添加Gradle配置:</p>
-<pre><code class="language-java">    //retrofit
-    compile 'com.squareup.retrofit2:retrofit:2.1.0'
-    //Gson converter
-    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
-    //RxJava2 Adapter
-    compile 'com.jakewharton.retrofit:retrofit2-rxjava2-adapter:1.0.0'
-    //okhttp
-    compile 'com.squareup.okhttp3:okhttp:3.4.1'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
-</code></pre>
-<p>随后定义Api接口:</p>
-<pre><code class="language-java">public interface Api {
-    @GET
-    Observable&lt;LoginResponse&gt; login(@Body LoginRequest request);
-
-    @GET
-    Observable&lt;RegisterResponse&gt; register(@Body RegisterRequest request);
-}
-</code></pre>
-<p>接着创建一个Retrofit客户端:</p>
-<pre><code class="language-java">private static Retrofit create() {
-            OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
-            builder.readTimeout(10, TimeUnit.SECONDS);
-            builder.connectTimeout(9, TimeUnit.SECONDS);
-
-            if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-                interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-                builder.addInterceptor(interceptor);
-            }
-
-            return new Retrofit.Builder().baseUrl(ENDPOINT)
-                    .client(builder.build())
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .build();
-}
-</code></pre>
-<p>发起请求就很简单了:</p>
-<pre><code class="language-java">Api api = retrofit.create(Api.class);
-        api.login(request)
-             .subscribeOn(Schedulers.io())               //在IO线程进行网络请求
-             .observeOn(AndroidSchedulers.mainThread())  //回到主线程去处理请求结果
-            .subscribe(new Observer&lt;LoginResponse&gt;() {
-                @Override
-                public void onSubscribe(Disposable d) {}
-
-                @Override
-                public void onNext(LoginResponse value) {}
-
-                @Override
-                public void onError(Throwable e) {
-                    Toast.makeText(mContext, &quot;登录失败&quot;, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onComplete() {
-                    Toast.makeText(mContext, &quot;登录成功&quot;, Toast.LENGTH_SHORT).show();
-                }
-            });
-</code></pre>
-<p>看似很完美, 但我们忽略了一点, 如果在请求的过程中Activity已经退出了, 这个时候如果回到主线程去更新UI, 那么APP肯定就崩溃了, 怎么办呢, 上一节我们说到了Disposable , 说它是个开关, 调用它的dispose()方法时就会切断水管, 使得下游收不到事件, 既然收不到事件, 那么也就不会再去更新UI了. 因此我们可以在Activity中将这个Disposable 保存起来, 当Activity退出时, 切断它即可.</p>
-<p>那如果有多个Disposable 该怎么办呢, RxJava中已经内置了一个容器CompositeDisposable, 每当我们得到一个Disposable时就调用CompositeDisposable.add()将它添加到容器中, 在退出的时候, 调用CompositeDisposable.clear() 即可切断所有的水管.</p>
-<h4 id="读写数据库">读写数据库</h4>
-<p>上面说了网络请求的例子, 接下来再看看读写数据库, 读写数据库也算一个耗时的操作, 因此我们也最好放在IO线程里去进行, 这个例子就比较简单, 直接上代码:</p>
-<pre><code class="language-java">public Observable&lt;List&lt;Record&gt;&gt; readAllRecords() {
-        return Observable.create(new ObservableOnSubscribe&lt;List&lt;Record&gt;&gt;() {
-            @Override
-            public void subscribe(ObservableEmitter&lt;List&lt;Record&gt;&gt; emitter) throws Exception {
-                Cursor cursor = null;
-                try {
-                    cursor = getReadableDatabase().rawQuery(&quot;select * from &quot; + TABLE_NAME, new String[]{});
-                    List&lt;Record&gt; result = new ArrayList&lt;&gt;();
-                    while (cursor.moveToNext()) {
-                        result.add(Db.Record.read(cursor));
-                    }
-                    emitter.onNext(result);
-                    emitter.onComplete();
-                } finally {
-                    if (cursor != null) {
-                        cursor.close();
-                    }
-                }
-            }
-        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
-    }
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[给初学者的RxJava2.0教程(一)]]></title>
-        <id>https://fqzhanghao.github.io/post/gei-chu-xue-zhe-de-rxjava20-jiao-cheng-yi</id>
-        <link href="https://fqzhanghao.github.io/post/gei-chu-xue-zhe-de-rxjava20-jiao-cheng-yi">
-        </link>
-        <updated>2020-01-19T10:23:34.000Z</updated>
-        <content type="html"><![CDATA[<h3 id="前言">前言</h3>
-<p>上个月RxJava2正式版发布了，但目前国内的资料还比较少，以前使用过RxJava1只需要看看更新文档就知道怎么使用了，但还有一些以前没用过RxJava的朋友可能就不知道怎么办了，不知道该看RxJava1还是直接跳到RxJava2。所以写下这个教程， 帮助那些没有用过RxJava的朋友入门。</p>
-<p>我先回答这个问题：学习RxJava2需要先学习RxJava1吗？</p>
-<p>这个问题就像论坛经常问学Java前需要先学习C语言吗，这里就不引战了！（PHP是世界上最好的语言！！）</p>
-<p>答案明显不是，如果你以前学过RxJava1，那么对于RxJava2只需要看看更新了哪些东西就行了，其最核心的思想并没有变化，如果你没学过RxJava1，没有关系，直接学习RxJava2。所以作为一个RxJava2的教程，本文中所有的名词都属于RxJava2中，并不涉及RxJava1。</p>
-<p>要在Android中使用RxJava2, 先添加Gradle配置:</p>
-<pre><code class="language-java">    compile 'io.reactivex.rxjava2:rxjava:2.0.1'
-    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-</code></pre>
-<h3 id="正题">正题</h3>
-<p>在开始学习之前，先来介绍点原理性的东西。</p>
-<p>网上也有很多介绍RxJava原理的文章，通常这些文章都从观察者模式开始，先讲观察者，被观察者，订阅关系巴拉巴拉一大堆，说实话，当我第一次看到这些文章的时候已经被这些名词给绕晕了，用了很长的时间才理清楚它们之间的关系。可能是我太蠢了，境界不够，领会不到那么多高大上的名词.</p>
-<p>今天我用两根水管代替观察者和被观察者, 试图用通俗易懂的话把它们的关系解释清楚, 在这里我将从事件流这个角度来说明RxJava的基本工作原理。</p>
-<p>先假设有两根水管：</p>
-<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119184528.png" alt="" loading="lazy"></figure>
-<p>上面一根水管为事件产生的水管，叫它上游吧，下面一根水管为事件接收的水管叫它下游吧。</p>
-<p>两根水管通过一定的方式连接起来，使得上游每产生一个事件，下游就能收到该事件。注意这里和官网的事件图是反过来的, 这里的事件发送的顺序是先1,后2,后3这样的顺序, 事件接收的顺序也是先1,后2,后3的顺序, 我觉得这样更符合我们普通人的思维, 简单明了.</p>
-<p>这里的上游和下游就分别对应着RxJava中的Observable和Observer，它们之间的连接就对应着subscribe()，因此这个关系用RxJava来表示就是：</p>
-<pre><code class="language-java">        //创建一个上游 Observable：
-        Observable&lt;Integer&gt; observable = Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {
-            @Override
-            public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {
-                emitter.onNext(1);
-                emitter.onNext(2);
-                emitter.onNext(3);
-                emitter.onComplete();
-            }
-        });
-        //创建一个下游 Observer
-        Observer&lt;Integer&gt; observer = new Observer&lt;Integer&gt;() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                Log.d(TAG, &quot;subscribe&quot;);
-            }
-
-            @Override
-            public void onNext(Integer value) {
-                Log.d(TAG, &quot;&quot; + value);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.d(TAG, &quot;error&quot;);
-            }
-
-            @Override
-            public void onComplete() {
-                Log.d(TAG, &quot;complete&quot;);
-            }
-        };
-        //建立连接
-        observable.subscribe(observer);
-</code></pre>
-<p>这个运行的结果就是:</p>
-<pre><code>12-02 03:37:17.818 4166-4166/zlc.season.rxjava2demo D/TAG: subscribe
-12-02 03:37:17.819 4166-4166/zlc.season.rxjava2demo D/TAG: 1
-12-02 03:37:17.819 4166-4166/zlc.season.rxjava2demo D/TAG: 2
-12-02 03:37:17.819 4166-4166/zlc.season.rxjava2demo D/TAG: 3
-12-02 03:37:17.819 4166-4166/zlc.season.rxjava2demo D/TAG: complete
-</code></pre>
-<pre><code>注意: 只有当上游和下游建立连接之后, 上游才会开始发送事件. 也就是调用了subscribe() 方法之后才开始发送事件.
-</code></pre>
-<p>把这段代码连起来写就成了RxJava引以为傲的链式操作：</p>
-<pre><code>Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {
-            @Override
-            public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {
-                emitter.onNext(1);
-                emitter.onNext(2);
-                emitter.onNext(3);
-                emitter.onComplete();
-            }
-        }).subscribe(new Observer&lt;Integer&gt;() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                Log.d(TAG, &quot;subscribe&quot;);
-            }
-
-            @Override
-            public void onNext(Integer value) {
-                Log.d(TAG, &quot;&quot; + value);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.d(TAG, &quot;error&quot;);
-            }
-
-            @Override
-            public void onComplete() {
-                Log.d(TAG, &quot;complete&quot;);
-            }
-        });
-</code></pre>
-<p>接下来解释一下其中两个陌生的玩意：ObservableEmitter和Disposable.</p>
-<p>ObservableEmitter： Emitter是发射器的意思，那就很好猜了，这个就是用来发出事件的，它可以发出三种类型的事件，通过调用emitter的onNext(T value)、onComplete()和onError(Throwable error)就可以分别发出next事件、complete事件和error事件。</p>
-<p>但是，请注意，并不意味着你可以随意乱七八糟发射事件，需要满足一定的规则：</p>
-<ul>
-<li>
-<p>上游可以发送无限个onNext, 下游也可以接收无限个onNext.</p>
-</li>
-<li>
-<p>当上游发送了一个onComplete后, 上游onComplete之后的事件将会继续发送-, 而下游收到onComplete事件之后将不再继续接收事件.</p>
-</li>
-<li>
-<p>当上游发送了一个onError后, 上游onError之后的事件将继续发送, 而下游收到onError事件之后将不再继续接收事件.</p>
-</li>
-<li>
-<p>上游可以不发送onComplete或onError.</p>
-</li>
-<li>
-<p>最为关键的是onComplete和onError必须唯一并且互斥, 即不能发多个onComplete, 也不能发多个onError, 也不能先发一个onComplete, 然后再发一个onError, 反之亦然</p>
-<p>注: 关于onComplete和onError唯一并且互斥这一点, 是需要自行在代码中进行控制, 如果你的代码逻辑中违背了这个规则, **并不一定会导致程序崩溃. ** 比如发送多个onComplete是可以正常运行的, 依然是收到第一个onComplete就不再接收了, 但若是发送多个onError, 则收到第二个onError事件会导致程序会崩溃.</p>
-</li>
-</ul>
-<p>以上几个规则用示意图表示如下:</p>
-<p>只发送onNext事件</p>
-<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119184547.png" alt="" loading="lazy"></figure>
-<p>发送onComplete事件</p>
-<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119184606.png" alt="" loading="lazy"></figure>
-<p>发送onError事件</p>
-<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119184623.png" alt="" loading="lazy"></figure>
-<p>介绍了ObservableEmitter, 接下来介绍Disposable, 这个单词的字面意思是一次性用品,用完即可丢弃的. 那么在RxJava中怎么去理解它呢, 对应于上面的水管的例子, 我们可以把它理解成两根管道之间的一个机关, 当调用它的dispose()方法时, 它就会将两根管道切断, 从而导致下游收不到事件.</p>
-<pre><code>注意: 调用dispose()并不会导致上游不再继续发送事件, 上游会继续发送剩余的事件.
-</code></pre>
-<p>来看个例子, 我们让上游依次发送1,2,3,complete,4,在下游收到第二个事件之后, 切断水管, 看看运行结果:</p>
-<pre><code>        Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {
-            @Override
-            public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {
-                Log.d(TAG, &quot;emit 1&quot;);
-                emitter.onNext(1);
-                Log.d(TAG, &quot;emit 2&quot;);
-                emitter.onNext(2);
-                Log.d(TAG, &quot;emit 3&quot;);
-                emitter.onNext(3);
-                Log.d(TAG, &quot;emit complete&quot;);
-                emitter.onComplete();
-                Log.d(TAG, &quot;emit 4&quot;);
-                emitter.onNext(4);
-            }
-        }).subscribe(new Observer&lt;Integer&gt;() {
-            private Disposable mDisposable;
-            private int i;
-
-            @Override
-            public void onSubscribe(Disposable d) {
-                Log.d(TAG, &quot;subscribe&quot;);
-                mDisposable = d;
-            }
-
-            @Override
-            public void onNext(Integer value) {
-                Log.d(TAG, &quot;onNext: &quot; + value);
-                i++;
-                if (i == 2) {
-                    Log.d(TAG, &quot;dispose&quot;);
-                    mDisposable.dispose();
-                    Log.d(TAG, &quot;isDisposed : &quot; + mDisposable.isDisposed());
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.d(TAG, &quot;error&quot;);
-            }
-
-            @Override
-            public void onComplete() {
-                Log.d(TAG, &quot;complete&quot;);
-            }
-        });
-</code></pre>
-<p>运行结果为:</p>
-<pre><code>12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: subscribe
-12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit 1
-12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: onNext: 1
-12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit 2
-12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: onNext: 2
-12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: dispose
-12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: isDisposed : true
-12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit 3
-12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit complete
-12-02 06:54:07.728 7404-7404/zlc.season.rxjava2demo D/TAG: emit 4
-</code></pre>
-<p>从运行结果我们看到, 在收到onNext 2这个事件后, 切断了水管, 但是上游仍然发送了3, complete, 4这几个事件, 而且上游并没有因为发送了onComplete而停止. 同时可以看到下游的onSubscribe()方法是最先调用的.</p>
-<p>Disposable的用处不止这些, 后面讲解到了线程的调度之后, 我们会发现它的重要性. 随着后续深入的讲解, 我们会在更多的地方发现它的身影.</p>
-<p>另外, subscribe()有多个重载的方法:</p>
-<pre><code>    public final Disposable subscribe() {}
-    public final Disposable subscribe(Consumer&lt;? super T&gt; onNext) {}
-    public final Disposable subscribe(Consumer&lt;? super T&gt; onNext, Consumer&lt;? super Throwable&gt; onError) {} 
-    public final Disposable subscribe(Consumer&lt;? super T&gt; onNext, Consumer&lt;? super Throwable&gt; onError, Action onComplete) {}
-    public final Disposable subscribe(Consumer&lt;? super T&gt; onNext, Consumer&lt;? super Throwable&gt; onError, Action onComplete, Consumer&lt;? super Disposable&gt; onSubscribe) {}
-    public final void subscribe(Observer&lt;? super T&gt; observer) {}
-</code></pre>
-<p>最后一个带有Observer参数的我们已经使用过了,这里对其他几个方法进行说明.</p>
-<ul>
-<li>不带任何参数的subscribe() 表示下游不关心任何事件,你上游尽管发你的数据去吧, 老子可不管你发什么.</li>
-<li>带有一个Consumer参数的方法表示下游只关心onNext事件, 其他的事件我假装没看见, 因此我们如果只需要onNext事件可以这么写:</li>
-</ul>
-<pre><code>        Observable.create(new ObservableOnSubscribe&lt;Integer&gt;() {
-            @Override
-            public void subscribe(ObservableEmitter&lt;Integer&gt; emitter) throws Exception {
-                Log.d(TAG, &quot;emit 1&quot;);
-                emitter.onNext(1);
-                Log.d(TAG, &quot;emit 2&quot;);
-                emitter.onNext(2);
-                Log.d(TAG, &quot;emit 3&quot;);
-                emitter.onNext(3);
-                Log.d(TAG, &quot;emit complete&quot;);
-                emitter.onComplete();
-                Log.d(TAG, &quot;emit 4&quot;);
-                emitter.onNext(4);
-            }
-        }).subscribe(new Consumer&lt;Integer&gt;() {
-            @Override
-            public void accept(Integer integer) throws Exception {
-                Log.d(TAG, &quot;onNext: &quot; + integer);
-            }
-        });
-</code></pre>
-<ul>
-<li>其他几个方法同理, 这里就不一一解释了.</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[优化Gridea网站加载速度]]></title>
-        <id>https://fqzhanghao.github.io/post/you-hua-gridea-wang-zhan-jia-zai-su-du</id>
-        <link href="https://fqzhanghao.github.io/post/you-hua-gridea-wang-zhan-jia-zai-su-du">
-        </link>
-        <updated>2019-10-02T06:15:06.000Z</updated>
-        <summary type="html"><![CDATA[<p>我觉得一开始的加载速度实在是太慢了，一直在转圈圈。<br>
-打开网站，按F12，查看network选项卡，锁定了几个js脚本比较缓慢，一个sidebar图片比较缓慢。<br>
-so,开始替换。</p>
+        <updated>2020-01-19T12:35:59.000Z</updated>
+        <summary type="html"><![CDATA[<p>转自:<a href="http://zmywly8866.github.io/2015/03/03/auto-update-app-data.html?utm_source=tuicool&amp;utm_medium=referral">http://zmywly8866.github.io/2015/03/03/auto-update-app-data.html?utm_source=tuicool&amp;utm_medium=referral</a></p>
 ]]></summary>
-        <content type="html"><![CDATA[<p>我觉得一开始的加载速度实在是太慢了，一直在转圈圈。<br>
-打开网站，按F12，查看network选项卡，锁定了几个js脚本比较缓慢，一个sidebar图片比较缓慢。<br>
-so,开始替换。</p>
-<!-- more -->
-<h2 id="1替换jscss">1.替换js,css</h2>
-<p>搜索找到最快的js CDN托管。<a href="https://cdnjs.com/">cdnjs地址</a><br>
-找到Gridea的theme文件夹，我使用的SIMPLE，主要修改以下几处<br>
-your\path\Gridea\themes\simple\templates_blocks\head.ejs</p>
-<pre><code class="language-ejs">\\替换gittalk
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.5.0/gitalk.min.css&quot; /&gt;
-\\替换vue，highlight，aos
-&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js&quot;&gt;&lt;/script&gt;
-&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js&quot;&gt;&lt;/script&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css&quot; /&gt;
-</code></pre>
-<p>your\path\Gridea\themes\simple\templates_blocks\scripts.ejs</p>
-<pre><code class="language-ejs">\\替换aos
-&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js&quot;&gt;&lt;/script&gt;
-\\替换gittalk
-&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.5.0/gitalk.min.js&quot;&gt;&lt;/script&gt;
-</code></pre>
-<p>其实我这边没有开评论，也就无所谓了，如果你开了评论系统的话，最好还是替换以下</p>
-<p>##2.替换sidebar图片<br>
-从加载上来看，sidebar图片过大，我这边使用了tinypng进行了压缩处理<a href="https://tinypng.com/">tinypng地址</a>。从800K减小到了200K,能小一点是一点。其实最好换成纯色背景，这样会更快。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[兼职计划]]></title>
-        <id>https://fqzhanghao.github.io/post/kai-shi-jian-zhi-ji-hua</id>
-        <link href="https://fqzhanghao.github.io/post/kai-shi-jian-zhi-ji-hua">
-        </link>
-        <updated>2019-07-11T04:14:56.000Z</updated>
-        <content type="html"><![CDATA[<!-- more -->
-<p>我计划分以下几步</p>
-<p>一、社群</p>
-<p>1.创建QQ群：京东优惠券购物群<br>
-2.创建微信群：京东优惠券购物群<br>
-3.创建公众号：京东优惠券购物</p>
-<p>二、小程序</p>
-<p>求生之路图鉴，接入广告</p>
-<p>三、app</p>
-<p>mp3铃声剪辑，接入广告</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[V2Ray WebSocket实现外网访问]]></title>
-        <id>https://fqzhanghao.github.io/post/v2ray-websocket-shi-xian-wai-wang-fang-wen</id>
-        <link href="https://fqzhanghao.github.io/post/v2ray-websocket-shi-xian-wai-wang-fang-wen">
-        </link>
-        <updated>2019-06-07T06:41:17.000Z</updated>
-        <summary type="html"><![CDATA[<p>使用 V2Ray 的 WebSocket 传输协议 + Cloudflare 可以访问无法ping通的ip.简单说就是使用 V2Ray 的 WebSocket + TLS 传输协议，使用Cloudflare 中转。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>使用 V2Ray 的 WebSocket 传输协议 + Cloudflare 可以访问无法ping通的ip.简单说就是使用 V2Ray 的 WebSocket + TLS 传输协议，使用Cloudflare 中转。</p>
+        <content type="html"><![CDATA[<p>转自:<a href="http://zmywly8866.github.io/2015/03/03/auto-update-app-data.html?utm_source=tuicool&amp;utm_medium=referral">http://zmywly8866.github.io/2015/03/03/auto-update-app-data.html?utm_source=tuicool&amp;utm_medium=referral</a></p>
 <!--more-->
-<h3 id="准备工作">准备工作</h3>
-<p>去<a href="https://my.freenom.com">freenom</a>注册一个免费域名.</p>
-<p>去<a href="https://dash.cloudflare.com">cloudflare</a>注册一个账户</p>
-<h3 id="开始工作">开始工作</h3>
-<ol>
-<li>先去cloudflare的DNS配置页配置如下</li>
-</ol>
-<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607101504.png" alt="" loading="lazy"></figure>
-<p>加密选项配置如下</p>
-<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607101620.png" alt="" loading="lazy"></figure>
-<ol start="2">
-<li>去免费域名处,将第一步的DNS解析填入</li>
-</ol>
-<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607101750.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190607104552.png" alt="" loading="lazy"></figure>
-<p>3.完成以后,就可以去你的IDC服务商后台,使用webshell安装V2ray.配置成websocket+ssl模式.域名填写为准备工作的免费域名.自己搞太麻烦了,我这边用的是一键脚本.</p>
-<blockquote>
-<p>bash &lt;(curl -s -L https://233v2.com/v2ray.sh)</p>
-</blockquote>
-<p>这一步会自动配置v2ray参数,并生成ssl证书,如果自己搞的话,还需要在nginx里面配置,自己创建证书.(当然也可以用cloudflare的,免费15年,一劳永逸)</p>
-<p>4.再到cloudflare网站去,将dns选项中的灰色云朵,点黄即可.状态为DNS and HTTP proxy(CDN)</p>
-<h3 id="备注">备注</h3>
-<p>无限域名模式.万一上面的操作完成以后,还是有问题.可以在cloudflare使用如下配置.</p>
-<p>WebSocket 协议，80 端口，Cloudflare 的 Crypto 选项卡 SSL 为 Flexible</p>
+<h3 id="前言">前言</h3>
+<p>当我在使用音乐播放器和各种小说APP的过程中，感觉非常不好的一个体验就是你需要通过手动点击全盘检索后，新下载的数据、从磁盘拷贝的数据才会更新显示在列表上，这对于我们来说看上去没有什么不对，但从用户的角度出发这是一个非常不好的体验，因为多数人是根本不知道全盘检索这个概念的，手动更新APP的本地数据无形之中增加了用户使用APP的学习成本。</p>
+<p>我们之前做的小系统APP也是通过手动检索这种方式来刷新程序中的本地数据列表的，在接触到Android的媒体库后，发现这个问题能够通过观察者模式监听Android媒体数据库变化的方式来实现APP本地数据的自动更新，在成功实现这个功能后，现在将其总结下来方便后面查看。</p>
+<h3 id="android媒体库">Android媒体库</h3>
+<p>媒体库是什么？：在Android系统中，为了提高应用检索数据的效率，Android会将存储在文件系统中的文件信息保存在一个数据库文件中，这样在应用中就可以通过读取该数据库来快速查找满足APP需求的文件列表，比如一个电子书阅读APP，通过如下方法就可以获取到媒体库中存在的电子书文件列表，保存哪些格式的文件是可以通过修改Android原来来调整的，不过对于多媒体文件来说，Android原生系统默认就保存在媒体库中了：</p>
+<pre><code class="language-java">/**
+   * 从媒体库中获取指定后缀的文件列表
+   * 
+   * @param searchFileSuffix 文件后缀列表，eg: new String[]{&quot;epub&quot;,&quot;mobi&quot;,&quot;pdf&quot;,&quot;txt&quot;};
+   * @return 指定后缀的文件列表
+   * */
+  public static ArrayList&lt;String&gt; getSupportFileList(Context context, String[] searchFileSuffix) {
+    ArrayList&lt;String&gt; searchFileList = null;
+    if (null == context || null == searchFileSuffix
+        || searchFileSuffix.length == 0) {
+      return null;
+    }
+    String searchPath = &quot;&quot;;
+    int length = searchFileSuffix.length;
+    for (int index = 0; index &lt; length; index++) {
+      searchPath += (MediaStore.Files.FileColumns.DATA + &quot; LIKE '%&quot; + searchFileSuffix[index] + &quot;' &quot;);
+      if ((index + 1) &lt; length) {
+        searchPath += &quot;or &quot;;
+      }
+    }
+    searchFileList = new ArrayList&lt;String&gt;();
+    Uri uri = MediaStore.Files.getContentUri(&quot;external&quot;);
+    Cursor cursor = context.getContentResolver().query(
+        uri,new String[] { MediaStore.Files.FileColumns.DATA,MediaStore.Files.FileColumns.SIZE }, searchPath, null,null);
+    if (cursor == null) {
+      System.out.println(&quot;Cursor 获取失败!&quot;);
+    } else {
+      if (cursor.moveToFirst()) {
+        do {
+          String filepath = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
+          if (isFileExist(filepath)) {
+            try {
+              searchFileList.add(new String(filepath.getBytes(&quot;UTF-8&quot;)));
+            } catch (UnsupportedEncodingException e) {
+              e.printStackTrace();
+            }
+          }
+        } while (cursor.moveToNext());
+      }
+      if (!cursor.isClosed()) {
+        cursor.close();
+      }
+    }
+    return searchFileList;
+  }
+  /**
+   * 判断SD卡上的文件夹是否存在
+   * 
+   * @param fileName 文件名
+   * @return true 文件存在，false 文件不存在
+   */
+  private static boolean isFileExist(String filePath) {
+    File file = null;
+    boolean isExist = false;
+    if (null != filePath) {
+      file = new File(filePath);
+      isExist = (null != file &amp;&amp; file.isFile()) ? file.exists() : false;
+      if (isExist &amp;&amp; null != file &amp;&amp; 0 == file.length()) {
+        isExist = false;
+      }
+    }
+    return isExist;
+  }
+</code></pre>
+<p>媒体库更新时机：Android系统会在系统开机、USB插拔、TF卡插拔的时候自动更新媒体库（将新增的文件添加到媒体库中，移除不存在的文件数据记录），除了Android系统会自动更新媒体库文件外，开发者也可以在程序中手动更新媒体库，这样能够在文件系统中有新的文件或者通过程序删掉某些文件时能够将动态及时更新到媒体库，保证媒体库中的文件信息是实时的，更新的具体方式如下：</p>
+<pre><code class="language-java">context.sendBroadcast( new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse( &quot;file://&quot; + filePath ) ) );
+</code></pre>
+<p>注：上面介绍是的更新单个文件的方式，Android没有提供直接更新整个文件夹的方式，如果是整个文件夹，可以先得到文件夹下的所有文件路径列表，然后挨个更新，对于这个如果有更先进的方法欢迎提出。</p>
+<h3 id="app本地数据自动更新的具体实现">APP本地数据自动更新的具体实现</h3>
+<p>类似于上述的音视频播放器、小说阅读APP，如果我们需要实现本地数据APP自动更新的功能，只要保持APP支持文件列表的数据库和媒体库中的对应格式的文件同步就可以了，所以我们需要做的是：监听媒体库中文件列表的变化，然后将变化告知APP即可，原理是：</p>
+<ul>
+<li>通过广播监听USB插拔、TF卡插拔，如果检查到在APP运行过程中有这些操作，直接通过APP全盘检索；</li>
+<li>通过观察者模式监听媒体库中的文件变化，如果有变化，每隔五秒钟将APP现存列表和媒体库中检索到对应格式的文件列表做比较，如果列表有变化，则将变化的列表更新给APP；</li>
+<li>在APP进入、退出时注册/反注册广播、打开/关闭计时器。</li>
+</ul>
+<p>整个代码非常简单，一个类搞定，具体代码如下：</p>
+<pre><code class="language-java">import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Timer;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.provider.MediaStore;
+/**
+ * 自动更新书架
+ * 
+ * */
+public class AutoRefreshBookShelf {
+  public AutoRefreshBookShelf( Context context, AutoRefreshListener autoRefreshListener, String[] supportSuffix ) throws NullPointerException{
+    if( null == context || null == autoRefreshListener || null == supportSuffix ){
+      throw new NullPointerException( &quot;传非空的参数进来！&quot; );
+    }
+    mContext = context;
+    mAutoRefreshListener = autoRefreshListener;
+    mSupportSuffix = supportSuffix;
+    initAutoRefreshBookShelf( );
+  }
+  // 不在本界面停止后台检索
+  public void onPause( ){
+    stopCheckFileTimer( );
+  }
+  // 返回界面恢复后台检索
+  public void onResume( ){
+    startCheckFileTimer( );
+  }
+  /**
+   * 注销广播
+   * 
+   * */
+  public void unregisterAutoRefreshBookShelf( ) throws NullPointerException{
+    if( null == mBroadcastReceiver || null == mMediaStoreChangeObserver || null == mContext ){
+      throw new NullPointerException( &quot;没有初始化&quot; );
+    }
+    mContext.unregisterReceiver( mBroadcastReceiver );
+    mContext.getContentResolver( ).unregisterContentObserver( mMediaStoreChangeObserver );
+    stopCheckFileTimer( );
+  }
+  /**
+   * 得到变化的文件列表
+   * 
+   * */
+  public void getChangedFileList( ){
+    System.out.println( &quot;toast ================= getChangedFileList &quot; );
+    startCheckFileTimer( );
+  }
+  private void initAutoRefreshBookShelf( ){
+    startMediaFileListener( );
+    observerMediaStoreChange( );
+  }
+  private void observerMediaStoreChange( ){
+    if( null == mMediaStoreChangeObserver ){
+      mMediaStoreChangeObserver = new MediaStoreChangeObserver( );
+    }
+    mContext.getContentResolver( ).registerContentObserver( MediaStore.Files.getContentUri(&quot;external&quot;), false, mMediaStoreChangeObserver );
+  }
+  /**
+   * 监听USB的状态，更新书架书本信息
+   * 
+   * */
+  private void startMediaFileListener( ){
+    if( null != mBroadcastReceiver ){
+      return;
+    }
+    IntentFilter intentFilter = new IntentFilter( );
+    intentFilter.addAction( Intent.ACTION_MEDIA_SCANNER_FINISHED );
+    intentFilter.addAction( Intent.ACTION_MEDIA_MOUNTED );
+    intentFilter.addAction( Intent.ACTION_MEDIA_EJECT );
+    intentFilter.addDataScheme( &quot;file&quot; );
+    mBroadcastReceiver = new BroadcastReceiver(){
+      @Override
+      public void onReceive(Context context,Intent intent){
+        String action = intent.getAction( );
+        if( Intent.ACTION_MEDIA_SCANNER_FINISHED.equals( action ) ){
+          System.out.println( &quot;toast ================= ACTION_MEDIA_SCANNER_FINISHED &quot; );
+          mTimerWorking = false;
+          startCheckFileTimer( );
+        }else if( action.equals( Intent.ACTION_MEDIA_MOUNTED ) ){
+          System.out.println( &quot;toast ================= ACTION_MEDIA_MOUNTED or ACTION_MEDIA_EJECT &quot; );
+          mTimerWorking = true;
+          mAutoRefreshListener.onBookScan( );
+        }else if( action.equals( Intent.ACTION_MEDIA_EJECT ) ){
+          mAutoRefreshListener.onBookScan( );
+        }
+      }
+    };
+    mContext.registerReceiver( mBroadcastReceiver, intentFilter );//注册监听函数
+  }
+  /**
+   * 媒体数据库变更观察类
+   * 
+   * */
+  class MediaStoreChangeObserver extends ContentObserver{
+    public MediaStoreChangeObserver( ) {
+      super( new Handler( ) );
+    }
+    @Override
+    public void onChange(boolean selfChange) {
+      super.onChange(selfChange);
+      startCheckFileTimer( );
+    }
+  }
+  private void startCheckFileTimer( ){
+    if( mTimerWorking ){
+      return;
+    }
+    mCheckFileTimer = new Timer( );
+    mCheckFileTimer.schedule( new CheckFileChangeTimerTask( ), 5000 );
+    mTimerWorking = true;
+  }
+  private void stopCheckFileTimer( ){
+    if( null != mCheckFileTimer ){
+      mCheckFileTimer.cancel( );
+      mCheckFileTimer = null;
+      mTimerWorking = false;
+    }
+  }
+  /**
+   * 得到新增的文件列表
+   * 
+   * */
+  public ArrayList&lt;String&gt; getChangedFileList( Context context, String[] searchFileSuffix, ArrayList&lt;String&gt; existFileList ){
+    ArrayList&lt;String&gt; changedFileList = null;
+    if( null == context || null == searchFileSuffix ){
+      return changedFileList;
+    }
+    ArrayList&lt;String&gt; supportFileList = getSupportFileList( context, searchFileSuffix );
+    changedFileList = getDifferentFileList( supportFileList, existFileList );
+    if( null == changedFileList || changedFileList.size( ) == 0 ){
+      changedFileList = null;
+    }
+    return changedFileList;
+  }
+  /**
+   * 获取新增的文件列表
+   * 
+   * */
+  private ArrayList&lt;String&gt; getDifferentFileList( ArrayList&lt;String&gt; newFileList, ArrayList&lt;String&gt; existFileList ){
+    ArrayList&lt;String&gt; differentFileList = null;
+    if( null == newFileList || newFileList.size( ) == 0 ){
+      return differentFileList;
+    }
+    differentFileList = new ArrayList&lt;String&gt;( );
+    boolean isExist = false;
+    if( null == existFileList ){
+      // 如果已存在文件为空，那肯定是全部加进来啦。
+      for( String newFilePath : newFileList ){
+        differentFileList.add( newFilePath );
+      }
+    }else{
+      for( String newFilePath : newFileList ){
+        isExist = false;
+        for( String existFilePath : existFileList ){
+          if( existFilePath.equals( newFilePath ) ){
+            isExist = true;
+            break;
+          }
+        }
+        if( !isExist ){
+          differentFileList.add( newFilePath );
+        }
+      }
+    }
+    return differentFileList;
+  }
+  /**
+   * 从媒体库中获取指定后缀的文件列表
+   * 
+   * */
+  public ArrayList&lt;String&gt; getSupportFileList( Context context, String[] searchFileSuffix ) {
+    ArrayList&lt;String&gt; searchFileList = null;
+    if( null == context || null == searchFileSuffix || searchFileSuffix.length == 0 ){
+      return null;
+    }
+    String searchPath = &quot;&quot;;
+    int length = searchFileSuffix.length;
+    for( int index = 0; index &lt; length; index++ ){
+      searchPath += ( MediaStore.Files.FileColumns.DATA + &quot; LIKE '%&quot; + searchFileSuffix[ index ] + &quot;' &quot; );
+      if( ( index + 1 ) &lt; length ){
+        searchPath += &quot;or &quot;;
+      }
+    }
+    searchFileList = new ArrayList&lt;String&gt;();
+    Uri uri = MediaStore.Files.getContentUri(&quot;external&quot;);
+    Cursor cursor = context.getContentResolver().query(
+        uri, new String[] { MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns._ID },
+        searchPath, null, null);
+    String filepath = null;
+    if (cursor == null) {
+      System.out.println(&quot;Cursor 获取失败!&quot;);
+    } else {
+      if (cursor.moveToFirst()) {
+        do {
+          filepath = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
+          try {
+            searchFileList.add(new String(filepath.getBytes(&quot;UTF-8&quot;)));
+          } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+          }
+        } while (cursor.moveToNext());
+      }
+      if (!cursor.isClosed()) {
+        cursor.close();
+      }
+    }
+    return searchFileList;
+  }
+  /**
+   * 得到媒体库更新的文件
+   * 
+   * */
+  class GetMediaStoreDataTask extends AsyncTask&lt; Void , Void , Void&gt;{
+    @Override
+    protected Void doInBackground(Void... arg0) {
+      ArrayList&lt;String&gt; changedFileList = getChangedFileList( mContext, mSupportSuffix, mAutoRefreshListener.onGetBookPathList( ) );
+      if( null != changedFileList &amp;&amp; changedFileList.size( ) &gt; 0 ){
+        mAutoRefreshListener.onBookRefresh( changedFileList );
+      }
+      mTimerWorking = false;
+      return null;
+    }
+  }
+  class CheckFileChangeTimerTask extends java.util.TimerTask{
+    @Override
+    public void run() {
+      new GetMediaStoreDataTask( ).execute( );
+    }
+  }
+  /**
+   * 书架自动刷新接口
+   * 
+   * */
+  public interface AutoRefreshListener{
+    public ArrayList&lt;String&gt; onGetBookPathList( ); // 得到书架书本列表
+    public void onBookRefresh( ArrayList&lt;String&gt; bookInfoList );// 刷新书架
+    public void onBookScan( );//全盘扫描书架
+  }
+  private boolean mTimerWorking = false;
+  private Context mContext = null;
+  private String[] mSupportSuffix = null;
+  private BroadcastReceiver mBroadcastReceiver = null;
+  private MediaStoreChangeObserver mMediaStoreChangeObserver = null;
+  private AutoRefreshListener mAutoRefreshListener = null;
+  private Timer mCheckFileTimer = null;
+}
+
+</code></pre>
+<p>注意：建议该功能只在APP运行时开启，因为现实的文件列表只有你真正在使用APP时才会去查看，所以没有必要通过这种方式在后台操作。</p>
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[服务器搭建aira2和webui]]></title>
-        <id>https://fqzhanghao.github.io/post/fu-wu-qi-da-jian-aira2-he-webui</id>
-        <link href="https://fqzhanghao.github.io/post/fu-wu-qi-da-jian-aira2-he-webui">
+        <title type="html"><![CDATA[获取未安装资源apk种的资源文件]]></title>
+        <id>https://fqzhanghao.github.io/post/huo-qu-wei-an-zhuang-zi-yuan-apk-chong-de-zi-yuan-wen-jian</id>
+        <link href="https://fqzhanghao.github.io/post/huo-qu-wei-an-zhuang-zi-yuan-apk-chong-de-zi-yuan-wen-jian">
         </link>
-        <updated>2019-05-23T06:47:31.000Z</updated>
-        <summary type="html"><![CDATA[<p>新买的服务器安装下载服务器</p>
+        <updated>2020-01-19T12:35:11.000Z</updated>
+        <summary type="html"><![CDATA[<p>最近做游戏联运的sdk插件，里面涉及到了游戏的登录、应用内支付等功能，故而界面的布局是少不了的。首先，想到的是xml布局，但是，作为第三方的sdk插件，作为jar包需要加到第三方的libs中，xml界面布局是不被打包到jar包中的。虽然，xml布局文件可以通过反射获取到，但是，这对第三方的要求是所有文件必须放的位置正确，不得出现疏忽。为此，想到，如果把所有的资源文件全部放到一个apk中，然后去加载这个apk的资源，那问题岂不是都解决了？带着这个想法，一步一步来实现这个功能。</p>
 ]]></summary>
-        <content type="html"><![CDATA[<p>新买的服务器安装下载服务器</p>
-<!-- more-->
-<h3 id="基础软件的安装">基础软件的安装</h3>
-<p>在下载Aria2之前先安装一些基础必备的软件：git、screen、nodejs</p>
-<blockquote>
-<p>sudo apt-get install git screen nodejs</p>
-</blockquote>
-<p>如果有些软件已经安装过了就不用再安装</p>
-<h3 id="在命令行中安装aria2">在命令行中安装aria2</h3>
-<p>在Ubuntu 18.04操作系统命令行中运行以下命令：</p>
-<blockquote>
-<p>sudo apt-get install aria2</p>
-</blockquote>
-<p>以下是安装aria2后的一些基本常识：</p>
-<pre><code>sudo mkdir /etc/aria2　#新建文件夹 
-
-sudo touch /etc/aria2/aria2.session　#新建session文件
-
-sudo chmod 777 /etc/aria2/aria2.session　#设置aria2.session可写 
-
-sudo vi /etc/aria2/aria2.conf　#创建配置文件
+        <content type="html"><![CDATA[<p>最近做游戏联运的sdk插件，里面涉及到了游戏的登录、应用内支付等功能，故而界面的布局是少不了的。首先，想到的是xml布局，但是，作为第三方的sdk插件，作为jar包需要加到第三方的libs中，xml界面布局是不被打包到jar包中的。虽然，xml布局文件可以通过反射获取到，但是，这对第三方的要求是所有文件必须放的位置正确，不得出现疏忽。为此，想到，如果把所有的资源文件全部放到一个apk中，然后去加载这个apk的资源，那问题岂不是都解决了？带着这个想法，一步一步来实现这个功能。</p>
+<!--more-->
+<p>众所周知，apk中的资源文件基本上全部放到res目录下面，所以，怎么获取到资源apk的res实体是首要目标。以下代码就是获取资源apk中的Resource：</p>
+<pre><code class="language-java">package com.tabolt.reflect;  
+  
+import java.io.File;  
+import java.lang.reflect.Constructor;  
+import java.lang.reflect.Field;  
+import java.lang.reflect.Method;  
+import android.content.Context;  
+import android.content.res.Resources;  
+import android.util.DisplayMetrics;  
+  
+public class GetOtherApkRes {  
+    /** 
+     *获取指定路径apk的resources 
+     *@param context 上下文 
+     *@param apkPath apk绝对路径  
+     */  
+    public static Resources getResources(Context context, String apkPath) {  
+        File file = new File(apkPath);  
+        String PATH_PackageParser = &quot;android.content.pm.PackageParser&quot;;  
+        String PATH_AssetManager = &quot;android.content.res.AssetManager&quot;;  
+        try {  
+            // 反射得到pkgParserCls对象并实例化,有参数  
+            Class&lt;?&gt; pkgParserCls = Class.forName(PATH_PackageParser);  
+            Class&lt;?&gt;[] typeArgs = { String.class };  
+            Constructor&lt;?&gt; pkgParserCt = pkgParserCls.getConstructor(typeArgs);  
+            Object[] valueArgs = { file.getAbsolutePath() };  
+            Object pkgParser = pkgParserCt.newInstance(valueArgs);  
+  
+            // 从pkgParserCls类得到parsePackage方法  
+            DisplayMetrics metrics = new DisplayMetrics();  
+            metrics.setToDefaults();// 这个是与显示有关的, 这边使用默认  
+            typeArgs = new Class&lt;?&gt;[] { File.class, String.class,DisplayMetrics.class, int.class };  
+            Method pkgParser_parsePackageMtd = pkgParserCls.getDeclaredMethod(&quot;parsePackage&quot;, typeArgs);  
+            valueArgs = new Object[] { file, file.getAbsolutePath(), metrics, 0 };  
+  
+            // 执行pkgParser_parsePackageMtd方法并返回  
+            Object pkgParserPkg = pkgParser_parsePackageMtd.invoke(pkgParser,valueArgs);  
+  
+            // 从返回的对象得到名为&quot;applicationInfo&quot;的字段对象  
+            if (pkgParserPkg == null) {  
+                return null;  
+            }  
+            Field appInfoFld = pkgParserPkg.getClass().getDeclaredField(&quot;applicationInfo&quot;);  
+  
+            // 从对象&quot;pkgParserPkg&quot;得到字段&quot;appInfoFld&quot;的值  
+            if (appInfoFld.get(pkgParserPkg) == null) {  
+                return null;  
+            }  
+            // 反射得到assetMagCls对象并实例化,无参  
+            Class&lt;?&gt; assetMagCls = Class.forName(PATH_AssetManager);  
+            Object assetMag = assetMagCls.newInstance();  
+            // 从assetMagCls类得到addAssetPath方法  
+            typeArgs = new Class[1];  
+            typeArgs[0] = String.class;  
+            Method assetMag_addAssetPathMtd = assetMagCls.getDeclaredMethod(&quot;addAssetPath&quot;, typeArgs);  
+            valueArgs = new Object[1];  
+            valueArgs[0] = file.getAbsolutePath();  
+            // 执行assetMag_addAssetPathMtd方法  
+            assetMag_addAssetPathMtd.invoke(assetMag, valueArgs);  
+            // 得到Resources对象并实例化,有参数  
+            Resources res = context.getResources();  
+            typeArgs = new Class[3];  
+            typeArgs[0] = assetMag.getClass();  
+            typeArgs[1] = res.getDisplayMetrics().getClass();  
+            typeArgs[2] = res.getConfiguration().getClass();  
+            Constructor&lt;Resources&gt; resCt = Resources.class.getConstructor(typeArgs);  
+            valueArgs = new Object[3];  
+            valueArgs[0] = assetMag;  
+            valueArgs[1] = res.getDisplayMetrics();  
+            valueArgs[2] = res.getConfiguration();  
+            res = (Resources) resCt.newInstance(valueArgs);  
+            return res;  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+        }  
+        return null;  
+    }  
+}  
 </code></pre>
-<h3 id="aria2conf文件配置">aria2.conf文件配置</h3>
-<pre><code>dir=/home/ye/download
-
-disable-ipv6=true
-
-#打开rpc的目的是为了给web管理端用
-
-enable-rpc=true
-
-rpc-allow-origin-all=true
-
-rpc-listen-all=true
-
-#rpc-listen-port=6800
-
-#断点续传
-
-continue=true
-
-input-file=/etc/aria2/aria2.session
-
-save-session=/etc/aria2/aria2.session
-
-#最大同时下载任务数
-
-max-concurrent-downloads=20
-
-save-session-interval=120
-
-# Http/FTP 相关
-
-connect-timeout=120
-
-#lowest-speed-limit=10K
-
-#同服务器连接数
-
-max-connection-per-server=10
-
-#max-file-not-found=2
-
-#最小文件分片大小, 下载线程数上限取决于能分出多少片, 对于小文件重要
-
-min-split-size=10M
-
-#单文件最大线程数, 路由建议值: 5
-
-split=10
-
-check-certificate=false
-
-#http-no-cache=true
+<p>ok，上面的代码已经获取到了资源apk里面的Resource，然后接下来就是获取你要得到的资源了。<br>
+第一步：Resource中有个方法是getIdentifie，三个参数分别是 资源名，资源类型，资源apk包名，通过此方法可以获取到资源的id号。<br>
+第二步：上一步获取到资源id号之后，接下来就是要得到实质性的资源了。对于简单类型的资源，如：</p>
+<p>(1)图片资源，可以获取到Drawable类型的图片</p>
+<pre><code class="language-java">public Drawable getResApkDrawable(int id) {  
+	return res.getDrawable(id);
+} 
 </code></pre>
-<h3 id="下载aria2webui">下载Aria2WebUI</h3>
-<p>首先切换到用户目录下</p>
-<blockquote>
-<p>cd /home/ye</p>
-</blockquote>
-<p>同样也是一行命令：</p>
-<blockquote>
-<p>git clone https://github.com/ziahamza/webui-aria2.git</p>
-</blockquote>
-<p>下载完之后会在当前目录下创建一个webui-aria2目录。</p>
-<h3 id="设置aria2监听rpc启动webui">设置Aria2监听rpc，启动WebUI</h3>
-<blockquote>
-<p>screen -S aria2</p>
-</blockquote>
-<p>新建一个名为aria2的会话</p>
-<p><strong>注意那个S是大写！S是大写！S是大写！</strong></p>
-<p>在新的会话中输入：</p>
-<pre><code class="language-undefined">aria2c --conf-path=/etc/aria2/aria2.conf --enable-rpc --rpc-listen-all --rpc-secret xxxxxxx
+<p>(2)String类型资源，获取String文件夹中的字符串</p>
+<pre><code class="language-java">public String getResApkString(int id) {  
+    return res.getString(id)  
+}  
 </code></pre>
-<p>注意：参数–rpc-secret 后面的字符串是自己自定义的token密码，要记住！要记住！要记住！</p>
-<p>执行后会显示：</p>
-<pre><code class="language-undefined">root@ubuntu:~# aria2c --conf-path=/etc/aria2/aria2.conf --enable-rpc --rpc-listen-all --rpc-secret xxxxxxx
-
-08/01 15:42:28 [NOTICE] IPv4 RPC: listening on TCP port 6800
-
-08/01 15:42:28 [NOTICE] IPv6 RPC: listening on TCP port 6800root@ubuntu:~# aria2c --enable-rpc --rpc-listen-all --rpc-secret asdfghjkl
-
-08/01 15:42:28 [NOTICE] IPv4 RPC: listening on TCP port 6800
-
-08/01 15:42:28 [NOTICE] IPv6 RPC: listening on TCP port 6800
-</code></pre>
-<p>记住port后面的端口号“6800”</p>
-<p>然后依次按下键盘的ctrl、A、D 这三个键，回到前一个会话，输入</p>
-<pre><code class="language-undefined">screen -S webui
-</code></pre>
-<p>新建一个名为webui的会话</p>
-<p>在新的会话中，先跳转到上面说的webui-aria2目录中，再输入启动命令</p>
-<pre><code>cd /home/ye/webui-aria2
-node node-server.js
-</code></pre>
-<p>显示如下:</p>
-<pre><code class="language-undefined">root@ubuntu:~/webui-aria2# node node-server.js
-WebUI Aria2 Server is running on http://localhost:8888
-</code></pre>
-<p>出现<code>WebUI Aria2 Server is running on http://localhost:8888</code>说明WebUI已经启动成功，访问 http://YourIP:8888 即可进入Web界面</p>
-<p>还是依次按下键盘的ctrl、A、D 这三个键，回到前一个会话，如果是用ssh客户端（如Putty）登陆的会话，这个时候就可以关闭这个会话了。</p>
-<h3 id="进入webui界面通过rpc接口连接aria2">进入WebUI界面，通过rpc接口连接Aria2</h3>
-<p>如果你是在有公网ip的vps上搭建的，访问“公网ip:8888/”就行了。</p>
-<p>进入WebUI界面后可能会提示</p>
-<pre><code class="language-undefined">糟糕！ 连接到 Aria2 RPC 服务器时认证失败，将在10秒后重试。
-您可能需要确认您的身份验证信息，请前往 设置 &gt; 连接设置
-</code></pre>
-<p>这个时候在设置&gt;连接设置里设置一下RPC服务</p>
-<p>主机后面填写Aria2服务所在的主机的ip，端口就是第四步中启动Aria2 监听RPC的端口6800，密码令牌就是参数**–rpc-secret 后面的字符串，**第四步中让你记住的那个。这三个填完点最下面的“保存连接配置”即可。只要配置填对了就能连接到Aria2了</p>
-<p>教程到此结束了,其余的设置可参考下面的链接,里面有具体的用法和具体含义</p>
-<h3 id="参考链接">参考链接:</h3>
-<p><a href="https://blog.sunriseydy.top/technology/server-blog/server/zaiubuntushangyongaria2hearia2webuishixianyuanchengduoxianchengxiazai/">ubuntu上安装aria2及webui</a></p>
-<p><a href="https://ywnz.com/linuxjc/2686.html">在Ubuntu 18.04系统下安装配置和使用aria2</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[服务器搭建ftp]]></title>
-        <id>https://fqzhanghao.github.io/post/fu-wu-qi-da-jian-ftp</id>
-        <link href="https://fqzhanghao.github.io/post/fu-wu-qi-da-jian-ftp">
-        </link>
-        <updated>2019-05-23T06:47:03.000Z</updated>
-        <summary type="html"><![CDATA[<p>新买的服务器安装ftp服务器</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>新买的服务器安装ftp服务器</p>
-<!-- more-->
-<p>1、使用命令安装</p>
-<blockquote>
-<p>sudo apt install vsftpd</p>
-</blockquote>
-<p>2、为FTP添加用户</p>
-<blockquote>
-<p>sudo useradd -m ye</p>
-</blockquote>
-<p>3、为ye用户设置密码</p>
-<blockquote>
-<p>sudo passwd ye</p>
-</blockquote>
-<p>4、在/home/ye/目录中创建一个download目录用于作为ftp的根目录</p>
-<blockquote>
-<p>cd /home/ye</p>
-<p>mkdir download</p>
-</blockquote>
-<p>5、使用 sudo vim /etc/vsftpd.conf编辑配置文件，用于配置目录信息</p>
-<pre><code>local_root=/home/sunftp/ftpdir
-allow_writeable_chroot=YES
-chroot_local_user=YES
-</code></pre>
-<p>6、其他选择默认，保存退出，然后启动</p>
-<blockquote>
-<p>sudo service vsftpd start</p>
-</blockquote>
-<p>备注:</p>
-<ol>
-<li>
-<p><a href="https://blog.csdn.net/liwb94/article/details/80090082">vsftpd参数参考</a></p>
-</li>
-<li>
-<p>第五步中的配置: 如果不进行参数配置也是可以的.用户的根目录为/home/ye.即当前登录用户的根目录.对于我们来说够用了,不用配置太多</p>
-</li>
-</ol>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[服务器搭建http服务]]></title>
-        <id>https://fqzhanghao.github.io/post/fu-wu-qi-da-jian-http-fu-wu</id>
-        <link href="https://fqzhanghao.github.io/post/fu-wu-qi-da-jian-http-fu-wu">
-        </link>
-        <updated>2019-05-23T06:46:34.000Z</updated>
-        <summary type="html"><![CDATA[<p>新买的服务器安装http服务器</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>新买的服务器安装http服务器</p>
-<!-- more-->
-<p>首先安装Apache</p>
-<blockquote>
-<p>sudo apt-get install apache2</p>
-</blockquote>
-<p>Apache2的默认访问端口为80，当端口被占用时需要更改其访问端口</p>
-<p>进入apache2的安装目录  /etc/apache2/，修改器ports.conf文件</p>
-<pre><code># If you just change the port or add more ports here, you will likely also
-# have to change the VirtualHost statement in
-# /etc/apache2/sites-enabled/000-default.conf
-
-#Listen 80
-Listen 8001
-
-&lt;IfModule ssl_module&gt;
-        Listen 443
-&lt;/IfModule&gt;
-
-&lt;IfModule mod_gnutls.c&gt;
-        Listen 443
-&lt;/IfModule&gt;
-
-# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
-</code></pre>
-<p>进入 目录 /etc/apache2/sites-available， 修改000-default.conf文件</p>
-<pre><code>#&lt;VirtualHost *:80&gt;
-&lt;VirtualHost *:8001&gt;
-        # The ServerName directive sets the request scheme, hostname and port that
-        # the server uses to identify itself. This is used when creating
-        # redirection URLs. In the context of virtual hosts, the ServerName
-        # specifies what hostname must appear in the request's Host: header to
-        # match this virtual host. For the default virtual host (this file) this
-        # value is not decisive as it is used as a last resort host regardless.
-        # However, you must set it for any further virtual host explicitly.
-        #ServerName www.example.com
-
-        ServerAdmin webmaster@localhost
-        DocumentRoot /var/www/html
-
-        # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
-        # error, crit, alert, emerg.
-        # It is also possible to configure the loglevel for particular
-        # modules, e.g.
-        #LogLevel info ssl:warn
-
-        ErrorLog ${APACHE_LOG_DIR}/error.log
-        CustomLog ${APACHE_LOG_DIR}/access.log combined
-
-        # For most configuration files from conf-available/, which are
-        # enabled or disabled at a global level, it is possible to
-        # include a line for only one particular virtual host. For example the
-        # following line enables the CGI configuration for this host only
-        # after it has been globally disabled with &quot;a2disconf&quot;.
-        #Include conf-available/serve-cgi-bin.conf
-&lt;/VirtualHost&gt;
-
-# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
-</code></pre>
-<p>然后重启apache服务器</p>
-<blockquote>
-<p>sudo /etc/init.d/apache2 restart</p>
-</blockquote>
-<p>apache服务器的默认目录在/var/www/html，如果想利用http服务器下载文件，需要删除其index.html文件，然后把文件放在该目录即可.</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[服务器端搭建ss]]></title>
-        <id>https://fqzhanghao.github.io/post/fu-wu-qi-duan-da-jian-ss</id>
-        <link href="https://fqzhanghao.github.io/post/fu-wu-qi-duan-da-jian-ss">
-        </link>
-        <updated>2019-05-23T06:43:53.000Z</updated>
-        <summary type="html"><![CDATA[<p>新买的服务器安装ss</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>新买的服务器安装ss</p>
-<!-- more-->
-<h2 id="安装ss">安装ss</h2>
-<blockquote>
-<p>sudo apt install python3-pip</p>
-<p>pip3 install shadowsocks</p>
-</blockquote>
-<h2 id="启动">启动</h2>
-<p>2.1直接启动</p>
-<blockquote>
-<p>ssserver -p 8388 -k password -m rc4-md5 -d start</p>
-</blockquote>
-<p>2.2配置文件启动</p>
-<p>新建/etc/shadowsocks.json文件并写入</p>
-<pre><code>{
-    &quot;server&quot;:&quot;xxxxxx&quot;,
-    &quot;server_port&quot;:xxxx,
-    &quot;local_address&quot;:&quot;127.0.0.1&quot;,
-    &quot;local_port&quot;:1080,
-    &quot;password&quot;:&quot;xxxxx&quot;,
-    &quot;timeout&quot;:300,
-    &quot;method&quot;:&quot;rc4-md5&quot;
+<p>对于color，dimens文件中的资源，获取方式与以上两种相同，再次不在赘述。<br>
+(3.1) layout布局资源的获取，要想获取layout资源，我采用的是根据id先获取XmlPullParser，然后再调用LayoutInflater的inflate方法获取layout资源，视图view。</p>
+<pre><code class="language-java">public View getResApkLayoutView(Context context, int id) {  
+    LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);  
+    return inflater.inflate(res.getLayout(id), null);  
 }
 </code></pre>
-<p>使用命令启动</p>
-<blockquote>
-<p>ssserver -c /etc/shadowsocks.json -d start</p>
-</blockquote>
-<h2 id="开机自启动">开机自启动</h2>
-<p>新建 /etc/ss.conf并写入：</p>
-<pre><code>[program:shadowsocks]
-command=ssserver -c /etc/shadowsocks.json
-autostart=true
-autorestart=true
-user=root
-log_stderr=true
-logfile=/var/log/shadowsocks.log
+<p>(3.2) 上一步获取到layout布局，然后就是要获取到layout中控件的实体view了，很简单，</p>
+<pre><code class="language-java">public View getResApkWidgetView(View layout, int id) {  
+    return layout.findViewById(id);  
+}
 </code></pre>
-<p>打开/etc/rc.local并添加一行：</p>
-<blockquote>
-<p>service ss start</p>
-</blockquote>
-<h2 id="备注">备注</h2>
-<p>启动ss出现undefined symbol: EVP_CIPHER_CTX_cleanup错误。</p>
-<p>修改方法：</p>
+<p>(4) anim动画资源的获取，res中没有方法可以直接获取到Animation，只有方法getAnimation获取到XmlPullParser，查询AnimationUtils的loadAnimation方法，发现加载Animation的最后一步是方法createAnimationFromXml，此方法的源码是：</p>
+<pre><code class="language-java">private Animation createAnimationFromXml(Context c, XmlPullParser parser,AnimationSet parent,AttributeSet attrs)                                 throws XmlPullParserException, IOException {  
+  
+    Animation anim = null;  
+    int type;  
+    int depth = parser.getDepth();  
+    while (((type = parser.next()) != XmlPullParser.END_TAG || parser.getDepth() &gt; depth) &amp;&amp; 
+						type != XmlPullParser.END_DOCUMENT) {  
+        if (type != XmlPullParser.START_TAG) {  
+            continue;  
+        }  
+        String name = parser.getName();  
+        if (name.equals(&quot;set&quot;)) {  
+            anim = new AnimationSet(c, attrs);  
+            createAnimationFromXml(c, parser, (AnimationSet) anim, attrs);  
+        } else if (name.equals(&quot;alpha&quot;)) {  
+            anim = new AlphaAnimation(c, attrs);  
+        } else if (name.equals(&quot;scale&quot;)) {  
+            anim = new ScaleAnimation(c, attrs);  
+        } else if (name.equals(&quot;rotate&quot;)) {  
+            anim = new RotateAnimation(c, attrs);  
+        } else if (name.equals(&quot;translate&quot;)) {  
+            anim = new TranslateAnimation(c, attrs);  
+        } else {  
+            throw new RuntimeException(&quot;Unknown animation name: &quot;+ parser.getName());  
+        }  
+        if (parent != null) {  
+            parent.addAnimation(anim);  
+        }  
+    }  
+    return anim;  
+}
+</code></pre>
+<p>还有就是attrs的获取，AttributeSet attrs = Xml.asAttributeSet(parser);至此，动画Animation的获取算是完毕，最后的调用方法是：</p>
+<pre><code class="language-java">public Animation getResApkAnim(Context context, int id) {  
+    Animation animation = null;  
+    XmlPullParser parser = res.getAnimation(id); 
+	AttributeSet attrs = Xml.asAttributeSet(parser);  
+    try {  
+        animation = createAnimationFromXml(context, parser, null, attrs);  
+    } catch (XmlPullParserException e) {  
+        e.printStackTrace();  
+    } catch (IOException e) {  
+        e.printStackTrace();  
+    }  
+    return animation;  
+}
+</code></pre>
+<p>好了，到现在为止，资源apk中的要获取的资源现在都可以获取的到了，需要注意的是，获取layout布局视图view的时候，布局中用到的@资源的设置失效，不建议使用。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[简单明了，彻底地理解Binder]]></title>
+        <id>https://fqzhanghao.github.io/post/jian-dan-ming-liao-che-di-di-li-jie-binder</id>
+        <link href="https://fqzhanghao.github.io/post/jian-dan-ming-liao-che-di-di-li-jie-binder">
+        </link>
+        <updated>2020-01-19T12:33:51.000Z</updated>
+        <summary type="html"><![CDATA[<p>转自:<a href="http://blog.csdn.net/huachao1001/article/details/51504469">http://blog.csdn.net/huachao1001/article/details/51504469</a></p>
+<p>你是不是看过很多Binder文章但是还是对Binder没有一个深刻理解？不是那些文章讲得不够好，主要是存在两种情况，一种是讲的深，全C代码<sub>，对我这种专做Java的人来说没有心情往下看；另一种是只讲framework层，Binder驱动并没有具体提，导致我们会用Binder，也大致能说的出一些原理，可并没有一个完整的深刻认知。那么接下来让我们一起学习Binder吧，相信接下来的内容会让你有一定的收获</sub></p>
+]]></summary>
+        <content type="html"><![CDATA[<p>转自:<a href="http://blog.csdn.net/huachao1001/article/details/51504469">http://blog.csdn.net/huachao1001/article/details/51504469</a></p>
+<p>你是不是看过很多Binder文章但是还是对Binder没有一个深刻理解？不是那些文章讲得不够好，主要是存在两种情况，一种是讲的深，全C代码<sub>，对我这种专做Java的人来说没有心情往下看；另一种是只讲framework层，Binder驱动并没有具体提，导致我们会用Binder，也大致能说的出一些原理，可并没有一个完整的深刻认知。那么接下来让我们一起学习Binder吧，相信接下来的内容会让你有一定的收获</sub></p>
+<!--more-->
+<h3 id="什么是binder">什么是Binder</h3>
+<p>这个问题很多文章都有解释，比如：Binder是Android跨进程通信方式，它实现了IBinder接口，是ServiceManager连接各种Manager(如WindowManager、ActivityManager等)的桥梁。但是我觉得这些说法还是过于抽象。刚接触Binder时，看到这些定义还是一头雾水，只是内心觉得Binder很牛逼、很底层，仅此而已。</p>
+<p>那么应该怎么去理解Binder呢？我不打算介绍这个概念，而是介绍Binder是怎么来到Android世界的。我是这样理解的：Android团队想要实现进程之间的通信，需要解决以下几个问题：</p>
 <ol>
-<li>用vim打开文件：vim /PYTHON_PATH/dist-packages/shadowsocks/crypto/openssl.py (该路径请根据自己的系统情况自行修改，如果不知道该文件在哪里的话，可以使用find命令查找文件位置)</li>
-<li>跳转到52行（shadowsocks2.8.2版本，其他版本搜索一下cleanup）</li>
-<li>进入编辑模式</li>
-<li>将第52行libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)<br>
-改为libcrypto.EVP_CIPHER_CTX_reset.argtypes = (c_void_p,)</li>
-<li>再次搜索cleanup（全文件共2处，此处位于111行），将libcrypto.EVP_CIPHER_CTX_cleanup(self._ctx)<br>
-改为libcrypto.EVP_CIPHER_CTX_reset(self._ctx)</li>
-<li>保存并退出</li>
-<li>启动shadowsocks服务：service shadowsocks start 或 sslocal -c ss配置文件目录</li>
-<li>问题解决</li>
+<li>如何知道客户端需要调用哪个进程以及该进程中的函数</li>
+<li>客户端如何将函数形参发送给远程进程中的函数，以及如何将远程进程函数计算结果返回客户端</li>
+<li>如何去屏蔽底层通信细节，让实现客户端调用远程函数就像调用本地函数一样</li>
 </ol>
+<p>第一个问题，很容易解决，只要给每个需要远程通信的类唯一标识就可以通过包名+类名的字符串就可以做到，然后在类里面给每个函数编号即可对函数唯一编码。第二个问题，定义一个可打包的接口Parcelable，这个接口提供2个重要函数，分别是将对象中的属性写入到数组和从数组中的数据还原对象，每个可以发送到远程函数作为形参的对象只需实现Parcelable对象即可。Parcelable具体使用不再本文讨论范围。第三个问题，为了屏蔽进程之间的通信细节，那么Android团队肯定在想，定义一个类，由这个类来实现这些细节。这个类应该做哪些事情呢？首先，这个类得帮用户发送远程请求并将拿到返回结果提交给用户，这是最重要的功能了，有了这个功能，妈妈再也不用担心我的进程通信。其次，如果我想实现服务端，什么时候客户端调用我了，这些细节不用用户操心。当然，这个类还要帮用户封装更多细节。既然打算定义这个类了，那总得取个响当当的名称吧，什么？你说取名为Binder，好吧，那就叫Binder吧。Binder类既然封装很多功能，那该怎么用这个类呢？让客户端去继承还是服务端继承呢？答案是服务端。接下来有个约定，本文后面所指的Binder类都是指远程服务端的对象。服务端想要实现被跨进程访问，就必须继承Binder类。<br>
+首先我们看看我们的程序跨进程调用系统服务的简单示例，实现浮动窗口部分代码：</p>
+<pre><code class="language-java">//获取WindowManager服务引用
+WindowManager wm = (WindowManager)getSystemService(getApplication().WINDOW_SERVICE);  
+//布局参数layoutParams相关设置略...
+View view=LayoutInflater.from(getApplication()).inflate(R.layout.float_layout, null);  
+//添加view
+wm.addView(view, layoutParams);  
+</code></pre>
+<p>系统服务都是运行在systemServer进程中，因此我们调用系统服务都是跨进程的调用。第2行代码中，得到的wm是WindowManager对象的引用，第6行调用WindowManager的addView函数，将触发远程调用，调用的是运行在systemServer进程中的WindowManager的addView函数。是不是很想知道addView发生了什么？我们先看看Binder机制吧！看完Binder原理，再解释！</p>
+<h3 id="binder机制">Binder机制</h3>
+<p>先看看一般执行过程</p>
+<h4 id="代码执行过程">代码执行过程</h4>
+<p>假设你已经创建好服务端类MyService、客户端类MyClient。在客户端持有MyService的引用，并且调用了MyService的func函数，那么Android内部调用过程如下：</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203428.png" alt="" loading="lazy"></figure>
+<p>看了这个图以后，相信你对你的代码在调用远程进程函数时有个全局的认识。这张图有一点很重要，就是客户端当前线程会被挂起！因此，如果远程进程是执行长时间的运算，请不要使用主线程去调用远程函数，以防止ANR。</p>
+<h3 id="binder的cs架构">Binder的C/S架构</h3>
+<p>上面一节我们对远程进程调用代码执行过程有个初步了解，在Android开发中，我们大量使用到了系统Service，比如媒体播放、各种传感器以及WindowManagerService等等等等（太多了~）。那么Android是怎么管理这些服务，并且让用户跨进程调用这些服务呢？首先我们看看调用系统服务的过程。在Android开机启动过程中，Android会初始化系统的各种Service，并将这些Service向ServiceManager注册（即让ServiceManager管理）。客户端想要得到具体的Service直接向ServiceManager要即可。客户端首先向ServiceManager查询得到具体的Service引用，然后通过这个引用向具体的服务端发送请求，服务端执行完成后就返回。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203442.png" alt="" loading="lazy"></figure>
+<h3 id="binder驱动实现原理">Binder驱动实现原理</h3>
+<p>一直以来，我有个困惑！！！这个困惑让我迷茫了很久：客户端持有远程进程的某个对象引用，然后调用引用类中的函数，远程进程的函数就执行了。我在想，凭什么？学过操作系统都知道，不同的进程之间是不共享资源的。也就是说，客户端持有的这个对象跟远程进程中的实际对象完全是两个不同的对象。客户端调用引用的对象跟远程进程半毛钱关系都没有，凭啥远程进程就调用了执行了？相信也有一部分人跟我有同样的困惑！仔细研读一下下面这张图，相信你会豁然开朗！</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203454.png" alt="" loading="lazy"></figure>
+<p>服务端跨进程的类都要继承Binder类。我们所持有的Binder引用(即服务端的类引用)并不是实际真实的远程Binder对象，我们的引用在Binder驱动里还要做一次映射。也就是说，设备驱动根据我们的引用对象找到对应的远程进程。客户端要调用远程对象函数时，只需把数据写入到Parcel，在调用所持有的Binder引用的transact()函数，transact函数执行过程中会把参数、标识符（标记远程对象及其函数）等数据放入到Client的共享内存，Binder驱动从Client的共享内存中读取数据，根据这些数据找到对应的远程进程的共享内存，把数据拷贝到远程进程的共享内存中，并通知远程进程执行onTransact()函数，这个函数也是属于Binder类。远程进程Binder对象执行完成后，将得到的写入自己的共享内存中，Binder驱动再将远程进程的共享内存数据拷贝到客户端的共享内存，并唤醒客户端线程。</p>
+<h3 id="binder机制运用">Binder机制运用</h3>
+<p>好了，现在对Binder机制已经理解了，我们再看看Android是怎么运用Binder的。再现前面代码：</p>
+<pre><code class="language-java">//获取WindowManager服务引用
+WindowManager wm = (WindowManager)getSystemService(getApplication().WINDOW_SERVICE);  
+//布局参数layoutParams相关设置略...
+View view=LayoutInflater.from(getApplication()).inflate(R.layout.float_layout, null);  
+//添加view
+wm.addView(view, layoutParams);  
+</code></pre>
+<p>这段代码前面已经出现过。getSystemService(getApplication().WINDOW_SERVICE);函数内部原理就是向ServiceManager查询标识符为getApplication().WINDOW_SERVICE的远程对象的引用。即WindowManager对象的引用，这个引用的真正实现是WindowManager的某个代理。得到这个引用后，在调用addView时，真正的实现是在代理里面，代理把参数打包到Parcel对象中，然后调用transact函数（该函数继承自Binder），再触发Binder驱动的一系列调用过程，在Binder驱动实现原理一节中有具体介绍，忘记了的同学可以返回继续看。关于Binder的代理对象，可以参考AIDL工具生成的代码，这里不再具体介绍。</p>
 ]]></content>
     </entry>
 </feed>

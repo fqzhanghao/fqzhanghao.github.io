@@ -1,0 +1,409 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Google 官方Android MVP架构实践 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Google 官方Android MVP架构实践</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><h3 id="一-google-官方mvp介绍">一、Google 官方MVP介绍</h3>
+<p>近期，关于Android开发架构的讨论沸沸扬扬，各大技术平台随处可见关于Android架构的技术文章。MVC、MVP、MVVM等等，就目前的形式来看，MVP模式在Android开发领域界逐渐流行了起来。前段时间，Google也忍耐不住Android MVP架构的火热程度，给广大Android程序员带来了福利，推出了Google官方MVP架构例子。源码见： https://github.com/googlesamples/android-architecture</p>
+<!--more-->
+<p>官方给出了四种MVP架构模式：</p>
+<p>1、todo-mvp：MVP基础架构</p>
+<p>2、todo-mvp-loaders：基于MVP基础架构，获取数据部分使用了Loaders架构</p>
+<p>3、todo-mvp-databinding：基于MVP基础架构，使用了数据绑定组件</p>
+<p>4、todo-mvp-clean：基于MVP基础架构，引入Clean架构概念</p>
+<p>官方正在进行的MVP架构模式：</p>
+<p>1、todo-mvp-contentproviders：基于MVP基础架构，使用了Content Provider</p>
+<p>2、todo-mvp-dragger：基于MVP基础架构，使用dragger2依赖注入</p>
+<p>3、todo-mvp-rxjava：基于MVP基础架构，使用RxJava解决数据并发</p>
+<h3 id="二-mvp架构模式介绍">二、MVP架构模式介绍</h3>
+<p>MVP中的M代表Model，即数据层，V代表View，即界面层，P代表Presenter，负责关联Model和View，把Model层的数据显示到View。</p>
+<h3 id="三-mvp架构实践">三、MVP架构实践</h3>
+<p>这里，我从todo-mvp基础架构入手，模仿一下官方MVP源码，跟大家详细介绍一下Google官方MVP架构模式。官方的MVP示例源码展示的是一个简易便签，数据提供者是Sqlite数据库。我的项目里面数据提供者是网络，使用okhttp网络请求框架从服务器获取数据。一起来看看神奇的MVP架构模式是怎样把数据显示到手机界面的吧。</p>
+<p>google官方todo-mvp模式架构图(结合todo-mvp源码可以好好感受一下mvp的魅力)</p>
+<p>Presente基础接口</p>
+<pre><code class="language-java">public interface BasePresenter {  
+    void start();  
+}  
+</code></pre>
+<p>View基础接口</p>
+<pre><code class="language-java">public interface BaseView&lt;T&gt; {  
+    void setPresenter(T presenter);  
+}  
+</code></pre>
+<p>具体任务的Presener和View接口，Presenter接口里面封装的是数据获取的方法，需要数据提供者具体实现；View里面封装的方法是界面层(Fragment/Activity)要实现的方法。</p>
+<pre><code class="language-java">public interface TaskDetailContract {  
+  
+    //http://www.diandidaxue.com:8080/apiServer.do?opcode=getBeauty&amp;pageNum=1&amp;numPerPage=5  
+    interface Presenter extends BasePresenter{  
+        void loadBeauty(int pageIndex, int pageSize);  
+    }  
+  
+    interface View extends BaseView&lt;Presenter&gt;{  
+        void showProgress();  
+        void hideProgress();  
+        void showBeauty(List&lt;Beauty&gt; beautyList);  
+    }  
+}  
+</code></pre>
+<p>数据提供者，基于Okhttp请求，我这里使用的鸿洋大神封装好的Okhttp请求库。提供一个接口，将数据共享出去，提供给具体Presenter。</p>
+<p>Okhttp封装具体使用方法见：http://blog.csdn.net/lmj623565791/article/details/47911083</p>
+<p>数据提供的服务器是我自己搭建的一个阿里云服务器，为了平时开发方便，写了一个数据接口，可以获取大量的美女图片和文字信息，get和post请求都支持，便于开发时候做数据测试。数据接口地址：http://www.diandidaxue.com:8080/apiServer.do?opcode=getBeauty&amp;pageNum=1&amp;numPerPage=50</p>
+<pre><code class="language-java">public class ServerHelper {  
+  
+    private DataLoadListener listener;  
+  
+    public void getBeautyList(int pageIndex, int pageSize){  
+        String url = &quot;http://www.diandidaxue.com:8080/apiServer.do&quot;;  
+        Map&lt;String, String&gt; params = new HashMap&lt;String, String&gt;();  
+        params.put(&quot;opcode&quot;, &quot;getBeauty&quot;);  
+        params.put(&quot;pageNum&quot;, String.valueOf(pageIndex));  
+        params.put(&quot;numPerPage&quot;, String.valueOf(pageSize));  
+        OkHttpUtils.post().url(url).params(params).build().execute(new ListBeautyCallBack() {  
+            @Override  
+            public void onError(Call call, Exception e) {  
+                listener.failure(e);  
+            }  
+  
+            @Override  
+            public void onResponse(List&lt;Beauty&gt; response) {  
+                listener.success(response);  
+            }  
+        });  
+    }  
+  
+    public interface DataLoadListener{  
+        void failure(Exception e);  
+        void success(List&lt;Beauty&gt; beautyList);  
+    }  
+  
+    public void setListener(DataLoadListener listener) {  
+        this.listener = listener;  
+    }  
+}  
+</code></pre>
+<p>具体Presenter，实现了TaskDetailContract.Presenter和ServerHelper.DataLoadListener接口，关联了TaskDetailContract.View接口，把网络请求到的数据提供给View。</p>
+<pre><code class="language-java">public class TaskPresenter implements TaskDetailContract.Presenter,ServerHelper.DataLoadListener {  
+  
+    private TaskDetailContract.View view;  
+    private ServerHelper serverHelper;  
+  
+    //数据提供者 这里应该封装网络数据请求  
+  
+    public TaskPresenter(TaskDetailContract.View view) {  
+        this.view = view;  
+        view.setPresenter(this);  
+        serverHelper = new ServerHelper();  
+        serverHelper.setListener(this);  
+    }  
+  
+    /** 
+     * 请求网络数据 
+     * @param pageIndex 页码 
+     * @param pageSize 一页显示的数量 
+     */  
+    @Override  
+    public void loadBeauty(final int pageIndex, int pageSize) {  
+        serverHelper.getBeautyList(pageIndex,pageSize);  
+    }  
+  
+    @Override  
+    public void start() {  
+  
+    }  
+  
+    @Override  
+    public void failure(Exception e) {  
+        view.hideProgress();  
+    }  
+  
+    @Override  
+    public void success(List&lt;Beauty&gt; beautyList) {  
+        view.hideProgress();  
+        view.showBeauty(beautyList);  
+    }  
+}  
+</code></pre>
+<p>具体的View，这里的BeautyFragment实现了TaskDetailContract.View，使用TaskDetailContract.Presenter进行数据请求，View如果接受到数据，则对数据进行界面展示操作。这样保证了界面层只负责数据的显示，减少了界面层的数据逻辑处理，使得界面更加流畅。</p>
+<pre><code class="language-java">public class BeautyFragment extends Fragment implements TaskDetailContract.View, SwipeRefreshLayout.OnRefreshListener {  
+  
+    private TaskDetailContract.Presenter presenter;  
+    private SwipeRefreshLayout refreshLayout;  
+    private RecyclerView recyclerView;  
+    private BeautyAdapter adapter;  
+    private List&lt;Beauty&gt; beautyList;  
+    private int pageIndex = 1;  
+    private int pageSize = 8;  
+    private boolean isLastPage = false;  
+    private int lastVisibleItem = 0;  
+    private LinearLayoutManager linearLayoutManager;  
+  
+    public static BeautyFragment newInstance(){  
+        return new BeautyFragment();  
+    }  
+  
+    @Override  
+    public void onCreate(Bundle savedInstanceState) {  
+        super.onCreate(savedInstanceState);  
+        presenter = new TaskPresenter(this);  
+        beautyList = new ArrayList&lt;&gt;();  
+    }  
+  
+    @Override  
+    public void onActivityCreated(Bundle savedInstanceState) {  
+        super.onActivityCreated(savedInstanceState);  
+    }  
+  
+    @Nullable  
+    @Override  
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {  
+        View view = inflater.inflate(R.layout.fragment_beauty,container,false);  
+        recyclerView = (RecyclerView) view.findViewById(R.id.tabRecyler);  
+        refreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.tabSwipeRefresh);  
+  
+        linearLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL,false);  
+  
+        //设置下拉刷新  
+        refreshLayout.setColorSchemeColors(R.color.colorAccent);  
+        refreshLayout.setOnRefreshListener(this);  
+        //第一次进入界面时候加载进度条  
+        refreshLayout.setProgressViewOffset(false, 0, (int) TypedValue  
+                .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources()  
+                        .getDisplayMetrics()));  
+        recyclerView.setLayoutManager(linearLayoutManager);  
+        adapter = new BeautyAdapter(beautyList,getActivity());  
+        recyclerView.setAdapter(adapter);  
+  
+        presenter.loadBeauty(1,8);  
+  
+  
+        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {  
+            @Override  
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {  
+                super.onScrolled(recyclerView, dx, dy);  
+                lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();  
+            }  
+  
+            @Override  
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {  
+                super.onScrollStateChanged(recyclerView, newState);  
+                if (newState == RecyclerView.SCROLL_STATE_IDLE  
+                        &amp;&amp; lastVisibleItem + 1 == adapter.getItemCount()) {  
+                    Log.i(&quot;pageIndex&quot;,pageIndex+&quot;&quot;);  
+                    //根据类目网络请求数据  
+                    if(!isLastPage){  
+                        presenter.loadBeauty(pageIndex,pageSize);  
+                    }  
+                }  
+            }  
+        });  
+  
+        return view;  
+    }  
+  
+    @Override  
+    public void showProgress() {  
+        refreshLayout.setRefreshing(true);  
+    }  
+  
+    @Override  
+    public void hideProgress() {  
+        refreshLayout.setRefreshing(false);  
+    }  
+  
+    @Override  
+    public void showBeauty(List&lt;Beauty&gt; list) {  
+        ActivityUtils.checkNotNull(list);  
+        if(list != null){  
+            if(pageIndex == 1){  
+                beautyList.clear();  
+                beautyList.addAll(list);  
+                isLastPage = false;  
+                pageIndex ++;  
+            }else if(list                                                                                                                                                                                                                   .size() == pageSize){  
+                beautyList.addAll(list);  
+                isLastPage = false;  
+                pageIndex ++;  
+            }else {  
+                beautyList.addAll(list);  
+                isLastPage = true;  
+            }  
+        }  
+        adapter.notifyDataSetChanged();  
+  
+  
+    }  
+  
+  
+    @Override  
+    public void setPresenter(TaskDetailContract.Presenter presenter) {  
+        this.presenter = presenter;  
+    }  
+  
+    @Override  
+    public void onRefresh() {  
+        pageIndex = 1;  
+        presenter.loadBeauty(pageIndex,pageSize);  
+    }  
+}  
+</code></pre>
+<pre><code class="language-java">public class BeautyActivity extends AppCompatActivity {  
+  
+    @Override  
+    protected void onCreate(Bundle savedInstanceState) {  
+        super.onCreate(savedInstanceState);  
+        setContentView(R.layout.activity_beauty);  
+  
+        BeautyFragment fragment = new BeautyFragment();  
+        if(fragment == null){  
+            fragment = BeautyFragment.newInstance();  
+        }  
+        ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),fragment,R.id.container);  
+  
+    }  
+</code></pre>
+<p>好了，Google 官方MVP架构实践介绍完毕，希望对大家有收获。上述代码是实现MVP架构模式的关键代码，中间还涉及到的ActivityUtils等类都在源码中哦，欢迎大家下载。</p>
+<p>源码下载地址：https://github.com/xiaomanzijia/mvp</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/gradle-yi-lai-de-tong-yi-guan-li">Gradle依赖的统一管理</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/google-play-cong-fu-wu-qi-jian-suo-xin-xi-shi-chu-cuo-rh-01">google play 从服务器检索信息时出错[RH-01]</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-google-%E5%AE%98%E6%96%B9mvp%E4%BB%8B%E7%BB%8D">一、Google 官方MVP介绍</a></li>
+<li><a href="#%E4%BA%8C-mvp%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D">二、MVP架构模式介绍</a></li>
+<li><a href="#%E4%B8%89-mvp%E6%9E%B6%E6%9E%84%E5%AE%9E%E8%B7%B5">三、MVP架构实践</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

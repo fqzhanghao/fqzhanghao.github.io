@@ -1,0 +1,156 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Gradle依赖的统一管理 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Gradle依赖的统一管理</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>我想大部分人应该都在使用Gradle来依赖管理，还没有使用的去面壁思过，Gradle使用起来简直太好用了，举个例子，我们想依赖个support-v4包，直接一句话：</p>
+<!--more-->
+<pre><code>compile 'com.android.support:support-v4:23.1.1'
+</code></pre>
+<p>不要太方便好么？</p>
+<p>但是不知道你们发现一些问题没有？比如以后v4版本号如果升级了怎么办？你可能会说直接手动改下版本号就好了，又不费多少精力。是的，只有这一个地方当然很简单，假设你项目里引用了三四个module，而这些module里也引用了v4包，那就要把所有依赖v4的包全部手动更改，这是一个项目，而如果你又是多个项目呢？这还只是一个v4包，假设又有多处地方依赖okhttp呢？而且下次所有的compileSdkVersion跟buildToolsVersion都要跟着升级呢？每次版本更新都要手动更改简直太麻烦了，而且还容易遗漏某些地方。那么今天就来给大家提供一种解决方案完全解决这种问题。</p>
+<p>我们如果根本性的解决这个问题肯定会想有没有一种通过一个配置文件来管理所有的Gradle依赖呢？哈哈，聪明，还真有这种方法，就不绕弯了，直接告诉你终极解决方案。</p>
+<p>我们以我在GitHub开源的项目9GAG为例，首先我们在项目的根目录创建一个gradle配置文件config.gradle，内容如下：</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119201043.png" alt="" loading="lazy"></figure>
+<p>可以看到这里包含了一些android和依赖的基本配置，以上都是gradle支持的语法，也许这里包含了所有你觉得好用的库，但是项目中只用到3、4个库也没关系，有了这个配置文件，以后所有的buildToolsVersion的升级还是依赖库的版本升级都在这里统一进行配置管理，所有的module以及主项目都从这里统一读取就ok了，那么接下来项目中怎么依赖这里的配置文件呢？</p>
+<p>其次看下项目根目录的build.gradle文件内容：</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119201100.png" alt="" loading="lazy"></figure>
+<p>只需在最顶部加上上面一行代码，意思就是所有的子项目或者所有的modules都可以从这个配置文件里读取内容。</p>
+<p>最后在到app目录下的build.gradle文件里看下具体如何读取的呢？</p>
+<p>android节点下的读取：</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119201111.png" alt="" loading="lazy"></figure>
+<p>denpendencies节点下的读取：</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119201121.png" alt="" loading="lazy"></figure>
+<p>是不是很简单方便呢？以后所有的版本号或者配置的更改直接更改这个文件就好了，而且可以把所有项目中使用到或者可能使用到的第三方库都塞到这里管理，用到了就依赖，用不到就放里面就好了。</p>
+<p>所谓配置在手，天下我有！</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/hexo-mian-shu-ru-mi-ma-bu-shu-dao-github">Hexo免输入密码部署到github</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/google-guan-fang-android-mvp-jia-gou-shi-jian">Google 官方Android MVP架构实践</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

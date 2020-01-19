@@ -1,0 +1,642 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>安卓自定义View进阶-Canvas之绘制图形 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">安卓自定义View进阶-Canvas之绘制图形</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>在上一篇自定义View分类与流程中我们了解自定义View相关的基本知识，不过，这些东西依旧还是理论，并不能拿来(zhuang)用(B), 这一次我们就了解一些能(zhaung)用(B)的东西。</p>
+<p>在本篇文章中，我们先了解Canvas的基本用法，最后用一个小示例来结束本次教程。</p>
+<!--more-->
+<h1 id="一canvas简介">一.Canvas简介</h1>
+<p>Canvas我们可以称之为画布，能够在上面绘制各种东西，是安卓平台2D图形绘制的基础，非常强大。</p>
+<p>一般来说，比较基础的东西有两大特点:<br>
+1.可操作性强：由于这些是构成上层的基础，所以可操作性必然十分强大。<br>
+2.比较难用：各种方法太过基础，想要完美的将这些操作组合起来有一定难度。</p>
+<p>不过不必担心，本系列文章不仅会介绍到Canvas的操作方法，还会简单介绍一些设计思路和技巧。</p>
+<h1 id="二canvas的常用操作速查表">二.Canvas的常用操作速查表</h1>
+<table>
+<thead>
+<tr>
+<th>操作类型</th>
+<th style="text-align:left">相关API</th>
+<th style="text-align:left">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>绘制颜色</td>
+<td style="text-align:left">drawColor, drawRGB, drawARGB</td>
+<td style="text-align:left">使用单一颜色填充整个画布</td>
+</tr>
+<tr>
+<td>绘制基本形状</td>
+<td style="text-align:left">drawPoint, drawPoints, drawLine, drawLines, drawRect, drawRoundRect, drawOval, drawCircle, drawArc</td>
+<td style="text-align:left">依次为 点、线、矩形、圆角矩形、椭圆、圆、圆弧</td>
+</tr>
+<tr>
+<td>绘制图片</td>
+<td style="text-align:left">drawBitmap, drawPicture</td>
+<td style="text-align:left">绘制位图和图片</td>
+</tr>
+<tr>
+<td>绘制文本</td>
+<td style="text-align:left">drawText, drawPosText, drawTextOnPath</td>
+<td style="text-align:left">依次为 绘制文字、绘制文字时指定每个文字位置、根据路径绘制文字</td>
+</tr>
+<tr>
+<td>绘制路径</td>
+<td style="text-align:left">drawPath</td>
+<td style="text-align:left">绘制路径，绘制贝塞尔曲线时也需要用到该函数</td>
+</tr>
+<tr>
+<td>顶点操作</td>
+<td style="text-align:left">drawVertices, drawBitmapMesh</td>
+<td style="text-align:left">通过对顶点操作可以使图像形变，drawVertices直接对画布作用、 drawBitmapMesh只对绘制的Bitmap作用</td>
+</tr>
+<tr>
+<td>画布剪裁</td>
+<td style="text-align:left">clipPath, clipRect</td>
+<td style="text-align:left">设置画布的显示区域</td>
+</tr>
+<tr>
+<td>画布快照</td>
+<td style="text-align:left">save, restore, saveLayerXxx, restoreToCount, getSaveCount</td>
+<td style="text-align:left">依次为 保存当前状态、 回滚到上一次保存的状态、 保存图层状态、 回滚到指定状态、 获取保存次数</td>
+</tr>
+<tr>
+<td>画布变换</td>
+<td style="text-align:left">translate, scale, rotate, skew</td>
+<td style="text-align:left">依次为 位移、缩放、 旋转、错切</td>
+</tr>
+<tr>
+<td>Matrix(矩阵)</td>
+<td style="text-align:left">getMatrix, setMatrix, concat</td>
+<td style="text-align:left">实际上画布的位移，缩放等操作的都是图像矩阵Matrix， 只不过Matrix比较难以理解和使用，故封装了一些常用的方法。</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>PS： Canvas常用方法在上面表格中已经全部列出了，当然还存在一些其他的方法未列出，具体可以参考官方文档 Canvas</p>
+</blockquote>
+<h1 id="三canvas详解">三.Canvas详解</h1>
+<p>本篇内容主要讲解如何利用Canvas绘制基本图形。</p>
+<p>绘制颜色：</p>
+<p>绘制颜色是填充整个画布，常用于绘制底色。</p>
+<pre><code class="language-java">canvas.drawColor(Color.BLUE); //绘制蓝色
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="http://ww4.sinaimg.cn/large/005Xtdi2jw1f2742437w3j30u01hcjrq.jpg" alt="" loading="lazy"></figure>
+<blockquote>
+<p>关于颜色的更多资料请参考基础篇_颜色</p>
+</blockquote>
+<p>创建画笔：</p>
+<p>要想绘制内容，首先需要先创建一个画笔，如下：</p>
+<pre><code class="language-java">// 1.创建一个画笔
+private Paint mPaint = new Paint();
+
+// 2.初始化画笔
+private void initPaint() {
+	mPaint.setColor(Color.BLACK);       //设置画笔颜色
+	mPaint.setStyle(Paint.Style.FILL);  //设置画笔模式为填充
+	mPaint.setStrokeWidth(10f);         //设置画笔宽度为10px
+}
+
+// 3.在构造函数中初始化
+public SloopView(Context context, AttributeSet attrs) {
+   super(context, attrs);
+   initPaint();
+}
+</code></pre>
+<p>在创建完画笔之后，就可以在Canvas中绘制各种内容了。</p>
+<p>绘制点：</p>
+<p>可以绘制一个点，也可以绘制一组点，如下：</p>
+<pre><code class="language-java">canvas.drawPoint(200, 200, mPaint);     //在坐标(200,200)位置绘制一个点
+canvas.drawPoints(new float[]{          //绘制一组点，坐标位置由float数组指定
+      500,500,
+      500,600,
+      500,700
+},mPaint);
+</code></pre>
+<p>关于坐标原点默认在左上角，水平向右为x轴增大方向，竖直向下为y轴增大方向。</p>
+<blockquote>
+<p>更多参考这里 基础篇_坐标系<br>
+<img src="http://ww1.sinaimg.cn/large/005Xtdi2jw1f2743rkifnj30u01hc74n.jpg" alt="" loading="lazy"></p>
+</blockquote>
+<p>绘制直线：</p>
+<p>绘制直线需要两个点，初始点和结束点，同样绘制直线也可以绘制一条或者绘制一组：</p>
+<pre><code class="language-java">canvas.drawLine(300,300,500,600,mPaint);    // 在坐标(300,300)(500,600)之间绘制一条直线
+canvas.drawLines(new float[]{               // 绘制一组线 每四数字(两个点的坐标)确定一条线
+    100,200,200,200,
+    100,300,200,300
+},mPaint);
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f2745k83ybj30u01hcq3d.jpg" alt="" loading="lazy"></figure>
+<p>绘制矩形：</p>
+<p>确定确定一个矩形最少需要四个数据，就是对角线的两个点的坐标值，这里一般采用左上角和右下角的两个点的坐标。</p>
+<p>关于绘制矩形，Canvas提供了三种重载方法，第一种就是提供四个数值(矩形左上角和右下角两个点的坐标)来确定一个矩形进行绘制。 其余两种是先将矩形封装为Rect或RectF(实际上仍然是用两个坐标点来确定的矩形)，然后传递给Canvas绘制，如下：</p>
+<pre><code class="language-java">// 第一种
+canvas.drawRect(100,100,800,400,mPaint);
+
+// 第二种
+Rect rect = new Rect(100,100,800,400);
+canvas.drawRect(rect,mPaint);
+
+// 第三种
+RectF rectF = new RectF(100,100,800,400);
+canvas.drawRect(rectF,mPaint);
+</code></pre>
+<p>以上三种方法所绘制出来的结果是完全一样的。<br>
+<img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f27478692dj30u01hc3yy.jpg" alt="" loading="lazy"><br>
+看到这里,相信很多观众会产生一个疑问，为什么会有Rect和RectF两种？两者有什么区别吗？</p>
+<p>答案当然是存在区别的，两者最大的区别就是精度不同，Rect是int(整形)的，而RectF是float(单精度浮点型)的。除了精度不同，两种提供的方法也稍微存在差别，在这里我们暂时无需关注，想了解更多参见官方文档 Rect 和 RectF</p>
+<p>绘制圆角矩形：</p>
+<p>绘制圆角矩形也提供了两种重载方式，如下：</p>
+<pre><code class="language-java">// 第一种
+RectF rectF = new RectF(100,100,800,400);
+canvas.drawRoundRect(rectF,30,30,mPaint);
+
+// 第二种
+canvas.drawRoundRect(100,100,800,400,30,30,mPaint);
+</code></pre>
+<p>上面两种方法绘制效果也是一样的，但鉴于第二种方法在API21的时候才添加上，所以我们一般使用的都是第一种。<br>
+<img src="http://ww4.sinaimg.cn/large/005Xtdi2jw1f2747s3c5zj30u01hcq3e.jpg" alt="" loading="lazy"></p>
+<p>下面简单解析一下圆角矩形的几个必要的参数的意思。</p>
+<p>很明显可以看出，第二种方法前四个参数和第一种方法的RectF作用是一样的，都是为了确定一个矩形，最后一个参数Paint是画笔，无需多说，与矩形相比，圆角矩形多出来了两个参数rx 和 ry，这两个参数是干什么的呢？</p>
+<p>稍微分析一下，既然是圆角矩形，他的角肯定是圆弧(圆形的一部分)，我们一般用什么确定一个圆形呢？</p>
+<p>答案是圆心 和 半径，其中圆心用于确定位置，而半径用于确定大小。</p>
+<p>由于矩形位置已经确定，所以其边角位置也是确定的，那么确定位置的参数就可以省略，只需要用半径就能描述一个圆弧了。</p>
+<p>但是，半径只需要一个参数，但这里怎么会有两个呢？</p>
+<p>好吧，让你发现了，这里圆角矩形的角实际上不是一个正圆的圆弧，而是椭圆的圆弧，这里的两个参数实际上是椭圆的两个半径，他们看起来个如下图：<br>
+<img src="http://ww3.sinaimg.cn/large/005Xtdi2jw1f2748fjw2bj308c0dwmx8.jpg" alt="" loading="lazy"></p>
+<p>红线标注的 rx 与 ry 就是两个半径，也就是相比绘制矩形多出来的那两个参数。</p>
+<p>我们了解到原理后，就可以为所欲为了，通过计算可知我们上次绘制的矩形宽度为700，高度为300，当你让 rx大于350(宽度的一半)， ry大于150(高度的一半) 时奇迹就出现了， 你会发现圆角矩形变成了一个椭圆， 他们画出来是这样的 ( 为了方便确认我更改了画笔颜色， 同时绘制出了矩形和圆角矩形 )：</p>
+<pre><code class="language-java">// 矩形
+RectF rectF = new RectF(100,100,800,400);  
+
+// 绘制背景矩形
+mPaint.setColor(Color.GRAY);
+canvas.drawRect(rectF,mPaint);
+
+// 绘制圆角矩形
+mPaint.setColor(Color.BLUE);
+canvas.drawRoundRect(rectF,700,400,mPaint);
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="http://ww4.sinaimg.cn/large/005Xtdi2jw1f2748ugy2pj30u01hcwf1.jpg" alt="" loading="lazy"></figure>
+<p>其中灰色部分是我们所选定的矩形，而里面的圆角矩形则变成了一个椭圆，实际上在rx为宽度的一半，ry为高度的一半时，刚好是一个椭圆，通过上面我们分析的原理推算一下就能得到，而当rx大于宽度的一半，ry大于高度的一半时，实际上是无法计算出圆弧的，所以drawRoundRect对大于该数值的参数进行了限制(修正)，凡是大于一半的参数均按照一半来处理。</p>
+<p>绘制椭圆：</p>
+<p>相对于绘制圆角矩形，绘制椭圆就简单的多了，因为他只需要一个矩形矩形作为参数:</p>
+<pre><code class="language-java">// 第一种
+RectF rectF = new RectF(100,100,800,400);
+canvas.drawOval(rectF,mPaint);
+
+// 第二种
+canvas.drawOval(100,100,800,400,mPaint);
+</code></pre>
+<p>同样，以上两种方法效果完全一样，但一般使用第一种。<br>
+<img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f274afxbiyj30u01hczks.jpg" alt="" loading="lazy"><br>
+绘制椭圆实际上就是绘制一个矩形的内切图形，原理如下，就不多说了：<br>
+<img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f274bq1h4rj308c0dwjrl.jpg" alt="" loading="lazy"><br>
+PS： 如果你传递进来的是一个长宽相等的矩形(即正方形)，那么绘制出来的实际上就是一个圆。</p>
+<p>绘制圆：</p>
+<p>绘制圆形也比较简单, 如下：</p>
+<pre><code class="language-java">canvas.drawCircle(500,500,400,mPaint);  // 绘制一个圆心坐标在(500,500)，半径为400 的圆。
+</code></pre>
+<p>绘制圆形有四个参数，前两个是圆心坐标，第三个是半径，最后一个是画笔。<br>
+<img src="http://ww3.sinaimg.cn/large/005Xtdi2jw1f274c41kknj30u01hcdgf.jpg" alt="" loading="lazy"></p>
+<p>绘制圆弧：<br>
+绘制圆弧就比较神奇一点了，为了理解这个比较神奇的东西，我们先看一下它需要的几个参数：</p>
+<pre><code class="language-java">// 第一种
+public void drawArc(@NonNull RectF oval, float startAngle, float sweepAngle, boolean useCenter, @NonNull Paint paint){}
+    
+// 第二种
+public void drawArc(float left, float top, float right, float bottom, float startAngle,
+            float sweepAngle, boolean useCenter, @NonNull Paint paint) {}
+</code></pre>
+<p>从上面可以看出，相比于绘制椭圆，绘制圆弧还多了三个参数：</p>
+<pre><code class="language-java">startAngle  // 开始角度
+sweepAngle  // 扫过角度
+useCenter   // 是否使用中心
+</code></pre>
+<p>通过字面意思我们基本能猜测出来前两个参数(startAngle， sweepAngel)的作用，就是确定角度的起始位置和扫过角度， 不过第三个参数是干嘛的？试一下就知道了,上代码：</p>
+<pre><code class="language-java">RectF rectF = new RectF(100,100,800,400);
+// 绘制背景矩形
+mPaint.setColor(Color.GRAY);
+canvas.drawRect(rectF,mPaint);
+
+// 绘制圆弧
+mPaint.setColor(Color.BLUE);
+canvas.drawArc(rectF,0,90,false,mPaint);
+
+//-------------------------------------
+
+RectF rectF2 = new RectF(100,600,800,900);
+// 绘制背景矩形
+mPaint.setColor(Color.GRAY);
+canvas.drawRect(rectF2,mPaint);
+
+// 绘制圆弧
+mPaint.setColor(Color.BLUE);
+canvas.drawArc(rectF2,0,90,true,mPaint);
+</code></pre>
+<p>上述代码实际上是绘制了一个起始角度为0度，扫过90度的圆弧，两者的区别就是是否使用了中心点，结果如下：<br>
+<img src="http://ww4.sinaimg.cn/large/005Xtdi2jw1f274d1smwej30u01hc3z4.jpg" alt="" loading="lazy"></p>
+<p>可以发现使用了中心点之后绘制出来类似于一个扇形，而不使用中心点则是圆弧起始点和结束点之间的连线加上圆弧围成的图形。这样中心点这个参数的作用就很明显了，不必多说想必大家试一下就明白了。 另外可以关于角度可以参考一下这篇文章： 角度与弧度</p>
+<p>相比于使用椭圆，我们还是使用正圆比较多的，使用正圆展示一下效果：</p>
+<pre><code class="language-java">RectF rectF = new RectF(100,100,600,600);
+// 绘制背景矩形
+mPaint.setColor(Color.GRAY);
+canvas.drawRect(rectF,mPaint);
+
+// 绘制圆弧
+mPaint.setColor(Color.BLUE);
+canvas.drawArc(rectF,0,90,false,mPaint);
+
+//-------------------------------------
+
+RectF rectF2 = new RectF(100,700,600,1200);
+// 绘制背景矩形
+mPaint.setColor(Color.GRAY);
+canvas.drawRect(rectF2,mPaint);
+
+// 绘制圆弧
+mPaint.setColor(Color.BLUE);
+canvas.drawArc(rectF2,0,90,true,mPaint);
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f274e3surgj30u01hc3z4.jpg" alt="" loading="lazy"></figure>
+<p>简要介绍Paint</p>
+<p>看了上面这么多，相信有一部分人会产生一个疑问，如果我想绘制一个圆，只要边不要里面的颜色怎么办？</p>
+<p>很简单，绘制的基本形状由Canvas确定，但绘制出来的颜色,具体效果则由Paint确定。</p>
+<p>如果你注意到了的话，在一开始我们设置画笔样式的时候是这样的：</p>
+<pre><code class="language-java">mPaint.setStyle(Paint.Style.FILL);  //设置画笔模式为填充
+</code></pre>
+<p>为了展示方便，容易看出效果，之前使用的模式一直为填充模式，实际上画笔有三种模式，如下：</p>
+<pre><code class="language-java">STROKE                //描边
+FILL                  //填充
+FILL_AND_STROKE       //描边加填充
+</code></pre>
+<p>为了区分三者效果我们做如下实验：</p>
+<pre><code class="language-java">Paint paint = new Paint();
+paint.setColor(Color.BLUE);
+paint.setStrokeWidth(40);     //为了实验效果明显，特地设置描边宽度非常大
+
+// 描边
+paint.setStyle(Paint.Style.STROKE);
+canvas.drawCircle(200,200,100,paint);
+
+// 填充
+paint.setStyle(Paint.Style.FILL);
+canvas.drawCircle(200,500,100,paint);
+
+// 描边加填充
+paint.setStyle(Paint.Style.FILL_AND_STROKE);
+canvas.drawCircle(200, 800, 100, paint);
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="http://ww4.sinaimg.cn/large/005Xtdi2jw1f274g6lxbpj30u01hcq3n.jpg" alt="" loading="lazy"></figure>
+<p>一图胜千言，通过以上实验我们可以比较明显的看出三种模式的区别，如果只需要边缘不需要填充内容的话只需要设置模式为描边(STROKE)即可。</p>
+<p>其实关于Paint的内容也是有不少的，这些只是冰山一角，在后续内容中会详细的讲解Paint。</p>
+<h1 id="小示例">小示例</h1>
+<p>简要介绍画布的操作:</p>
+<blockquote>
+<p>画布操作详细内容会在下一篇文章中讲解, 不是本文重点，但以下示例中可能会用到，所以此处简要介绍一下。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>相关操作</th>
+<th>简要介绍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>save</td>
+<td>保存当前画布状态</td>
+</tr>
+<tr>
+<td>restore</td>
+<td>回滚到上一次保存的状态</td>
+</tr>
+<tr>
+<td>translate</td>
+<td>相对于当前位置位移</td>
+</tr>
+<tr>
+<td>rotate</td>
+<td>旋转</td>
+</tr>
+</tbody>
+</table>
+<p>制作一个饼状图</p>
+<p>在展示百分比数据的时候经常会用到饼状图，像这样：<br>
+<img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f274gmnlk3j308c0dwglq.jpg" alt="" loading="lazy"></p>
+<p>简单分析</p>
+<p>其实根据我们上面的知识已经能自己制作一个饼状图了。不过制作东西最重要的不是制作结果，而是制作思路。 相信我贴上代码大家一看就立刻明白了，非常简单的东西。不过嘛，咱们还是想了解一下制作思路：</p>
+<p>先分析饼状图的构成，非常明显，饼状图就是一个又一个的扇形构成的，每个扇形都有不同的颜色，对应的有名字，数据和百分比。</p>
+<p>经以上信息可以得出饼状图的最基本数据应包括：名字 数据值 百分比 对应的角度 颜色。</p>
+<p>用户关心的数据 ： 名字 数据值 百分比<br>
+需要程序计算的数据： 百分比 对应的角度<br>
+其中颜色这一项可以用户指定也可以用程序指定(我们这里采用程序指定)。</p>
+<p>封装数据：</p>
+<pre><code class="language-java">public class PieData {
+    // 用户关心数据
+    private String name;        // 名字
+    private float value;        // 数值
+    private float percentage;   // 百分比
+    
+    // 非用户关心数据
+    private int color = 0;      // 颜色
+    private float angle = 0;    // 角度
+
+    public PieData(@NonNull String name, @NonNull float value) {
+        this.name = name;
+        this.value = value;
+    }
+}
+</code></pre>
+<p>PS: 以上省略了get set方法</p>
+<p>自定义View：</p>
+<p>先按照自定义View流程梳理一遍(确定各个步骤应该做的事情)：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>关键字</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>构造函数</td>
+<td>View初始化</td>
+</tr>
+<tr>
+<td>2</td>
+<td>onMeasure</td>
+<td>测量View大小</td>
+</tr>
+<tr>
+<td>3</td>
+<td>onSizeChanged</td>
+<td>确定View大小</td>
+</tr>
+<tr>
+<td>4</td>
+<td>onLayout</td>
+<td>确定子View布局(自定义View包含子View时有用)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>onDraw</td>
+<td>实际绘制内容</td>
+</tr>
+<tr>
+<td>6</td>
+<td>提供接口</td>
+<td>控制View或监听View某些状态</td>
+</tr>
+</tbody>
+</table>
+<p>代码如下：</p>
+<pre><code class="language-java">public class PieView extends View {
+    // 颜色表 (注意: 此处定义颜色使用的是ARGB，带Alpha通道的)
+    private int[] mColors = {0xFFCCFF00, 0xFF6495ED, 0xFFE32636, 0xFF800000, 0xFF808000, 0xFFFF8C69, 0xFF808080,
+            0xFFE6B800, 0xFF7CFC00};
+    // 饼状图初始绘制角度
+    private float mStartAngle = 0;
+    // 数据
+    private ArrayList&lt;PieData&gt; mData;
+    // 宽高
+    private int mWidth, mHeight;
+    // 画笔
+    private Paint mPaint = new Paint();
+
+    public PieView(Context context) {
+        this(context, null);
+    }
+
+    public PieView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setAntiAlias(true);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mWidth = w;
+        mHeight = h;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (null == mData)
+            return;
+        float currentStartAngle = mStartAngle;                    // 当前起始角度
+        canvas.translate(mWidth / 2, mHeight / 2);                // 将画布坐标原点移动到中心位置
+        float r = (float) (Math.min(mWidth, mHeight) / 2 * 0.8);  // 饼状图半径
+        RectF rect = new RectF(-r, -r, r, r);                     // 饼状图绘制区域
+
+        for (int i = 0; i &lt; mData.size(); i++) {
+            PieData pie = mData.get(i);
+            mPaint.setColor(pie.getColor());
+            canvas.drawArc(rect, currentStartAngle, pie.getAngle(), true, mPaint);
+            currentStartAngle += pie.getAngle();
+        }
+
+    }
+
+    // 设置起始角度
+    public void setStartAngle(int mStartAngle) {
+        this.mStartAngle = mStartAngle;
+        invalidate();   // 刷新
+    }
+
+    // 设置数据
+    public void setData(ArrayList&lt;PieData&gt; mData) {
+        this.mData = mData;
+        initDate(mData);
+        invalidate();   // 刷新
+    }
+
+    // 初始化数据
+    private void initDate(ArrayList&lt;PieData&gt; mData) {
+        if (null == mData || mData.size() == 0)   // 数据有问题 直接返回
+            return;
+
+        float sumValue = 0;
+        for (int i = 0; i &lt; mData.size(); i++) {
+            PieData pie = mData.get(i);
+
+            sumValue += pie.getValue();       //计算数值和
+
+            int j = i % mColors.length;       //设置颜色
+            pie.setColor(mColors[j]);
+        }
+
+        float sumAngle = 0;
+        for (int i = 0; i &lt; mData.size(); i++) {
+            PieData pie = mData.get(i);
+
+            float percentage = pie.getValue() / sumValue;   // 百分比
+            float angle = percentage * 360;                 // 对应的角度
+
+            pie.setPercentage(percentage);                  // 记录百分比
+            pie.setAngle(angle);                            // 记录角度大小
+            sumAngle += angle;
+
+            Log.i(&quot;angle&quot;, &quot;&quot; + pie.getAngle());
+        }
+    }
+}
+</code></pre>
+<p>PS: 在更改了数据需要重绘界面时要调用invalidate()这个函数重新绘制。</p>
+<p>效果图<br>
+<img src="http://ww4.sinaimg.cn/large/005Xtdi2jw1f274gz06voj30u01hc3za.jpg" alt="" loading="lazy"></p>
+<blockquote>
+<p>PS: 这个饼状图并没有添加百分比等数据，仅作为示例使用。</p>
+</blockquote>
+<p>总结：<br>
+其实自定义View只要按照流程一步步的走，也是比较容易的。不过里面也有不少坑，这些坑还是自己踩过印象比较深，建议大家不要直接copy源码，自己手打体验一下。</p>
+<h1 id="参考资料">参考资料：</h1>
+<ul>
+<li><a href="http://developer.android.com/reference/android/view/View.html">View</a></li>
+<li><a href="http://developer.android.com/reference/android/graphics/Canvas.html">Canvas</a></li>
+<li><a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2012/1212/703.html">Android Canvas绘图详解</a></li>
+</ul>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/an-zhuo-zi-ding-yi-view-jin-jie-fen-lei-he-liu-cheng">安卓自定义View进阶 - 分类和流程</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/an-zhuo-zi-ding-yi-view-ji-chu-yan-se"> 安卓自定义View基础 - 颜色</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E4%B8%80canvas%E7%AE%80%E4%BB%8B">一.Canvas简介</a></li>
+<li><a href="#%E4%BA%8Ccanvas%E7%9A%84%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E9%80%9F%E6%9F%A5%E8%A1%A8">二.Canvas的常用操作速查表</a></li>
+<li><a href="#%E4%B8%89canvas%E8%AF%A6%E8%A7%A3">三.Canvas详解</a></li>
+<li><a href="#%E5%B0%8F%E7%A4%BA%E4%BE%8B">小示例</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">参考资料：</a></li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

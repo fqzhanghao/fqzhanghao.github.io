@@ -1,0 +1,489 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>通过观察者模式监听媒体库的变化实现APP本地数据自动更新 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">通过观察者模式监听媒体库的变化实现APP本地数据自动更新</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>转自:<a href="http://zmywly8866.github.io/2015/03/03/auto-update-app-data.html?utm_source=tuicool&amp;utm_medium=referral">http://zmywly8866.github.io/2015/03/03/auto-update-app-data.html?utm_source=tuicool&amp;utm_medium=referral</a></p>
+<!--more-->
+<h3 id="前言">前言</h3>
+<p>当我在使用音乐播放器和各种小说APP的过程中，感觉非常不好的一个体验就是你需要通过手动点击全盘检索后，新下载的数据、从磁盘拷贝的数据才会更新显示在列表上，这对于我们来说看上去没有什么不对，但从用户的角度出发这是一个非常不好的体验，因为多数人是根本不知道全盘检索这个概念的，手动更新APP的本地数据无形之中增加了用户使用APP的学习成本。</p>
+<p>我们之前做的小系统APP也是通过手动检索这种方式来刷新程序中的本地数据列表的，在接触到Android的媒体库后，发现这个问题能够通过观察者模式监听Android媒体数据库变化的方式来实现APP本地数据的自动更新，在成功实现这个功能后，现在将其总结下来方便后面查看。</p>
+<h3 id="android媒体库">Android媒体库</h3>
+<p>媒体库是什么？：在Android系统中，为了提高应用检索数据的效率，Android会将存储在文件系统中的文件信息保存在一个数据库文件中，这样在应用中就可以通过读取该数据库来快速查找满足APP需求的文件列表，比如一个电子书阅读APP，通过如下方法就可以获取到媒体库中存在的电子书文件列表，保存哪些格式的文件是可以通过修改Android原来来调整的，不过对于多媒体文件来说，Android原生系统默认就保存在媒体库中了：</p>
+<pre><code class="language-java">/**
+   * 从媒体库中获取指定后缀的文件列表
+   * 
+   * @param searchFileSuffix 文件后缀列表，eg: new String[]{&quot;epub&quot;,&quot;mobi&quot;,&quot;pdf&quot;,&quot;txt&quot;};
+   * @return 指定后缀的文件列表
+   * */
+  public static ArrayList&lt;String&gt; getSupportFileList(Context context, String[] searchFileSuffix) {
+    ArrayList&lt;String&gt; searchFileList = null;
+    if (null == context || null == searchFileSuffix
+        || searchFileSuffix.length == 0) {
+      return null;
+    }
+    String searchPath = &quot;&quot;;
+    int length = searchFileSuffix.length;
+    for (int index = 0; index &lt; length; index++) {
+      searchPath += (MediaStore.Files.FileColumns.DATA + &quot; LIKE '%&quot; + searchFileSuffix[index] + &quot;' &quot;);
+      if ((index + 1) &lt; length) {
+        searchPath += &quot;or &quot;;
+      }
+    }
+    searchFileList = new ArrayList&lt;String&gt;();
+    Uri uri = MediaStore.Files.getContentUri(&quot;external&quot;);
+    Cursor cursor = context.getContentResolver().query(
+        uri,new String[] { MediaStore.Files.FileColumns.DATA,MediaStore.Files.FileColumns.SIZE }, searchPath, null,null);
+    if (cursor == null) {
+      System.out.println(&quot;Cursor 获取失败!&quot;);
+    } else {
+      if (cursor.moveToFirst()) {
+        do {
+          String filepath = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
+          if (isFileExist(filepath)) {
+            try {
+              searchFileList.add(new String(filepath.getBytes(&quot;UTF-8&quot;)));
+            } catch (UnsupportedEncodingException e) {
+              e.printStackTrace();
+            }
+          }
+        } while (cursor.moveToNext());
+      }
+      if (!cursor.isClosed()) {
+        cursor.close();
+      }
+    }
+    return searchFileList;
+  }
+  /**
+   * 判断SD卡上的文件夹是否存在
+   * 
+   * @param fileName 文件名
+   * @return true 文件存在，false 文件不存在
+   */
+  private static boolean isFileExist(String filePath) {
+    File file = null;
+    boolean isExist = false;
+    if (null != filePath) {
+      file = new File(filePath);
+      isExist = (null != file &amp;&amp; file.isFile()) ? file.exists() : false;
+      if (isExist &amp;&amp; null != file &amp;&amp; 0 == file.length()) {
+        isExist = false;
+      }
+    }
+    return isExist;
+  }
+</code></pre>
+<p>媒体库更新时机：Android系统会在系统开机、USB插拔、TF卡插拔的时候自动更新媒体库（将新增的文件添加到媒体库中，移除不存在的文件数据记录），除了Android系统会自动更新媒体库文件外，开发者也可以在程序中手动更新媒体库，这样能够在文件系统中有新的文件或者通过程序删掉某些文件时能够将动态及时更新到媒体库，保证媒体库中的文件信息是实时的，更新的具体方式如下：</p>
+<pre><code class="language-java">context.sendBroadcast( new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse( &quot;file://&quot; + filePath ) ) );
+</code></pre>
+<p>注：上面介绍是的更新单个文件的方式，Android没有提供直接更新整个文件夹的方式，如果是整个文件夹，可以先得到文件夹下的所有文件路径列表，然后挨个更新，对于这个如果有更先进的方法欢迎提出。</p>
+<h3 id="app本地数据自动更新的具体实现">APP本地数据自动更新的具体实现</h3>
+<p>类似于上述的音视频播放器、小说阅读APP，如果我们需要实现本地数据APP自动更新的功能，只要保持APP支持文件列表的数据库和媒体库中的对应格式的文件同步就可以了，所以我们需要做的是：监听媒体库中文件列表的变化，然后将变化告知APP即可，原理是：</p>
+<ul>
+<li>通过广播监听USB插拔、TF卡插拔，如果检查到在APP运行过程中有这些操作，直接通过APP全盘检索；</li>
+<li>通过观察者模式监听媒体库中的文件变化，如果有变化，每隔五秒钟将APP现存列表和媒体库中检索到对应格式的文件列表做比较，如果列表有变化，则将变化的列表更新给APP；</li>
+<li>在APP进入、退出时注册/反注册广播、打开/关闭计时器。</li>
+</ul>
+<p>整个代码非常简单，一个类搞定，具体代码如下：</p>
+<pre><code class="language-java">import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Timer;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.provider.MediaStore;
+/**
+ * 自动更新书架
+ * 
+ * */
+public class AutoRefreshBookShelf {
+  public AutoRefreshBookShelf( Context context, AutoRefreshListener autoRefreshListener, String[] supportSuffix ) throws NullPointerException{
+    if( null == context || null == autoRefreshListener || null == supportSuffix ){
+      throw new NullPointerException( &quot;传非空的参数进来！&quot; );
+    }
+    mContext = context;
+    mAutoRefreshListener = autoRefreshListener;
+    mSupportSuffix = supportSuffix;
+    initAutoRefreshBookShelf( );
+  }
+  // 不在本界面停止后台检索
+  public void onPause( ){
+    stopCheckFileTimer( );
+  }
+  // 返回界面恢复后台检索
+  public void onResume( ){
+    startCheckFileTimer( );
+  }
+  /**
+   * 注销广播
+   * 
+   * */
+  public void unregisterAutoRefreshBookShelf( ) throws NullPointerException{
+    if( null == mBroadcastReceiver || null == mMediaStoreChangeObserver || null == mContext ){
+      throw new NullPointerException( &quot;没有初始化&quot; );
+    }
+    mContext.unregisterReceiver( mBroadcastReceiver );
+    mContext.getContentResolver( ).unregisterContentObserver( mMediaStoreChangeObserver );
+    stopCheckFileTimer( );
+  }
+  /**
+   * 得到变化的文件列表
+   * 
+   * */
+  public void getChangedFileList( ){
+    System.out.println( &quot;toast ================= getChangedFileList &quot; );
+    startCheckFileTimer( );
+  }
+  private void initAutoRefreshBookShelf( ){
+    startMediaFileListener( );
+    observerMediaStoreChange( );
+  }
+  private void observerMediaStoreChange( ){
+    if( null == mMediaStoreChangeObserver ){
+      mMediaStoreChangeObserver = new MediaStoreChangeObserver( );
+    }
+    mContext.getContentResolver( ).registerContentObserver( MediaStore.Files.getContentUri(&quot;external&quot;), false, mMediaStoreChangeObserver );
+  }
+  /**
+   * 监听USB的状态，更新书架书本信息
+   * 
+   * */
+  private void startMediaFileListener( ){
+    if( null != mBroadcastReceiver ){
+      return;
+    }
+    IntentFilter intentFilter = new IntentFilter( );
+    intentFilter.addAction( Intent.ACTION_MEDIA_SCANNER_FINISHED );
+    intentFilter.addAction( Intent.ACTION_MEDIA_MOUNTED );
+    intentFilter.addAction( Intent.ACTION_MEDIA_EJECT );
+    intentFilter.addDataScheme( &quot;file&quot; );
+    mBroadcastReceiver = new BroadcastReceiver(){
+      @Override
+      public void onReceive(Context context,Intent intent){
+        String action = intent.getAction( );
+        if( Intent.ACTION_MEDIA_SCANNER_FINISHED.equals( action ) ){
+          System.out.println( &quot;toast ================= ACTION_MEDIA_SCANNER_FINISHED &quot; );
+          mTimerWorking = false;
+          startCheckFileTimer( );
+        }else if( action.equals( Intent.ACTION_MEDIA_MOUNTED ) ){
+          System.out.println( &quot;toast ================= ACTION_MEDIA_MOUNTED or ACTION_MEDIA_EJECT &quot; );
+          mTimerWorking = true;
+          mAutoRefreshListener.onBookScan( );
+        }else if( action.equals( Intent.ACTION_MEDIA_EJECT ) ){
+          mAutoRefreshListener.onBookScan( );
+        }
+      }
+    };
+    mContext.registerReceiver( mBroadcastReceiver, intentFilter );//注册监听函数
+  }
+  /**
+   * 媒体数据库变更观察类
+   * 
+   * */
+  class MediaStoreChangeObserver extends ContentObserver{
+    public MediaStoreChangeObserver( ) {
+      super( new Handler( ) );
+    }
+    @Override
+    public void onChange(boolean selfChange) {
+      super.onChange(selfChange);
+      startCheckFileTimer( );
+    }
+  }
+  private void startCheckFileTimer( ){
+    if( mTimerWorking ){
+      return;
+    }
+    mCheckFileTimer = new Timer( );
+    mCheckFileTimer.schedule( new CheckFileChangeTimerTask( ), 5000 );
+    mTimerWorking = true;
+  }
+  private void stopCheckFileTimer( ){
+    if( null != mCheckFileTimer ){
+      mCheckFileTimer.cancel( );
+      mCheckFileTimer = null;
+      mTimerWorking = false;
+    }
+  }
+  /**
+   * 得到新增的文件列表
+   * 
+   * */
+  public ArrayList&lt;String&gt; getChangedFileList( Context context, String[] searchFileSuffix, ArrayList&lt;String&gt; existFileList ){
+    ArrayList&lt;String&gt; changedFileList = null;
+    if( null == context || null == searchFileSuffix ){
+      return changedFileList;
+    }
+    ArrayList&lt;String&gt; supportFileList = getSupportFileList( context, searchFileSuffix );
+    changedFileList = getDifferentFileList( supportFileList, existFileList );
+    if( null == changedFileList || changedFileList.size( ) == 0 ){
+      changedFileList = null;
+    }
+    return changedFileList;
+  }
+  /**
+   * 获取新增的文件列表
+   * 
+   * */
+  private ArrayList&lt;String&gt; getDifferentFileList( ArrayList&lt;String&gt; newFileList, ArrayList&lt;String&gt; existFileList ){
+    ArrayList&lt;String&gt; differentFileList = null;
+    if( null == newFileList || newFileList.size( ) == 0 ){
+      return differentFileList;
+    }
+    differentFileList = new ArrayList&lt;String&gt;( );
+    boolean isExist = false;
+    if( null == existFileList ){
+      // 如果已存在文件为空，那肯定是全部加进来啦。
+      for( String newFilePath : newFileList ){
+        differentFileList.add( newFilePath );
+      }
+    }else{
+      for( String newFilePath : newFileList ){
+        isExist = false;
+        for( String existFilePath : existFileList ){
+          if( existFilePath.equals( newFilePath ) ){
+            isExist = true;
+            break;
+          }
+        }
+        if( !isExist ){
+          differentFileList.add( newFilePath );
+        }
+      }
+    }
+    return differentFileList;
+  }
+  /**
+   * 从媒体库中获取指定后缀的文件列表
+   * 
+   * */
+  public ArrayList&lt;String&gt; getSupportFileList( Context context, String[] searchFileSuffix ) {
+    ArrayList&lt;String&gt; searchFileList = null;
+    if( null == context || null == searchFileSuffix || searchFileSuffix.length == 0 ){
+      return null;
+    }
+    String searchPath = &quot;&quot;;
+    int length = searchFileSuffix.length;
+    for( int index = 0; index &lt; length; index++ ){
+      searchPath += ( MediaStore.Files.FileColumns.DATA + &quot; LIKE '%&quot; + searchFileSuffix[ index ] + &quot;' &quot; );
+      if( ( index + 1 ) &lt; length ){
+        searchPath += &quot;or &quot;;
+      }
+    }
+    searchFileList = new ArrayList&lt;String&gt;();
+    Uri uri = MediaStore.Files.getContentUri(&quot;external&quot;);
+    Cursor cursor = context.getContentResolver().query(
+        uri, new String[] { MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns._ID },
+        searchPath, null, null);
+    String filepath = null;
+    if (cursor == null) {
+      System.out.println(&quot;Cursor 获取失败!&quot;);
+    } else {
+      if (cursor.moveToFirst()) {
+        do {
+          filepath = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
+          try {
+            searchFileList.add(new String(filepath.getBytes(&quot;UTF-8&quot;)));
+          } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+          }
+        } while (cursor.moveToNext());
+      }
+      if (!cursor.isClosed()) {
+        cursor.close();
+      }
+    }
+    return searchFileList;
+  }
+  /**
+   * 得到媒体库更新的文件
+   * 
+   * */
+  class GetMediaStoreDataTask extends AsyncTask&lt; Void , Void , Void&gt;{
+    @Override
+    protected Void doInBackground(Void... arg0) {
+      ArrayList&lt;String&gt; changedFileList = getChangedFileList( mContext, mSupportSuffix, mAutoRefreshListener.onGetBookPathList( ) );
+      if( null != changedFileList &amp;&amp; changedFileList.size( ) &gt; 0 ){
+        mAutoRefreshListener.onBookRefresh( changedFileList );
+      }
+      mTimerWorking = false;
+      return null;
+    }
+  }
+  class CheckFileChangeTimerTask extends java.util.TimerTask{
+    @Override
+    public void run() {
+      new GetMediaStoreDataTask( ).execute( );
+    }
+  }
+  /**
+   * 书架自动刷新接口
+   * 
+   * */
+  public interface AutoRefreshListener{
+    public ArrayList&lt;String&gt; onGetBookPathList( ); // 得到书架书本列表
+    public void onBookRefresh( ArrayList&lt;String&gt; bookInfoList );// 刷新书架
+    public void onBookScan( );//全盘扫描书架
+  }
+  private boolean mTimerWorking = false;
+  private Context mContext = null;
+  private String[] mSupportSuffix = null;
+  private BroadcastReceiver mBroadcastReceiver = null;
+  private MediaStoreChangeObserver mMediaStoreChangeObserver = null;
+  private AutoRefreshListener mAutoRefreshListener = null;
+  private Timer mCheckFileTimer = null;
+}
+
+</code></pre>
+<p>注意：建议该功能只在APP运行时开启，因为现实的文件列表只有你真正在使用APP时才会去查看，所以没有必要通过这种方式在后台操作。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/yue-du-lei-app-jing-pin-fen-xi">阅读类app竞品分析</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/huo-qu-wei-an-zhuang-zi-yuan-apk-chong-de-zi-yuan-wen-jian">获取未安装资源apk种的资源文件</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#android%E5%AA%92%E4%BD%93%E5%BA%93">Android媒体库</a></li>
+<li><a href="#app%E6%9C%AC%E5%9C%B0%E6%95%B0%E6%8D%AE%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0%E7%9A%84%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0">APP本地数据自动更新的具体实现</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

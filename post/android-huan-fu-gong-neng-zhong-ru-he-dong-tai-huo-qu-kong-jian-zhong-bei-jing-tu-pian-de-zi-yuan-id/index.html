@@ -1,0 +1,205 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>android换肤功能中，如何动态获取控件中背景图片的资源id？ | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">android换肤功能中，如何动态获取控件中背景图片的资源id？</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>这个是在在做一个换肤功能时遇到的问题。</p>
+<!--more-->
+<p>对于换肤，网上都有示例，可以从别的皮肤安装包中读取所要的资源，前提是你必须先持有这个资源的引用名称，像R.drawable.background（喂，这不是废话嘛）。这个换肤的方案原理就是，自身应用的资源名称是R.drawable.background，那皮肤包中应该也是这个名称，然后通过这个名称获取该资源在皮肤包中的具体id，代码：</p>
+<pre><code class="language-java">//先获取本地资源引用名称，type name是R.drawable.background中的&quot;drawable&quot;，entry name是&quot;background&quot;  
+String resTypeName = getContext().getResources().getResourceTypeName(id);  
+String resEntryName = getContext().getResources().getResourceEntryName(id);  
+//然后创建皮肤包所在应用的Context  
+Context apk = getContext().createPackageContext(packageName,  
+        Context.CONTEXT_IGNORE_SECURITY)  
+//然后就是获取皮肤包中的资源id了  
+int drawavleId = apk.getResources().getIdentifier(resEntryName, resTypeName,  
+        apk.getPackageName());  
+</code></pre>
+<p>这个换肤方案中，每个Activity在切换皮肤时，需要遍历整个layout，判断控件如果id中包含“skin”的字符，意味这个控件是需要换肤的控件，这个控件的id可以先保存下来。遍历视图的代码:</p>
+<pre><code class="language-java">private void scanViewGroup(ViewGroup group, List&lt;Integer&gt; skinViewList, Resources res) {  
+    //first we need check if this ViewGroup have a background  
+    if(group.getId() != View.NO_ID  
+            &amp;&amp; res.getResourceEntryName(group.getId()).contains(SKIN_PATTERN)  
+            &amp;&amp; !skinViewList.contains(group)) {  
+        skinViewList.add(group.getId());  
+    }  
+  
+    //second check its child view  
+    View child;  
+  
+    for(int i = 0; i &lt; group.getChildCount(); i++) {  
+        child = group.getChildAt(i);  
+  
+        if(child instanceof ViewGroup) {  
+            scanViewGroup((ViewGroup)child, skinViewList, res);  
+        } else if(child.getId() == View.NO_ID) {  
+            return;  
+        } else {  
+            int viewId = child.getId();  
+            String entryName = res.getResourceEntryName(viewId);  
+  
+            Log(&quot;scanViewGroup(), entryName of this childView : &quot; + entryName);  
+  
+            if(entryName.contains(SKIN_PATTERN) &amp;&amp; !skinViewList.contains(child))  
+                skinViewList.add(child.getId());  
+        }  
+    }  
+} 
+</code></pre>
+<p>问题来了，本地应用中，你持有一个控件，比如Button，它的id可以直接调用button.getId()方法获取，但是它的背景图片background呢，我们可以调用button.getBackground()方法获取其对象，但是却没有方法可以获取这个资源图片的引用名称，也就无法得到它的具体id了。后面想到的方案就是，在每次Activity初始化的时候，我们事先遍历每一个控件的属性集AttributeSet，有需要换肤的控件，将其android:background这个属性的值保存下来，为此，需要重载Activity的onCreateView(String name, Context context, AttributeSet attrs)方法，这个方法我的理解是在Activity中每个控件（包括LinearLayout、TextView、Button等等）初始化前会调用，我也打了log，进行了验证，其中attrs参数就是该控件的属性集，这就是我们需要的，代码：</p>
+<pre><code class="language-java">//先判断前面扫描的skinViewList是否为空，不为空意味着有控件需要换肤  
+if(skinViewList != null &amp;&amp; skinViewList.size() &gt; 0) {  
+    int viewId = -1, backgroundId = -1;  
+    for(int i = 0; i &lt; attrs.getAttributeCount(); i++) {  
+        if(attrs.getAttributeName(i).equals(&quot;id&quot;)) {  
+            viewId = attrs.getAttributeResourceValue(i, -1);  
+        }  
+  
+        if(attrs.getAttributeName(i).equals(&quot;background&quot;)) {  
+            backgroundId = attrs.getAttributeResourceValue(i, -1);  
+        }  
+    }  
+  
+    //check if background drawable need save  
+    if(viewId != -1 &amp;&amp; backgroundId != -1 &amp;&amp;  
+            drawableIdList != null &amp;&amp; !drawableIdList.containsKey(viewId)) {  
+        drawableIdList.put(viewId, backgroundId);  
+  
+        Log(&quot;add to drawableIdList, viewId = &quot; + viewId  
+                + &quot;, backgroundId = &quot; + backgroundId);  
+    }  
+}  
+</code></pre>
+<p>有了这个backgroundId，就能获取该资源的引用名称R.drawable.background，然后我们就能通过名称从其他包获取对应的资源文件了，从而可以执行换肤操作。而且，通过这个方法，不只可以获取图片资源的id，也能获取字符串如R.string.title，字体颜色如R.color.red，字体大小如R.dimens.text_size_small等等属性，从而扩大换肤的范围。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/android-de-xing-neng-you-hua">Android的性能优化</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/android-sao-miao-duo-mei-ti-wen-jian-pou-xi">Android扫描多媒体文件剖析</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

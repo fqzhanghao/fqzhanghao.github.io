@@ -1,0 +1,200 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Android Build及相关类 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Android Build及相关类</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><h1 id="android-build及相关类">Android Build及相关类</h1>
+<p>Build ：Information about the current build, extracted from system properties.<br>
+官方文档有以下属性：</p>
+<!--more-->
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119191058.png" alt="" loading="lazy"></figure>
+<pre><code class="language-java">Build.BOARD // 主板   
+Build.BRAND // Android系统定制商   
+Build.CPU_ABI // cpu指令集   
+Build.DEVICE // 设备参数   
+Build.DISPLAY // 显示屏参数   
+Build.FINGERPRINT // 硬件名称   
+Build.HOST  
+Build.ID // 修订版本列表   
+Build.MANUFACTURER // 硬件制造商   
+Build.MODEL // 版本   
+Build.PRODUCT // 手机制造商   
+Build.TAGS // 描述build的标签   
+Build.TIME  
+Build.TYPE // builder类型   
+Build.USER  
+</code></pre>
+<p>Build.VERSION类：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119191114.png" alt="" loading="lazy"></p>
+<pre><code class="language-java">// 当前开发代号   
+Build.VERSION.CODENAME  
+// 源码控制版本号   
+Build.VERSION.INCREMENTAL  
+// 版本字符串   
+Build.VERSION.RELEASE  
+// 版本号   
+Build.VERSION.SDK  
+// 版本号   
+Build.VERSION.SDK_INT  
+</code></pre>
+<pre><code class="language-java">// Build.VERSION.SDK_INT可与switch搭配用   
+switch (Build.VERSION.SDK_INT) {  
+case Build.VERSION_CODES.BASE: // 1.0   
+ break;  
+   
+case Build.VERSION_CODES.BASE_1_1: // 1.1   
+ break;  
+   
+case Build.VERSION_CODES.CUPCAKE: // 1.5   
+ break;  
+   
+case Build.VERSION_CODES.CUR_DEVELOPMENT: // current dev version   
+ break;  
+   
+case Build.VERSION_CODES.DONUT: // 1.6   
+ break;  
+   
+case Build.VERSION_CODES.ECLAIR: // 2.0   
+ break;  
+   
+case Build.VERSION_CODES.ECLAIR_0_1: // 2.0.1   
+ break;  
+   
+case Build.VERSION_CODES.ECLAIR_MR1: // 2.1   
+ break;  
+}  
+</code></pre>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/android-onuserleavehint-he-onuserinteraction">android onUserLeaveHint和onUserInteraction</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/android-50-zhi-hou-yin-shi-sheng-ming-intent-qi-dong-service-yin-fa-de-wen-ti">Android 5.0之后隐式声明Intent 启动Service引发的问题</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li><a href="#android-build%E5%8F%8A%E7%9B%B8%E5%85%B3%E7%B1%BB">Android Build及相关类</a></li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

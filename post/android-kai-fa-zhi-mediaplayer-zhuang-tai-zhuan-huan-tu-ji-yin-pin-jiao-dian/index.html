@@ -1,0 +1,263 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Android开发之Mediaplayer状态转换图及音频焦点 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Android开发之Mediaplayer状态转换图及音频焦点</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>本篇博客主要内容如下：</p>
+<p>MediaPlayer的状态变换<br>
+MediaPlayer的唤醒锁<br>
+MediaPlayer的音频焦点</p>
+<!--more-->
+<h3 id="mediaplayer的状态变换">MediaPlayer的状态变换</h3>
+<p>之前讲到，使用MediaPlayer播放音频，主要使用的是start()、pause()、stop()等方法操作MediaPlayer。但是除了开始、暂停、停止等，MediaPlayer还涉及到一些其他的状态切换，有些状态是可以双向转换的，有些只能单向环形转换。如果在某状态下，强行转换状态，会应发程序错误，例如在Preparing状态下切换到Started状态，是准备中强行开始播放，会出错。下图是官方文档上的图例，可以很清晰的表名MediaPlayer各个状态的转换情况。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119191619.png" alt="" loading="lazy"></figure>
+<p>上图已经对MediaPlayer的各种状态转换有的清晰的介绍，这里不再详细讲解了，只是提一下需要注意的地方：</p>
+<p>Started（开始）/Paused（暂停）到Stopped（停止）是单向转换，无法再从Stopped直接转换到Started，需要经历Prepared重新装载才可以重新播放。<br>
+Initialized（初始化）状态需要装载数据才可以进行start()播放，但是如果使用prepareAsync()方法异步准备，需要等待准备完成再开始播放，这里需要使用一个回调方法：setOnPreparedListener()，它会在异步装载完成后调用。<br>
+End（结束）状态是游离在其他状态之外的，在任何状态皆可切换，一般在不需要继续使用MediaPlayer的时候，才会使用release()回收资源。<br>
+Error（错误）状态是游离在其他状态之外的，只有在MediaPlayer发生错误的时候才会转换。为了保持应用的用户体验，一般我们回监听setOnErrorListener()回调方法，它会在MediaPlayer发生错误的时候被回调。</p>
+<h3 id="mediaplayer的唤醒锁">MediaPlayer的唤醒锁</h3>
+<p>一般使用MediaPlayer播放音频流，推荐使用一个Service来承载MediaPlayer，而不是直接在Activity里使用。但是Android系统的功耗设计里，为了节约电池消耗，如果设备处于睡眠状态，系统将试图降低或者关闭一些没设备必须的特性，包括CUP和Wifi硬件，然后，如果是一个后台播放音乐的应用，降低CUP可能导致在后台运行的时候干扰音频的正常播放，关闭Wifi将可能导致网络音频流的获取出现错误。</p>
+<p>为了确保MediaPlayer的承载的服务在系统睡眠的时候继续正常运行下去，Android为我们提供了一种唤醒锁(wake locks)的机制。它可以在系统睡眠的，依然保持锁定硬件的正常工作。</p>
+<p>确保在MediaPlayer运行的时候，哪怕系统睡眠了CUP也能正常运行，需要使用MediaPlayer.setWakeMode()为MediaPlayer设定唤醒锁。下面是setWakMode()的签名：</p>
+<p>setWakeMode(Context context, int mode)</p>
+<p>第一个参数是当前上下文，第二个参数为需要加锁的状态，被设定为int类型的常量，定义在PowerManager这个final类中。PowerManager是专门用来管理Android功率消耗的锁定状态，与锁定CUP相关的，有四种，分别设定CUP、屏幕、键盘等的各种保持唤醒的状态，在这里只需要设定为PARTIAL_WAKE_LOCK即可。</p>
+<pre><code class="language-java">mediaPlayer = new MediaPlayer();
+// 设定CUP锁定
+mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+</code></pre>
+<p>一般对于锁而言，锁定了通常需要解锁，但是这里的唤醒说与MediaPlayer关联，所以只需要在使用完之后release()释放MediaPlayer即可，无需显式的为其解锁。在使用setWakeMode设定唤醒锁的时候，还必须为应用赋予相应的权限：</p>
+<p>再来说说如何锁定wifi硬件在系统睡眠的时候保持正常运行。wifi锁通过WifiLock进行操作，而WifiLock通过WifiManager进行管理，通过WifiManager.createWifiLock()进行Wifi锁定。</p>
+<pre><code class="language-java">WifiManager.WifiLock createWifiLock(int lockType, String tag)
+</code></pre>
+<p>这个方法有多个重载，这里介绍的这个，第一个参数设定锁的状态，为一个int类型的常量，定义在Context类中，这里的应用场景一般设定为WIFI_MODE_FULL即可。第二个参数为WifiLock的标志，用于确定wifiLock的。</p>
+<pre><code class="language-java">wifiLock= ((WifiManager) getSystemService(this.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, &quot;mylock&quot;);
+ wifiLock.acquire();
+</code></pre>
+<p>当然，在应用中把Wifi锁定之后，还需要在MediaPlayer.release()的时候为wifi硬件解锁，为避免意外关闭的情况，最好在Android组件的onDestory()里对其进行释放，释放Wifi锁使用WifiLock.release()。</p>
+<pre><code class="language-java">//停止播放
+protected void stop() {
+	if (mediaPlayer != null &amp;&amp; mediaPlayer.isPlaying()) {
+		mediaPlayer.stop();
+		mediaPlayer.release();
+		mediaPlayer = null;
+		// 释放wifi锁
+		wifiLock.acquire();
+		btn_play.setEnabled(true);
+		Toast.makeText(this, &quot;停止播放&quot;, 0).show();
+	}
+}
+
+@Override
+protected void onDestroy() {
+	// 在activity结束的时候回收资源
+	if (mediaPlayer != null &amp;&amp; mediaPlayer.isPlaying()) {
+		mediaPlayer.stop();
+		mediaPlayer.release();
+		mediaPlayer = null;
+		// 释放wifi锁
+		wifiLock.acquire();
+	}
+	super.onDestroy();
+}
+</code></pre>
+<h3 id="mediaplayer的音频焦点">MediaPlayer的音频焦点</h3>
+<p>众所周知，Android是一个多任务的操作系统，所以对于音频的播放，也许有几个不同的媒体服务会同时播放，这样可能导致一个比较杂乱的声音环境，而错过一些重要的声音提醒。在Android2.2之后，Android提供了一种应用协商使用设备音频输出的机制，这种机制称为音频焦点。</p>
+<p>当应用程序需要输出音频或通知的时候，需要请求音频焦点，当请求得到音频焦点之后，监听音频焦点的变换，当音频焦点变换了，根据返回回来的音频焦点码进行相应的处理。音频焦点的注册使用音频管理器的AudioManager.requestAudioFocus()方法设定。它的签名如下：</p>
+<p>int requestAudioFocus(AudioManager.OnAudioFocusChangeListener l, int streamType, int durationHint)</p>
+<p>这个方法的返回值是int类型，其含义被定义在AudioManager中以常量表示AUDIOFOCUS_REQUEST_FAILED（获取音频焦点成功）、AUDIOFOCUS_REQUEST_GRANTED（获取音频焦点失败）。其中重要的是第一个参数，为音频焦点变化的回调函数，在其中可以设定如果音频焦点变换了，当前应用如何管理MediaPlayer，第二个参数为媒体流的类型，第三个参数为持续的状态。</p>
+<p>AudioManager.OnAudioFocusChangeListener为音频焦点变换的监听器，其中需要实现一个方法：onAudioFocusChange(int focusChange)在音频焦点变换的时候回调。它有一个参数，为当前表示音频焦点对于当前应用的状态码，通过这个状态码指定对应的操作，有些时候音频状态改变了，并不一定需要停止音频的播放。</p>
+<p>focusChange有一下几种状态码：</p>
+<ul>
+<li>AUDIOFOCUS_GAIN：获得音频焦点。</li>
+<li>AUDIOFOCUS_LOSS：失去音频焦点，并且会持续很长时间。这是我们需要停止MediaPlayer的播放。</li>
+<li>AUDIOFOCUS_LOSS_TRANSIENT：失去音频焦点，但并不会持续很长时间，需要暂停MediaPlayer的播放，等待重新获得音频焦点。</li>
+<li>AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK：暂时失去音频焦点，但是无需停止播放，只需降低声音方法。</li>
+</ul>
+<pre><code class="language-java">	audioManager =(AudioManager)getSystemService(this.AUDIO_SERVICE);
+
+	int result = audioManager.requestAudioFocus(
+			new OnAudioFocusChangeListener() {
+
+				@Override
+				public void onAudioFocusChange(int focusChange) {
+					switch (focusChange) {
+						case AudioManager.AUDIOFOCUS_GAIN:
+							// 获得音频焦点
+							if (!mediaPlayer.isPlaying()) {
+								mediaPlayer.start();
+							}
+							// 还原音量
+							mediaPlayer.setVolume(1.0f, 1.0f);
+							break;
+
+						case AudioManager.AUDIOFOCUS_LOSS:
+							// 长久的失去音频焦点，释放MediaPlayer
+							if (mediaPlayer.isPlaying())
+								mediaPlayer.stop();
+							mediaPlayer.release();
+							mediaPlayer = null;
+							break;
+
+						case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+							// 展示失去音频焦点，暂停播放等待重新获得音频焦点
+							if (mediaPlayer.isPlaying())
+								mediaPlayer.pause();
+							break;
+						case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+							// 失去音频焦点，无需停止播放，降低声音即可
+							if (mediaPlayer.isPlaying()) {
+								mediaPlayer.setVolume(0.1f, 0.1f);
+							}
+							break;
+					}
+				}
+			}, AudioManager.STREAM_MUSIC,
+			AudioManager.AUDIOFOCUS_GAIN);
+</code></pre>
+<p>总结</p>
+<p>以上就讲解了MediaPlayer的一些高级的内容，在掌握了MediaPlayer的使用之后，开发有关音乐播放类的应用的时候就可以得心应手了。从用户体验的方面出发，如果真实开发一款播放器类的软件，需要监听AUDIO_BECOMING_NOISY的广播，它会在音频输出源从其他输出源变换到设备扬声器的时候发出此广播，监听广播在音频输出源改变到设备扬声器的时候，停止播放，这样确保在耳机或额外的音频输出硬件与设备断开连接的时候，不至于重新从扬声器继续输出音频播放。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/android-kai-fa-chang-jian-de-activity-zhong-nei-cun-xie-lou-ji-jie-jue-ban-fa">Android开发常见的Activity中内存泄漏及解决办法</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/android-cun-chu-wa-keng-ji">Android存储挖坑记</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#mediaplayer%E7%9A%84%E7%8A%B6%E6%80%81%E5%8F%98%E6%8D%A2">MediaPlayer的状态变换</a></li>
+<li><a href="#mediaplayer%E7%9A%84%E5%94%A4%E9%86%92%E9%94%81">MediaPlayer的唤醒锁</a></li>
+<li><a href="#mediaplayer%E7%9A%84%E9%9F%B3%E9%A2%91%E7%84%A6%E7%82%B9">MediaPlayer的音频焦点</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

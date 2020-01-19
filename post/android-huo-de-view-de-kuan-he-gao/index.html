@@ -1,0 +1,185 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Android 获得view的宽和高 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Android 获得view的宽和高</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>在oncreate()中利用view.getWidth()或是view.getHeiht()来获取view的宽和高，看似没有问题，其实他们去得值是0，并不是你想要的结果？</p>
+<p>这是为什么呢？</p>
+<!--more-->
+<p>在调用oncreate()方法时，界面处于不可见状态，内存加载组件还没有绘制出来，你是无法获取他的尺寸。</p>
+<p>那如何在绘制组件之前能获取到该组件的尺寸大小呢？</p>
+<p>这里有三种方法，经过验证的：</p>
+<p>方法一 ：</p>
+<pre><code class="language-java">//测量方法
+int width =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED);
+int height =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED);
+view.measure(width,height);
+int height=view.getMeasuredHeight(); 
+int width=view.getMeasuredWidth();
+</code></pre>
+<p>方法二 ：</p>
+<pre><code class="language-java">//增加组件绘制之前的监听
+ViewTreeObserver
+ vto =view.getViewTreeObserver(); 
+vto.addOnPreDrawListener(new
+ViewTreeObserver.OnPreDrawListener() { 
+   @Override
+    public
+booleanonPreDraw() { 
+       int
+height =view.getMeasuredHeight(); 
+       int
+width =view.getMeasuredWidth();
+   }
+});
+</code></pre>
+<p>方法三 ：</p>
+<pre><code class="language-java">//增加整体布局监听
+ViewTreeObserver
+ vto = view.getViewTreeObserver();  
+vto.addOnGlobalLayoutListener(new
+OnGlobalLayoutListener(){ 
+    @Override 
+    public
+voidonGlobalLayout() { 
+      view.getViewTreeObserver().removeGlobalOnLayoutListener(this);     
+    int
+height =view.getMeasuredHeight(); 
+     int
+width =view.getMeasuredWidth();  
+    } 
+});
+</code></pre>
+<p>那么，在activity进入运行期时，组件的尺寸获取方法就很简单了，直接getWidth()和getHeight().<br>
+来源： http://blog.csdn.net/yangdeli888/article/details/25405263</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/android-suo-ping-yan-jiu">android 锁屏研究</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/android-zhong-yu-zhi-dao-log-xian-shi-bu-quan-de-yuan-yin-liao">Android 终于知道Log显示不全的原因了</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

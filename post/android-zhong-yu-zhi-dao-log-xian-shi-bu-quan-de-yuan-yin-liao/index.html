@@ -1,0 +1,160 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Android 终于知道Log显示不全的原因了 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Android 终于知道Log显示不全的原因了</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>一个优秀的软件系统一定会实时保存系统运行过程中产生的异常或非异常性数据，用于记录系统运行过程产生的各种行为，作为日后发现问题、跟踪问题并解决问题的一个很重要的依据。一般以输出文件的形式保存，同时也可以选择性的在控台打印。日志处理，可谓是任何软件开发过程中必不可少的一个环节。</p>
+<!--more-->
+<p>在Android应用开发阶段，我们常常会使用系统提供的日志打印功能选择性地在Logcat控制台上打印一些数据信息，便于更加直观地调试跟踪应用运行的一个状态，常见如客户端与服务器通讯过程中涉及到的URL链接、request请求参数和response响应结果等。</p>
+<p>但如果打印的message过长，比如接口响应结果过大，将会导致Logcat控台数据显示不全。自打使用Log以来经常遇到这个问题，之前也是没太在意，毕竟message太长的情况也是少见，偶尔遇到这种情况就通过Debug工具跟踪调试，复制对应response信息到bejson等其他辅助工具上格式化浏览，多少还是有点不方便。</p>
+<p>后来经过查询才得知，Android系统的单条日志打印长度是有限的，在底层Logger驱动程序的一个类Logger.h头文件中有如下两行代码：</p>
+<pre><code class="language-C">#define LOGGER_ENTRY_MAX_LEN        (4*1024)  
+#define LOGGER_ENTRY_MAX_PAYLOAD    \\  
+    (LOGGER_ENTRY_MAX_LEN - sizeof(struct logger_entry))
+</code></pre>
+<p>可以看出，系统显示单条Log信息的长度是固定的，为4*1024个字符长度！Logcat使用的liblog资源包也提到，使用Log打印的message有可能被log内核驱动缩短：</p>
+<pre><code class="language-C">The message may have been truncated by the kernel log driver.
+</code></pre>
+<p>了解了其中的长度限制，就好办了。我们可以对Message做个长度判断，采取分段打印的办法输出日志信息，比如这样做：</p>
+<pre><code class="language-java">if(xml.length() &gt; 4000) {
+ for(int i=0;i&lt;xml.length();i+=4000){
+    if(i+4000&lt;xml.length())
+        Log.i(&quot;rescounter&quot;+i,xml.substring(i, i+4000));
+     else
+        Log.i(&quot;rescounter&quot;+i,xml.substring(i, xml.length()));
+    }
+} else
+    Log.i(&quot;resinfo&quot;,xml);
+}
+</code></pre>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/android-huo-de-view-de-kuan-he-gao">Android 获得view的宽和高</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/android-onuserleavehint-he-onuserinteraction">android onUserLeaveHint和onUserInteraction</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

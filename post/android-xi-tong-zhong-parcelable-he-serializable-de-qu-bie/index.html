@@ -1,0 +1,273 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Android系统中Parcelable和Serializable的区别 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Android系统中Parcelable和Serializable的区别</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>进行Android开发的时候，我们都知道不能将对象的引用传给Activities或者Fragments，我们需要将这些对象放到一个Intent或者Bundle里面，然后再传递。</p>
+<p>通过Android的API，我们知道有两种选择，即在传递对象时，需要对我们的对象进行 Parcelable 或者Serializable化。作为Java开发者，相信大家对Serializable 机制有一定了解，那为什么还需要 Parcelable呢？</p>
+<!--more-->
+<p>为了回答这个问题，让我们分别来看看这两者的差异。</p>
+<h3 id="serializable-简单易用">Serializable, 简单易用</h3>
+<pre><code class="language-java">// access modifiers, accessors and constructors omitted for brevity
+public class SerializableDeveloper implements Serializable
+    String name;
+    int yearsOfExperience;
+    List&lt;Skill&gt; skillSet;
+    float favoriteFloat;
+ 
+    static class Skill implements Serializable {
+        String name;
+        boolean programmingRelated;
+    }
+}
+</code></pre>
+<p>serializable的迷人之处在于你只需要对某个类以及它的属性实现Serializable 接口即可。Serializable 接口是一种标识接口（marker interface），这意味着无需实现方法，Java便会对这个对象进行高效的序列化操作。</p>
+<p>这种方法的缺点是使用了反射，序列化的过程较慢。这种机制会在序列化的时候创建许多的临时对象，容易触发垃圾回收。</p>
+<h3 id="parcelable-速度至上">Parcelable, 速度至上</h3>
+<pre><code class="language-java">// access modifiers, accessors and regular constructors ommited for brevity
+class ParcelableDeveloper implements Parcelable {
+    String name;
+    int yearsOfExperience;
+    List&lt;Skill&gt; skillSet;
+    float favoriteFloat;
+ 
+    ParcelableDeveloper(Parcel in) {
+        this.name = in.readString();
+        this.yearsOfExperience = in.readInt();
+        this.skillSet = new ArrayList&lt;Skill&gt;();
+        in.readTypedList(skillSet, Skill.CREATOR);
+        this.favoriteFloat = in.readFloat();
+    }
+ 
+    void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeInt(yearsOfExperience);
+        dest.writeTypedList(skillSet);
+        dest.writeFloat(favoriteFloat);
+    }
+ 
+    int describeContents() {
+        return 0;
+    }
+ 
+ 
+    static final Parcelable.Creator&lt;ParcelableDeveloper&gt; CREATOR
+            = new Parcelable.Creator&lt;ParcelableDeveloper&gt;() {
+ 
+        ParcelableDeveloper createFromParcel(Parcel in) {
+            return new ParcelableDeveloper(in);
+        }
+ 
+        ParcelableDeveloper[] newArray(int size) {
+            return new ParcelableDeveloper[size];
+        }
+    };
+ 
+    static class Skill implements Parcelable {
+        String name;
+        boolean programmingRelated;
+ 
+        Skill(Parcel in) {
+            this.name = in.readString();
+            this.programmingRelated = (in.readInt() == 1);
+        }
+ 
+        @Override
+        void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(name);
+            dest.writeInt(programmingRelated ? 1 : 0);
+        }
+ 
+        static final Parcelable.Creator&lt;Skill&gt; CREATOR
+            = new Parcelable.Creator&lt;Skill&gt;() {
+ 
+            Skill createFromParcel(Parcel in) {
+                return new Skill(in);
+            }
+ 
+            Skill[] newArray(int size) {
+                return new Skill[size];
+            }
+        };
+ 
+        @Override
+        int describeContents() {
+            return 0;
+        }
+    }
+}
+</code></pre>
+<p>根据 google 工程师的说法，这些代码将会运行地特别快。原因之一就是我们已经清楚地知道了序列化的过程，而不需要使用反射来推断。同时为了更快地进行序列化，对象的代码也需要高度优化。</p>
+<p>因此，很明显实现Parcelable并不容易。实现Parcelable接口需要写大量的模板代码，这使得对象代码变得难以阅读和维护。</p>
+<h3 id="速度测试">速度测试</h3>
+<p>当然，我们还是想知道到底Parcelable相对于Serializable要快多少。</p>
+<h3 id="测试方法">测试方法</h3>
+<p>通过将一个对象放到一个bundle里面然后调用Bundle#writeToParcel(Parcel, int)方法来模拟传递对象给一个activity的过程，然后再把这个对象取出来。<br>
+在一个循环里面运行1000 次。<br>
+两种方法分别运行10次来减少内存整理，cpu被其他应用占用等情况的干扰。<br>
+参与测试的对象就是上面代码中的SerializableDeveloper 和 ParcelableDeveloper。<br>
+在多种Android软硬件环境上进行测试<br>
+LG Nexus 4 – Android 4.2.2<br>
+Samsung Nexus 10 – Android 4.2.2<br>
+HTC Desire Z – Android 2.3.3</p>
+<h3 id="结果">结果</h3>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119192129.png" alt="" loading="lazy"></figure>
+<p>parcelable-vs-serializable<br>
+Nexus 10<br>
+Serializable: 1.0004ms,  Parcelable: 0.0850ms – 提升10.16倍。</p>
+<p>Nexus 4<br>
+Serializable: 1.8539ms – Parcelable: 0.1824ms – 提升11.80倍。</p>
+<p>Desire Z<br>
+Serializable: 5.1224ms – Parcelable: 0.2938ms – 提升17.36倍。</p>
+<p>由此可以得出: Parcelable 比 Serializable快了10多倍。有趣的是，即使在Nexus 10这样性能强悍的硬件上，一个相当简单的对象的序列化和反序列化的过程要花将近一毫秒。</p>
+<h3 id="总结">总结</h3>
+<p>如果你想成为一个优秀的软件工程师，你需要多花点时间来实现 Parcelable ，因为这将会为你对象的序列化过程快10多倍，而且占用较少的资源。</p>
+<p>但是大多数情况下， Serializable 的龟速不会太引人注目。你想偷点懒就用它吧，不过要记得serialization是一个比较耗资源的操作，尽量少使用。</p>
+<p>如果你想要传递一个包含许多对象的列表，那么整个序列化的过程的时间开销可能会超过一秒，这会让屏幕转向的时候变得很卡顿。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/android-xi-tong-biao-zhun-yin-le-jie-kou"> android系统标准音乐接口</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/android-de-xing-neng-you-hua">Android的性能优化</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#serializable-%E7%AE%80%E5%8D%95%E6%98%93%E7%94%A8">Serializable, 简单易用</a></li>
+<li><a href="#parcelable-%E9%80%9F%E5%BA%A6%E8%87%B3%E4%B8%8A">Parcelable, 速度至上</a></li>
+<li><a href="#%E9%80%9F%E5%BA%A6%E6%B5%8B%E8%AF%95">速度测试</a></li>
+<li><a href="#%E6%B5%8B%E8%AF%95%E6%96%B9%E6%B3%95">测试方法</a></li>
+<li><a href="#%E7%BB%93%E6%9E%9C">结果</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

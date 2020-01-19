@@ -1,0 +1,415 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title> android系统标准音乐接口 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3"> android系统标准音乐接口</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>在自己写完音乐软件之后,可以实现安卓标准播放接口,把控制权交给第三方软件使用.</p>
+<p>实现思路要分版本,一种是在安卓5.0以下,基于RemoteControlClient实现,另一种是在5.0以上,基于MediaSession实现.</p>
+<!--more-->
+<h1 id="1-基于remotecontrolclient实现">1 . 基于RemoteControlClient实现.</h1>
+<hr>
+<pre><code class="language-java">@SuppressWarnings(&quot;deprecation&quot;)
+public class RemoteControlResponse {
+
+	private final static String TAG = &quot;MediaSessonResponse&quot;;
+	private static RemoteControlResponse remoteControlResponse = null;
+	private static RemoteControlClient remoteClient = null;
+	public static RemoteControlResponse getInstance() {
+		if (remoteControlResponse == null) {
+			remoteControlResponse = new RemoteControlResponse();
+		}
+		return remoteControlResponse;
+	}
+	
+	public void init(){
+		if (remoteClient==null) {
+			 AudioManager myAudioManager = (AudioManager) App.getInstance().getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+			 Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+			 PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(App.getInstance().getApplicationContext(), 0, mediaButtonIntent, 0);
+			 remoteClient = new RemoteControlClient(mediaPendingIntent);
+			 myAudioManager.registerRemoteControlClient(remoteClient);
+		}
+		MessageManager.getInstance().attachMessage(MessageID.OBSERVER_PLAYCONTROL, playControlObserver);
+		MessageManager.getInstance().attachMessage(MessageID.OBSERVER_APP, appObserver);
+		MessageManager.getInstance().attachMessage(MessageID.OBSERVER_LYRICS, mLyricsObserver);
+		
+	}
+	
+	private void release(){
+		MessageManager.getInstance().detachMessage(MessageID.OBSERVER_PLAYCONTROL, playControlObserver);
+		MessageManager.getInstance().detachMessage(MessageID.OBSERVER_APP, appObserver);
+		MessageManager.getInstance().detachMessage(MessageID.OBSERVER_LYRICS, mLyricsObserver);
+	}
+	
+	private void setPlayState(int state){
+		remoteClient.setPlaybackState(state);
+	}
+	
+	@SuppressLint(&quot;InlinedApi&quot;)
+	private void setMusicData(){
+		
+		RemoteControlClient.MetadataEditor ed = remoteClient.editMetadata(true);
+		Music music = ModMgr.getPlayControl().getNowPlayingMusic();
+		if (music==null) {
+			return;
+		}
+		ed.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,music.name);
+		ed.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST,music.artist);
+		ed.putString(MediaMetadataRetriever.METADATA_KEY_ALBUM,music.album);
+		ed.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, music.duration);
+		Bitmap b = ModMgr.getLyricsMgr().getHeadPic();
+		if (b != null) {
+			Bitmap.Config config = b.getConfig();
+			if (config == null) {
+				config = Bitmap.Config.ARGB_8888;
+			}
+			b = b.copy(config, false);
+			ed.putBitmap(MetadataEditor.BITMAP_KEY_ARTWORK, b);
+		}
+		ed.apply();
+		
+	}
+	
+	//设置音乐播放状态
+	private PlayControlObserver playControlObserver = new PlayControlObserver(){
+		@Override
+		public void IPlayControlObserver_RealPlay(Music music) {
+			setPlayState((int)RemoteControlClient.PLAYSTATE_PLAYING);
+		}
+
+		@Override
+		public void IPlayControlObserver_Pause() {
+			setPlayState((int)RemoteControlClient.PLAYSTATE_PAUSED);
+		}
+		
+		@Override
+		public void IPlayControlObserver_Continue() {
+			setPlayState((int)RemoteControlClient.PLAYSTATE_PLAYING);
+		}
+		@Override
+		public void IPlayControlObserver_PlayStop(boolean end) {
+			setPlayState((int)RemoteControlClient.PLAYSTATE_STOPPED );
+		}
+	};
+	
+	//程序退出的时候释放资
+	private AppObserver appObserver = new AppObserver() {
+		@Override
+		public void IAppObserver_PrepareExitApp() {
+			release();
+		}
+	};
+	
+	//在播放歌曲的时候设置音乐资源到系统
+	private ILyricsObserver mLyricsObserver = new ILyricsObserver(){
+
+		@Override
+		public void ILyricObserver_Lyrics(DownloadStatus status, ILyrics lyrics, ILyrics extLyrics, boolean isManually) {
+			
+		}
+
+		@Override
+		public void ILyricObserver_SearchList(DownloadStatus status, List&lt;LyricsListItem&gt; lyricsList) {
+			
+		}
+
+		@Override
+		public void ILyricObserver_HeadPic(DownloadStatus status, Bitmap bitmap) {
+			if (!DownloadStatus.BEGIN.equals(status)) {
+				setMusicData();
+			}
+			
+		}
+
+		@Override
+		public void ILyricObserver_BackgroundPic(DownloadStatus status, Bitmap bitmap, boolean isManually) {
+			
+		}
+
+		@Override
+		public void ILyricObserver_AutoDownloadFinished(Music m) {
+			
+		}
+
+		@Override
+		public void ILyricObserver_AutoDownloadNotify(int alreadyDownloadCout, int sumDownloadCount) {
+			
+		}	
+	};
+}
+</code></pre>
+<h1 id="2-使用mediasession实现">2  .使用MediaSession实现</h1>
+<pre><code class="language-java">public class MediaSessonResponse {
+	
+	private final static String TAG = &quot;MediaSessonResponse&quot;;
+	private static MediaSessonResponse mediaSessonResponse = null;
+	private static MediaSession mediaSession = null;
+	public static MediaSessonResponse getInstance() {
+		if (mediaSessonResponse == null) {
+			mediaSessonResponse = new MediaSessonResponse();
+		}
+		return mediaSessonResponse;
+	}
+
+	public void init(){
+		if (mediaSession==null) {
+			mediaSession = new MediaSession(App.getInstance().getApplicationContext(), TAG);
+			mediaSession.setActive(true);
+			Intent openintent = new Intent(App.getInstance().getApplicationContext(), HeadsetControlReceiver.class);
+			PendingIntent pi = PendingIntent.getBroadcast(App.getInstance().getApplicationContext(), 0, openintent, PendingIntent.FLAG_CANCEL_CURRENT);
+			mediaSession.setMediaButtonReceiver(pi);
+			
+		}
+		MessageManager.getInstance().attachMessage(MessageID.OBSERVER_PLAYCONTROL, playControlObserver);
+		MessageManager.getInstance().attachMessage(MessageID.OBSERVER_APP, appObserver);
+		MessageManager.getInstance().attachMessage(MessageID.OBSERVER_LYRICS, mLyricsObserver);
+	}
+	private void release(){
+		mediaSession.release();
+		MessageManager.getInstance().detachMessage(MessageID.OBSERVER_PLAYCONTROL, playControlObserver);
+		MessageManager.getInstance().detachMessage(MessageID.OBSERVER_APP, appObserver);
+		MessageManager.getInstance().detachMessage(MessageID.OBSERVER_LYRICS, mLyricsObserver);
+	}
+	
+	private Callback callback = new Callback() {
+		@Override
+		public void onPlay() {
+			ModMgr.getPlayControl().continuePlay();
+        }
+		@Override
+		public void onPause() {
+			ModMgr.getPlayControl().pause();
+		}
+		@Override
+		public void onSkipToNext() {
+			ModMgr.getPlayControl().playNext();
+		}
+		@Override
+		public void onSkipToPrevious() {
+			ModMgr.getPlayControl().playPre();
+		}
+	};
+	
+	
+	private void setMusicData(){
+		Builder builder = new Builder();
+		Music music = ModMgr.getPlayControl().getNowPlayingMusic();
+		if (music==null) {
+			return;
+		}
+		builder.putBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON, ModMgr.getLyricsMgr().getHeadPic());
+		builder.putString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST, music.artist);
+		builder.putString(MediaMetadata.METADATA_KEY_TITLE, music.name);
+		MediaMetadata mediaMetadata = builder.build();
+		mediaSession.setMetadata(mediaMetadata);
+	}
+	
+	private void setPlayState(int state){
+		PlaybackState.Builder builder = new PlaybackState.Builder();
+		builder.setState(state, 0, 0);
+		PlaybackState playbackState = builder.build();
+		mediaSession.setPlaybackState(playbackState);
+	}
+	
+	
+	private PlayControlObserver playControlObserver = new PlayControlObserver(){
+		@Override
+		public void IPlayControlObserver_RealPlay(Music music) {
+			setPlayState((int)PlaybackState.STATE_PLAYING);
+		}
+
+		@Override
+		public void IPlayControlObserver_Pause() {
+			setPlayState((int)PlaybackState.STATE_PAUSED);
+		}
+		
+		@Override
+		public void IPlayControlObserver_Continue() {
+			setPlayState((int)PlaybackState.STATE_PLAYING);
+		}
+		@Override
+		public void IPlayControlObserver_PlayStop(boolean end) {
+			setPlayState((int)PlaybackState.STATE_STOPPED);
+		}
+	};
+
+	private AppObserver appObserver = new AppObserver() {
+		@Override
+		public void IAppObserver_PrepareExitApp() {
+			release();
+		}
+	};
+	
+	private ILyricsObserver mLyricsObserver = new ILyricsObserver(){
+
+		@Override
+		public void ILyricObserver_Lyrics(DownloadStatus status, ILyrics lyrics, ILyrics extLyrics, boolean isManually) {
+			
+		}
+
+		@Override
+		public void ILyricObserver_SearchList(DownloadStatus status, List&lt;LyricsListItem&gt; lyricsList) {
+			
+		}
+
+		@Override
+		public void ILyricObserver_HeadPic(DownloadStatus status, Bitmap bitmap) {
+			if (!DownloadStatus.BEGIN.equals(status)) {
+				setMusicData();
+			}
+			
+		}
+
+		@Override
+		public void ILyricObserver_BackgroundPic(DownloadStatus status, Bitmap bitmap, boolean isManually) {
+			
+		}
+
+		@Override
+		public void ILyricObserver_AutoDownloadFinished(Music m) {
+			
+		}
+
+		@Override
+		public void ILyricObserver_AutoDownloadNotify(int alreadyDownloadCout, int sumDownloadCount) {
+			
+		}
+		
+	};
+};
+</code></pre>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/android-huo-qu-view-gao-du-de-san-chong-fang-shi">Android获取view高度的三种方式</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/android-xi-tong-zhong-parcelable-he-serializable-de-qu-bie">Android系统中Parcelable和Serializable的区别</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li><a href="#1-%E5%9F%BA%E4%BA%8Eremotecontrolclient%E5%AE%9E%E7%8E%B0">1 . 基于RemoteControlClient实现.</a></li>
+<li><a href="#2-%E4%BD%BF%E7%94%A8mediasession%E5%AE%9E%E7%8E%B0">2  .使用MediaSession实现</a></li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

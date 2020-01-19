@@ -3,7 +3,7 @@
         <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
         <meta charset="utf-8">
         <meta name="referrer" content="never">
-        <title>安卓自定义View基础 - 坐标系 | 浩浩的博客</title>
+        <title>多台机子共同维护hexo博客 | 浩浩的博客</title>
         <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
         <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
         <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
@@ -40,75 +40,56 @@
                 <div class="mdui-row">
                         <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
                          <article class="mdui-shadow-10 mdui-p-a-2 post-list">
-                           <div class="mdui-typo-display-1 mdui-m-b-3">安卓自定义View基础 - 坐标系</div>
+                           <div class="mdui-typo-display-1 mdui-m-b-3">多台机子共同维护hexo博客</div>
                            <a  class="index-list-biaoqian ">2020-01-19</a>
-                           <div class="mdui-typo mdui-m-t-3 post-neirong"><h1 id="一屏幕坐标系和数学坐标系的区别">一.屏幕坐标系和数学坐标系的区别</h1>
-<p>由于移动设备一般定义屏幕左上角为坐标原点，向右为x轴增大方向，向下为y轴增大方向， 所以在手机屏幕上的坐标系与数学中常见的坐标系是稍微有点差别的，详情如下：</p>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>转自CrazyMilk.<a href="http://crazymilk.github.io/2015/12/28/GitHub-Pages-Hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/">GitHub Pages + Hexo搭建博客</a></p>
+<p>Hexo部署到GitHub上的文件，是.md（你的博文）转化之后的.html（静态网页）。因此，当你重装电脑或者想在不同电脑上修改博客时，就不可能了（除非你自己写html o(<sup>▽</sup>)o ）。</p>
 <!--more-->
-<blockquote>
-<p>（PS：其中的∠a 是对应的，注意y轴方向！）</p>
-</blockquote>
-<p><img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f1qygzfvhoj308c0dwglr.jpg" alt="" loading="lazy"><br>
-<img src="http://ww1.sinaimg.cn/large/005Xtdi2jw1f1qyhbqvihj308c0dwjrh.jpg" alt="" loading="lazy"></p>
-<h3 id="实际屏幕上的默认坐标系如下">实际屏幕上的默认坐标系如下：</h3>
-<blockquote>
-<p>PS: 假设其中棕色部分为手机屏幕</p>
-</blockquote>
-<figure data-type="image" tabindex="1"><img src="http://ww3.sinaimg.cn/large/005Xtdi2jw1f1qyhjy7h8j308c0dwq32.jpg" alt="" loading="lazy"></figure>
-<h1 id="二view的坐标系">二.View的坐标系</h1>
-<h3 id="注意view的坐标系统是相对于父控件而言的">注意：View的坐标系统是相对于父控件而言的.</h3>
-<pre><code class="language-java">getTop();       //获取子View左上角距父View顶部的距离
-getLeft();      //获取子View左上角距父View左侧的距离
-getBottom();    //获取子View右下角距父View顶部的距离
-getRight();     //获取子View右下角距父View左侧的距离
+<p>其实，Hexo生成的网站文件中有.gitignore文件，因此它的本意也是想我们将Hexo生成的网站文件存放到GitHub上进行管理的（而不是用U盘或者云备份啦(╬▔皿▔)凸）。这样，不仅解决了上述的问题，还可以通过git的版本控制追踪你的博文的修改过程，是极赞的。<br>
+但是，如果每一个GitHub Pages都需要创建一个额外的仓库来存放Hexo网站文件，我感觉很麻烦（10个项目需要20个仓库(ˉ▽ˉ；)…）。<br>
+所以，我利用了分支！！！<br>
+简单地说，每个想建立GitHub Pages的仓库，起码有两个分支，一个用来存放Hexo网站的文件，一个用来发布网站。<br>
+下面以我的博客作为例子详细地讲述。</p>
+<h3 id="1博客搭建流程">1.博客搭建流程</h3>
+<hr>
+<ol>
+<li>创建仓库，CrazyMilk.github.io；</li>
+<li>创建两个分支：master 与 hexo；</li>
+<li>设置hexo为默认分支（因为我们只需要手动管理这个分支上的Hexo网站文件）；</li>
+<li>使用git clone git@github.com:CrazyMilk/CrazyMilk.github.io.git拷贝仓库；</li>
+<li>在本地CrazyMilk.github.io文件夹下通过Git bash依次执行npm install hexo、hexo init、npm install 和 npm install hexo-deployer-git（此时当前分支应显示为hexo）;</li>
+<li>修改_config.yml中的deploy参数，分支应为master；</li>
+<li>依次执行git add .、git commit -m “…”、git push origin hexo提交网站相关的文件；</li>
+<li>执行hexo generate -d生成网站并部署到GitHub上。</li>
+</ol>
+<p>这样一来，在GitHub上的CrazyMilk.github.io仓库就有两个分支，一个hexo分支用来存放网站的原始文件，一个master分支用来存放生成的静态网页。完美( •̀ ω •́ )y！</p>
+<h3 id="2管理流程">2.管理流程</h3>
+<hr>
+<h4 id="1日常修改">1.日常修改</h4>
+<p>在本地对博客进行修改（添加新博文、修改样式等等）后，通过下面的流程进行管理：</p>
+<ol>
+<li>依次执行git add .、git commit -m “…”、git push origin hexo指令将改动推送到GitHub（此时当前分支应为hexo）；</li>
+<li>然后才执行hexo generate -d发布网站到master分支上。</li>
+</ol>
+<p>虽然两个过程顺序调转一般不会有问题，不过逻辑上这样的顺序是绝对没问题的（例如突然死机要重装了，悲催….的情况，调转顺序就有问题了）。</p>
+<h4 id="2本地资料丢失">2.本地资料丢失</h4>
+<p>当重装电脑之后，或者想在其他电脑上修改博客，可以使用下列步骤：</p>
+<ol>
+<li>使用git clone git@github.com:CrazyMilk/CrazyMilk.github.io.git拷贝仓库（默认分支为hexo）；</li>
+<li>在本地新拷贝的CrazyMilk.github.io文件夹下通过Git bash依次执行下列指令：npm install hexo、npm install、npm install hexo-deployer-git（记得，不需要hexo init这条指令）。</li>
+</ol>
+<h3 id="备注">备注</h3>
+<p>问题总出现在上传博客的时候,固把_config.yml中git参数记录在这里.</p>
+<pre><code class="language-xml">deploy:
+  type: git
+  repository: ssh://git@github.com/yeqiling/yeqiling.github.io.git
+  branch: master
 </code></pre>
-<h3 id="如下图所示">如下图所示：</h3>
-<figure data-type="image" tabindex="2"><img src="http://ww2.sinaimg.cn/large/005Xtdi2gw1f1qzqwvkkbj308c0dwgm9.jpg" alt="" loading="lazy"></figure>
-<h1 id="三motionevent中-get-和-getraw-的区别">三.MotionEvent中 get 和 getRaw 的区别</h1>
-<pre><code class="language-java">event.getX();       //触摸点相对于其所在组件坐标系的坐标
-event.getY();
-
-event.getRawX();    //触摸点相对于屏幕默认坐标系的坐标
-event.getRawY();
-</code></pre>
-<h3 id="如下图所示-2">如下图所示：</h3>
-<blockquote>
-<p>PS:其中相同颜色的内容是对应的，其中为了显示方便，蓝色箭头向左稍微偏移了一点.</p>
-</blockquote>
-<figure data-type="image" tabindex="3"><img src="http://ww1.sinaimg.cn/large/005Xtdi2jw1f1r2bdlqhbj308c0dwwew.jpg" alt="" loading="lazy"></figure>
-<h1 id="四核心要点">四.核心要点</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">序号</th>
-<th>要点</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">1</td>
-<td>在数学中常见的坐标系与屏幕默认坐标系的差别</td>
-</tr>
-<tr>
-<td style="text-align:center">2</td>
-<td>View的坐标系是相对于父控件而言的</td>
-</tr>
-<tr>
-<td style="text-align:center">3</td>
-<td>MotionEvent中get和getRaw的区别</td>
-</tr>
-</tbody>
-</table>
-<h1 id="五参考文章">五.参考文章</h1>
-<ul>
-<li><a href="http://blog.csdn.net/wangjinyu501/article/details/21827341" title="Android 屏幕（View）坐标系统">Android 屏幕（View）坐标系统</a></li>
-</ul>
-<p>转自 : <a href="http://www.gcssloop.com/customview/CoordinateSystem/">http://www.gcssloop.com/customview/CoordinateSystem/</a></p>
 </div>
                               <div class="mdui-divider mdui-m-t-3"></div>
                               <div class="mdui-row-xs-2 mdui-m-t-2">
-  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/an-zhuo-zi-ding-yi-view-ji-chu-jiao-du-hu-du">安卓自定义View基础 - 角度弧度</a></div></div>
- <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/gei-chu-xue-zhe-de-rxjava20-jiao-cheng-er">给初学者的RxJava2.0教程(二)</a></div> </div>
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/ru-he-jie-jue-android-50-zhong-chu-xian-de-jing-gao-service-intent-must-be-explitict">如何解决Android 5.0中出现的警告：Service Intent must be explitict</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/jian-guo-yun-gityou-xiao-guan-li-nin-de-dai-ma">坚果云+git，有效管理您的代码</a></div> </div>
                                 </div>
                                 <div class="mdui-divider mdui-m-t-2"></div>
    
@@ -140,27 +121,22 @@ event.getRawY();
                          </article>
                  <div class="toc-container mdui-float-right">
                 <ul class="markdownIt-TOC">
-<li><a href="#%E4%B8%80%E5%B1%8F%E5%B9%95%E5%9D%90%E6%A0%87%E7%B3%BB%E5%92%8C%E6%95%B0%E5%AD%A6%E5%9D%90%E6%A0%87%E7%B3%BB%E7%9A%84%E5%8C%BA%E5%88%AB">一.屏幕坐标系和数学坐标系的区别</a><br>
-*
+<li>
 <ul>
-<li><a href="#%E5%AE%9E%E9%99%85%E5%B1%8F%E5%B9%95%E4%B8%8A%E7%9A%84%E9%BB%98%E8%AE%A4%E5%9D%90%E6%A0%87%E7%B3%BB%E5%A6%82%E4%B8%8B">实际屏幕上的默认坐标系如下：</a></li>
+<li>
+<ul>
+<li><a href="#1%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E6%B5%81%E7%A8%8B">1.博客搭建流程</a></li>
+<li><a href="#2%E7%AE%A1%E7%90%86%E6%B5%81%E7%A8%8B">2.管理流程</a>
+<ul>
+<li><a href="#1%E6%97%A5%E5%B8%B8%E4%BF%AE%E6%94%B9">1.日常修改</a></li>
+<li><a href="#2%E6%9C%AC%E5%9C%B0%E8%B5%84%E6%96%99%E4%B8%A2%E5%A4%B1">2.本地资料丢失</a></li>
 </ul>
 </li>
-<li><a href="#%E4%BA%8Cview%E7%9A%84%E5%9D%90%E6%A0%87%E7%B3%BB">二.View的坐标系</a><br>
-*
-<ul>
-<li><a href="#%E6%B3%A8%E6%84%8Fview%E7%9A%84%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F%E6%98%AF%E7%9B%B8%E5%AF%B9%E4%BA%8E%E7%88%B6%E6%8E%A7%E4%BB%B6%E8%80%8C%E8%A8%80%E7%9A%84">注意：View的坐标系统是相对于父控件而言的.</a></li>
-<li><a href="#%E5%A6%82%E4%B8%8B%E5%9B%BE%E6%89%80%E7%A4%BA">如下图所示：</a></li>
+<li><a href="#%E5%A4%87%E6%B3%A8">备注</a></li>
 </ul>
 </li>
-<li><a href="#%E4%B8%89motionevent%E4%B8%AD-get-%E5%92%8C-getraw-%E7%9A%84%E5%8C%BA%E5%88%AB">三.MotionEvent中 get 和 getRaw 的区别</a><br>
-*
-<ul>
-<li><a href="#%E5%A6%82%E4%B8%8B%E5%9B%BE%E6%89%80%E7%A4%BA-2">如下图所示：</a></li>
 </ul>
 </li>
-<li><a href="#%E5%9B%9B%E6%A0%B8%E5%BF%83%E8%A6%81%E7%82%B9">四.核心要点</a></li>
-<li><a href="#%E4%BA%94%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0">五.参考文章</a></li>
 </ul>
 
               </div>

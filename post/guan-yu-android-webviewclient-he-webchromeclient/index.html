@@ -3,7 +3,7 @@
         <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
         <meta charset="utf-8">
         <meta name="referrer" content="never">
-        <title>安卓自定义View基础 - 坐标系 | 浩浩的博客</title>
+        <title>关于android WebViewClient和WebChromeClient | 浩浩的博客</title>
         <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
         <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
         <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
@@ -40,75 +40,96 @@
                 <div class="mdui-row">
                         <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
                          <article class="mdui-shadow-10 mdui-p-a-2 post-list">
-                           <div class="mdui-typo-display-1 mdui-m-b-3">安卓自定义View基础 - 坐标系</div>
+                           <div class="mdui-typo-display-1 mdui-m-b-3">关于android WebViewClient和WebChromeClient</div>
                            <a  class="index-list-biaoqian ">2020-01-19</a>
-                           <div class="mdui-typo mdui-m-t-3 post-neirong"><h1 id="一屏幕坐标系和数学坐标系的区别">一.屏幕坐标系和数学坐标系的区别</h1>
-<p>由于移动设备一般定义屏幕左上角为坐标原点，向右为x轴增大方向，向下为y轴增大方向， 所以在手机屏幕上的坐标系与数学中常见的坐标系是稍微有点差别的，详情如下：</p>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><h2 id="一-android之webviewclient与webchromeclient的区别">一、Android之WebViewClient与WebChromeClient的区别</h2>
+<p>ANDROID应用开发的时候可能会用到WEBVIEW这个组件，使用过程中可能会接触到WEBVIEWCLIENT与WEBCHROMECLIENT，那么这两个类到底有什么不同呢？</p>
 <!--more-->
-<blockquote>
-<p>（PS：其中的∠a 是对应的，注意y轴方向！）</p>
-</blockquote>
-<p><img src="http://ww2.sinaimg.cn/large/005Xtdi2jw1f1qygzfvhoj308c0dwglr.jpg" alt="" loading="lazy"><br>
-<img src="http://ww1.sinaimg.cn/large/005Xtdi2jw1f1qyhbqvihj308c0dwjrh.jpg" alt="" loading="lazy"></p>
-<h3 id="实际屏幕上的默认坐标系如下">实际屏幕上的默认坐标系如下：</h3>
-<blockquote>
-<p>PS: 假设其中棕色部分为手机屏幕</p>
-</blockquote>
-<figure data-type="image" tabindex="1"><img src="http://ww3.sinaimg.cn/large/005Xtdi2jw1f1qyhjy7h8j308c0dwq32.jpg" alt="" loading="lazy"></figure>
-<h1 id="二view的坐标系">二.View的坐标系</h1>
-<h3 id="注意view的坐标系统是相对于父控件而言的">注意：View的坐标系统是相对于父控件而言的.</h3>
-<pre><code class="language-java">getTop();       //获取子View左上角距父View顶部的距离
-getLeft();      //获取子View左上角距父View左侧的距离
-getBottom();    //获取子View右下角距父View顶部的距离
-getRight();     //获取子View右下角距父View左侧的距离
+<p>WebViewClient主要帮助WebView处理各种通知、请求事件的，比如：</p>
+<pre><code>onLoadResource
+onPageStart
+onPageFinish
+onReceiveError
+onReceivedHttpAuthRequest
 </code></pre>
-<h3 id="如下图所示">如下图所示：</h3>
-<figure data-type="image" tabindex="2"><img src="http://ww2.sinaimg.cn/large/005Xtdi2gw1f1qzqwvkkbj308c0dwgm9.jpg" alt="" loading="lazy"></figure>
-<h1 id="三motionevent中-get-和-getraw-的区别">三.MotionEvent中 get 和 getRaw 的区别</h1>
-<pre><code class="language-java">event.getX();       //触摸点相对于其所在组件坐标系的坐标
-event.getY();
+<p>WebChromeClient主要辅助WebView处理Javascript的对话框、网站图标、网站title、加载进度等比如</p>
+<pre><code>onCloseWindow(关闭WebView)
+onCreateWindow()
+onJsAlert (WebView上alert无效，需要定制WebChromeClient处理弹出)
+onJsPrompt
+onJsConfirm
+onProgressChanged
+onReceivedIcon
+onReceivedTitle
+</code></pre>
+<p>看上去他们有很多不同，实际使用的话，如果你的WebView只是用来处理一些html的页面内容，只用WebViewClient就行了，如果需要更丰富的处理效果，比如JS、进度条等，就要用到WebChromeClient。<br>
+更多的时候，你可以这样</p>
+<pre><code class="language-java">WebView webView;
+webView= (WebView) findViewById(R.id.webview);
+webView.setWebChromeClient(new WebChromeClient());
+webView.setWebViewClient(new WebViewClient());
+webView.getSettings().setJavaScriptEnabled(true);
+webView.loadUrl(url);
+</code></pre>
+<p>这样你的WebView理论上就能有大部分需要实现的特色了<br>
+当然，有些更精彩的内容还是需要你自己添加的</p>
+<h2 id="二-webviewclient的方法说明">二、WebViewClient的方法说明</h2>
+<p>1、</p>
+<pre><code class="language-java">public boolean shouldOverrideUrlLoading(WebView view, String url) { 
+       view.loadUrl(url);
+       return true;
+  }
+</code></pre>
+<p>在点击请求的是链接是才会调用，重写此方法返回true表明点击网页里面的链接还是在当前的webview里跳转，不跳到浏览器那边。<br>
+2、</p>
+<pre><code class="language-java">public void onReceivedSslError(WebView view, SslErrorHandler handler, android.net.http.SslError error) {
+	handler.proceed();
+}
+</code></pre>
+<p>重写此方法可以让webview处理https请求。<br>
+3、</p>
+<pre><code class="language-java">public boolean shouldOverrideKeyEvent(WebView view, KeyEvent event) {
+   return super.shouldOverrideKeyEvent(view, event);
+}
 
-event.getRawX();    //触摸点相对于屏幕默认坐标系的坐标
-event.getRawY();
 </code></pre>
-<h3 id="如下图所示-2">如下图所示：</h3>
-<blockquote>
-<p>PS:其中相同颜色的内容是对应的，其中为了显示方便，蓝色箭头向左稍微偏移了一点.</p>
-</blockquote>
-<figure data-type="image" tabindex="3"><img src="http://ww1.sinaimg.cn/large/005Xtdi2jw1f1r2bdlqhbj308c0dwwew.jpg" alt="" loading="lazy"></figure>
-<h1 id="四核心要点">四.核心要点</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">序号</th>
-<th>要点</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">1</td>
-<td>在数学中常见的坐标系与屏幕默认坐标系的差别</td>
-</tr>
-<tr>
-<td style="text-align:center">2</td>
-<td>View的坐标系是相对于父控件而言的</td>
-</tr>
-<tr>
-<td style="text-align:center">3</td>
-<td>MotionEvent中get和getRaw的区别</td>
-</tr>
-</tbody>
-</table>
-<h1 id="五参考文章">五.参考文章</h1>
-<ul>
-<li><a href="http://blog.csdn.net/wangjinyu501/article/details/21827341" title="Android 屏幕（View）坐标系统">Android 屏幕（View）坐标系统</a></li>
-</ul>
-<p>转自 : <a href="http://www.gcssloop.com/customview/CoordinateSystem/">http://www.gcssloop.com/customview/CoordinateSystem/</a></p>
+<p>重写此方法才能够处理在浏览器中的按键事件。<br>
+4、</p>
+<pre><code class="language-java">public void onLoadResource(WebView view, String url) {
+    if (DEBUG) {
+        Log.d(TAG, &quot; onLoadResource &quot;);
+    }
+    super.onLoadResource(view, url);
+}
+</code></pre>
+<p>在加载页面资源时会调用，每一个资源（比如图片）的加载都会调用一次。<br>
+5、</p>
+<pre><code class="language-java">public void onPageStarted(WebView view, String url, Bitmap favicon) {
+    if (DEBUG) {
+        Log.d(TAG, &quot; onPageStarted &quot;);
+    }
+   	if (url.endsWith(&quot;.apk&quot;)) {
+      	download(url);//下载处理
+    }
+    super.onPageStarted(view, url, favicon);
+}
+</code></pre>
+<p>在页面加载开始时调用。<br>
+6、</p>
+<pre><code class="language-java">public void onPageFinished(WebView view, String url) {
+    // TODO Auto-generated method stub
+    if (DEBUG) {
+        Log.d(TAG, &quot; onPageFinished &quot;);
+    }
+    super.onPageFinished(view, url);
+}
+</code></pre>
+<p>在页面加载结束时调用。</p>
 </div>
                               <div class="mdui-divider mdui-m-t-3"></div>
                               <div class="mdui-row-xs-2 mdui-m-t-2">
-  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/an-zhuo-zi-ding-yi-view-ji-chu-jiao-du-hu-du">安卓自定义View基础 - 角度弧度</a></div></div>
- <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/gei-chu-xue-zhe-de-rxjava20-jiao-cheng-er">给初学者的RxJava2.0教程(二)</a></div> </div>
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/guan-yu-na-xie-android-zhong-bu-chang-yong-de-she-zhi-shu-xing">关于那些Android中不常用的设置属性</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/guan-yu-android-42-ban-ben-de-sdcard-wen-jian-mu-lu-fen-xi-han-xiu-zheng">关于android 4.2版本的sdcard文件目录分析(含修正)</a></div> </div>
                                 </div>
                                 <div class="mdui-divider mdui-m-t-2"></div>
    
@@ -140,27 +161,12 @@ event.getRawY();
                          </article>
                  <div class="toc-container mdui-float-right">
                 <ul class="markdownIt-TOC">
-<li><a href="#%E4%B8%80%E5%B1%8F%E5%B9%95%E5%9D%90%E6%A0%87%E7%B3%BB%E5%92%8C%E6%95%B0%E5%AD%A6%E5%9D%90%E6%A0%87%E7%B3%BB%E7%9A%84%E5%8C%BA%E5%88%AB">一.屏幕坐标系和数学坐标系的区别</a><br>
-*
+<li>
 <ul>
-<li><a href="#%E5%AE%9E%E9%99%85%E5%B1%8F%E5%B9%95%E4%B8%8A%E7%9A%84%E9%BB%98%E8%AE%A4%E5%9D%90%E6%A0%87%E7%B3%BB%E5%A6%82%E4%B8%8B">实际屏幕上的默认坐标系如下：</a></li>
+<li><a href="#%E4%B8%80-android%E4%B9%8Bwebviewclient%E4%B8%8Ewebchromeclient%E7%9A%84%E5%8C%BA%E5%88%AB">一、Android之WebViewClient与WebChromeClient的区别</a></li>
+<li><a href="#%E4%BA%8C-webviewclient%E7%9A%84%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E">二、WebViewClient的方法说明</a></li>
 </ul>
 </li>
-<li><a href="#%E4%BA%8Cview%E7%9A%84%E5%9D%90%E6%A0%87%E7%B3%BB">二.View的坐标系</a><br>
-*
-<ul>
-<li><a href="#%E6%B3%A8%E6%84%8Fview%E7%9A%84%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F%E6%98%AF%E7%9B%B8%E5%AF%B9%E4%BA%8E%E7%88%B6%E6%8E%A7%E4%BB%B6%E8%80%8C%E8%A8%80%E7%9A%84">注意：View的坐标系统是相对于父控件而言的.</a></li>
-<li><a href="#%E5%A6%82%E4%B8%8B%E5%9B%BE%E6%89%80%E7%A4%BA">如下图所示：</a></li>
-</ul>
-</li>
-<li><a href="#%E4%B8%89motionevent%E4%B8%AD-get-%E5%92%8C-getraw-%E7%9A%84%E5%8C%BA%E5%88%AB">三.MotionEvent中 get 和 getRaw 的区别</a><br>
-*
-<ul>
-<li><a href="#%E5%A6%82%E4%B8%8B%E5%9B%BE%E6%89%80%E7%A4%BA-2">如下图所示：</a></li>
-</ul>
-</li>
-<li><a href="#%E5%9B%9B%E6%A0%B8%E5%BF%83%E8%A6%81%E7%82%B9">四.核心要点</a></li>
-<li><a href="#%E4%BA%94%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0">五.参考文章</a></li>
 </ul>
 
               </div>

@@ -1,0 +1,292 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>获取未安装资源apk种的资源文件 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">获取未安装资源apk种的资源文件</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>最近做游戏联运的sdk插件，里面涉及到了游戏的登录、应用内支付等功能，故而界面的布局是少不了的。首先，想到的是xml布局，但是，作为第三方的sdk插件，作为jar包需要加到第三方的libs中，xml界面布局是不被打包到jar包中的。虽然，xml布局文件可以通过反射获取到，但是，这对第三方的要求是所有文件必须放的位置正确，不得出现疏忽。为此，想到，如果把所有的资源文件全部放到一个apk中，然后去加载这个apk的资源，那问题岂不是都解决了？带着这个想法，一步一步来实现这个功能。</p>
+<!--more-->
+<p>众所周知，apk中的资源文件基本上全部放到res目录下面，所以，怎么获取到资源apk的res实体是首要目标。以下代码就是获取资源apk中的Resource：</p>
+<pre><code class="language-java">package com.tabolt.reflect;  
+  
+import java.io.File;  
+import java.lang.reflect.Constructor;  
+import java.lang.reflect.Field;  
+import java.lang.reflect.Method;  
+import android.content.Context;  
+import android.content.res.Resources;  
+import android.util.DisplayMetrics;  
+  
+public class GetOtherApkRes {  
+    /** 
+     *获取指定路径apk的resources 
+     *@param context 上下文 
+     *@param apkPath apk绝对路径  
+     */  
+    public static Resources getResources(Context context, String apkPath) {  
+        File file = new File(apkPath);  
+        String PATH_PackageParser = &quot;android.content.pm.PackageParser&quot;;  
+        String PATH_AssetManager = &quot;android.content.res.AssetManager&quot;;  
+        try {  
+            // 反射得到pkgParserCls对象并实例化,有参数  
+            Class&lt;?&gt; pkgParserCls = Class.forName(PATH_PackageParser);  
+            Class&lt;?&gt;[] typeArgs = { String.class };  
+            Constructor&lt;?&gt; pkgParserCt = pkgParserCls.getConstructor(typeArgs);  
+            Object[] valueArgs = { file.getAbsolutePath() };  
+            Object pkgParser = pkgParserCt.newInstance(valueArgs);  
+  
+            // 从pkgParserCls类得到parsePackage方法  
+            DisplayMetrics metrics = new DisplayMetrics();  
+            metrics.setToDefaults();// 这个是与显示有关的, 这边使用默认  
+            typeArgs = new Class&lt;?&gt;[] { File.class, String.class,DisplayMetrics.class, int.class };  
+            Method pkgParser_parsePackageMtd = pkgParserCls.getDeclaredMethod(&quot;parsePackage&quot;, typeArgs);  
+            valueArgs = new Object[] { file, file.getAbsolutePath(), metrics, 0 };  
+  
+            // 执行pkgParser_parsePackageMtd方法并返回  
+            Object pkgParserPkg = pkgParser_parsePackageMtd.invoke(pkgParser,valueArgs);  
+  
+            // 从返回的对象得到名为&quot;applicationInfo&quot;的字段对象  
+            if (pkgParserPkg == null) {  
+                return null;  
+            }  
+            Field appInfoFld = pkgParserPkg.getClass().getDeclaredField(&quot;applicationInfo&quot;);  
+  
+            // 从对象&quot;pkgParserPkg&quot;得到字段&quot;appInfoFld&quot;的值  
+            if (appInfoFld.get(pkgParserPkg) == null) {  
+                return null;  
+            }  
+            // 反射得到assetMagCls对象并实例化,无参  
+            Class&lt;?&gt; assetMagCls = Class.forName(PATH_AssetManager);  
+            Object assetMag = assetMagCls.newInstance();  
+            // 从assetMagCls类得到addAssetPath方法  
+            typeArgs = new Class[1];  
+            typeArgs[0] = String.class;  
+            Method assetMag_addAssetPathMtd = assetMagCls.getDeclaredMethod(&quot;addAssetPath&quot;, typeArgs);  
+            valueArgs = new Object[1];  
+            valueArgs[0] = file.getAbsolutePath();  
+            // 执行assetMag_addAssetPathMtd方法  
+            assetMag_addAssetPathMtd.invoke(assetMag, valueArgs);  
+            // 得到Resources对象并实例化,有参数  
+            Resources res = context.getResources();  
+            typeArgs = new Class[3];  
+            typeArgs[0] = assetMag.getClass();  
+            typeArgs[1] = res.getDisplayMetrics().getClass();  
+            typeArgs[2] = res.getConfiguration().getClass();  
+            Constructor&lt;Resources&gt; resCt = Resources.class.getConstructor(typeArgs);  
+            valueArgs = new Object[3];  
+            valueArgs[0] = assetMag;  
+            valueArgs[1] = res.getDisplayMetrics();  
+            valueArgs[2] = res.getConfiguration();  
+            res = (Resources) resCt.newInstance(valueArgs);  
+            return res;  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+        }  
+        return null;  
+    }  
+}  
+</code></pre>
+<p>ok，上面的代码已经获取到了资源apk里面的Resource，然后接下来就是获取你要得到的资源了。<br>
+第一步：Resource中有个方法是getIdentifie，三个参数分别是 资源名，资源类型，资源apk包名，通过此方法可以获取到资源的id号。<br>
+第二步：上一步获取到资源id号之后，接下来就是要得到实质性的资源了。对于简单类型的资源，如：</p>
+<p>(1)图片资源，可以获取到Drawable类型的图片</p>
+<pre><code class="language-java">public Drawable getResApkDrawable(int id) {  
+	return res.getDrawable(id);
+} 
+</code></pre>
+<p>(2)String类型资源，获取String文件夹中的字符串</p>
+<pre><code class="language-java">public String getResApkString(int id) {  
+    return res.getString(id)  
+}  
+</code></pre>
+<p>对于color，dimens文件中的资源，获取方式与以上两种相同，再次不在赘述。<br>
+(3.1) layout布局资源的获取，要想获取layout资源，我采用的是根据id先获取XmlPullParser，然后再调用LayoutInflater的inflate方法获取layout资源，视图view。</p>
+<pre><code class="language-java">public View getResApkLayoutView(Context context, int id) {  
+    LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);  
+    return inflater.inflate(res.getLayout(id), null);  
+}
+</code></pre>
+<p>(3.2) 上一步获取到layout布局，然后就是要获取到layout中控件的实体view了，很简单，</p>
+<pre><code class="language-java">public View getResApkWidgetView(View layout, int id) {  
+    return layout.findViewById(id);  
+}
+</code></pre>
+<p>(4) anim动画资源的获取，res中没有方法可以直接获取到Animation，只有方法getAnimation获取到XmlPullParser，查询AnimationUtils的loadAnimation方法，发现加载Animation的最后一步是方法createAnimationFromXml，此方法的源码是：</p>
+<pre><code class="language-java">private Animation createAnimationFromXml(Context c, XmlPullParser parser,AnimationSet parent,AttributeSet attrs)                                 throws XmlPullParserException, IOException {  
+  
+    Animation anim = null;  
+    int type;  
+    int depth = parser.getDepth();  
+    while (((type = parser.next()) != XmlPullParser.END_TAG || parser.getDepth() &gt; depth) &amp;&amp; 
+						type != XmlPullParser.END_DOCUMENT) {  
+        if (type != XmlPullParser.START_TAG) {  
+            continue;  
+        }  
+        String name = parser.getName();  
+        if (name.equals(&quot;set&quot;)) {  
+            anim = new AnimationSet(c, attrs);  
+            createAnimationFromXml(c, parser, (AnimationSet) anim, attrs);  
+        } else if (name.equals(&quot;alpha&quot;)) {  
+            anim = new AlphaAnimation(c, attrs);  
+        } else if (name.equals(&quot;scale&quot;)) {  
+            anim = new ScaleAnimation(c, attrs);  
+        } else if (name.equals(&quot;rotate&quot;)) {  
+            anim = new RotateAnimation(c, attrs);  
+        } else if (name.equals(&quot;translate&quot;)) {  
+            anim = new TranslateAnimation(c, attrs);  
+        } else {  
+            throw new RuntimeException(&quot;Unknown animation name: &quot;+ parser.getName());  
+        }  
+        if (parent != null) {  
+            parent.addAnimation(anim);  
+        }  
+    }  
+    return anim;  
+}
+</code></pre>
+<p>还有就是attrs的获取，AttributeSet attrs = Xml.asAttributeSet(parser);至此，动画Animation的获取算是完毕，最后的调用方法是：</p>
+<pre><code class="language-java">public Animation getResApkAnim(Context context, int id) {  
+    Animation animation = null;  
+    XmlPullParser parser = res.getAnimation(id); 
+	AttributeSet attrs = Xml.asAttributeSet(parser);  
+    try {  
+        animation = createAnimationFromXml(context, parser, null, attrs);  
+    } catch (XmlPullParserException e) {  
+        e.printStackTrace();  
+    } catch (IOException e) {  
+        e.printStackTrace();  
+    }  
+    return animation;  
+}
+</code></pre>
+<p>好了，到现在为止，资源apk中的要获取的资源现在都可以获取的到了，需要注意的是，获取layout布局视图view的时候，布局中用到的@资源的设置失效，不建议使用。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/tong-guo-guan-cha-zhe-mo-shi-jian-ting-mei-ti-ku-de-bian-hua-shi-xian-app-ben-di-shu-ju-zi-dong-geng-xin">通过观察者模式监听媒体库的变化实现APP本地数据自动更新</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/jian-dan-ming-liao-che-di-di-li-jie-binder">简单明了，彻底地理解Binder</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

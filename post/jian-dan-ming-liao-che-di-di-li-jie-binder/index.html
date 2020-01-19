@@ -1,0 +1,199 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>简单明了，彻底地理解Binder | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">简单明了，彻底地理解Binder</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>转自:<a href="http://blog.csdn.net/huachao1001/article/details/51504469">http://blog.csdn.net/huachao1001/article/details/51504469</a></p>
+<p>你是不是看过很多Binder文章但是还是对Binder没有一个深刻理解？不是那些文章讲得不够好，主要是存在两种情况，一种是讲的深，全C代码<sub>，对我这种专做Java的人来说没有心情往下看；另一种是只讲framework层，Binder驱动并没有具体提，导致我们会用Binder，也大致能说的出一些原理，可并没有一个完整的深刻认知。那么接下来让我们一起学习Binder吧，相信接下来的内容会让你有一定的收获</sub></p>
+<!--more-->
+<h3 id="什么是binder">什么是Binder</h3>
+<p>这个问题很多文章都有解释，比如：Binder是Android跨进程通信方式，它实现了IBinder接口，是ServiceManager连接各种Manager(如WindowManager、ActivityManager等)的桥梁。但是我觉得这些说法还是过于抽象。刚接触Binder时，看到这些定义还是一头雾水，只是内心觉得Binder很牛逼、很底层，仅此而已。</p>
+<p>那么应该怎么去理解Binder呢？我不打算介绍这个概念，而是介绍Binder是怎么来到Android世界的。我是这样理解的：Android团队想要实现进程之间的通信，需要解决以下几个问题：</p>
+<ol>
+<li>如何知道客户端需要调用哪个进程以及该进程中的函数</li>
+<li>客户端如何将函数形参发送给远程进程中的函数，以及如何将远程进程函数计算结果返回客户端</li>
+<li>如何去屏蔽底层通信细节，让实现客户端调用远程函数就像调用本地函数一样</li>
+</ol>
+<p>第一个问题，很容易解决，只要给每个需要远程通信的类唯一标识就可以通过包名+类名的字符串就可以做到，然后在类里面给每个函数编号即可对函数唯一编码。第二个问题，定义一个可打包的接口Parcelable，这个接口提供2个重要函数，分别是将对象中的属性写入到数组和从数组中的数据还原对象，每个可以发送到远程函数作为形参的对象只需实现Parcelable对象即可。Parcelable具体使用不再本文讨论范围。第三个问题，为了屏蔽进程之间的通信细节，那么Android团队肯定在想，定义一个类，由这个类来实现这些细节。这个类应该做哪些事情呢？首先，这个类得帮用户发送远程请求并将拿到返回结果提交给用户，这是最重要的功能了，有了这个功能，妈妈再也不用担心我的进程通信。其次，如果我想实现服务端，什么时候客户端调用我了，这些细节不用用户操心。当然，这个类还要帮用户封装更多细节。既然打算定义这个类了，那总得取个响当当的名称吧，什么？你说取名为Binder，好吧，那就叫Binder吧。Binder类既然封装很多功能，那该怎么用这个类呢？让客户端去继承还是服务端继承呢？答案是服务端。接下来有个约定，本文后面所指的Binder类都是指远程服务端的对象。服务端想要实现被跨进程访问，就必须继承Binder类。<br>
+首先我们看看我们的程序跨进程调用系统服务的简单示例，实现浮动窗口部分代码：</p>
+<pre><code class="language-java">//获取WindowManager服务引用
+WindowManager wm = (WindowManager)getSystemService(getApplication().WINDOW_SERVICE);  
+//布局参数layoutParams相关设置略...
+View view=LayoutInflater.from(getApplication()).inflate(R.layout.float_layout, null);  
+//添加view
+wm.addView(view, layoutParams);  
+</code></pre>
+<p>系统服务都是运行在systemServer进程中，因此我们调用系统服务都是跨进程的调用。第2行代码中，得到的wm是WindowManager对象的引用，第6行调用WindowManager的addView函数，将触发远程调用，调用的是运行在systemServer进程中的WindowManager的addView函数。是不是很想知道addView发生了什么？我们先看看Binder机制吧！看完Binder原理，再解释！</p>
+<h3 id="binder机制">Binder机制</h3>
+<p>先看看一般执行过程</p>
+<h4 id="代码执行过程">代码执行过程</h4>
+<p>假设你已经创建好服务端类MyService、客户端类MyClient。在客户端持有MyService的引用，并且调用了MyService的func函数，那么Android内部调用过程如下：</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203428.png" alt="" loading="lazy"></figure>
+<p>看了这个图以后，相信你对你的代码在调用远程进程函数时有个全局的认识。这张图有一点很重要，就是客户端当前线程会被挂起！因此，如果远程进程是执行长时间的运算，请不要使用主线程去调用远程函数，以防止ANR。</p>
+<h3 id="binder的cs架构">Binder的C/S架构</h3>
+<p>上面一节我们对远程进程调用代码执行过程有个初步了解，在Android开发中，我们大量使用到了系统Service，比如媒体播放、各种传感器以及WindowManagerService等等等等（太多了~）。那么Android是怎么管理这些服务，并且让用户跨进程调用这些服务呢？首先我们看看调用系统服务的过程。在Android开机启动过程中，Android会初始化系统的各种Service，并将这些Service向ServiceManager注册（即让ServiceManager管理）。客户端想要得到具体的Service直接向ServiceManager要即可。客户端首先向ServiceManager查询得到具体的Service引用，然后通过这个引用向具体的服务端发送请求，服务端执行完成后就返回。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203442.png" alt="" loading="lazy"></figure>
+<h3 id="binder驱动实现原理">Binder驱动实现原理</h3>
+<p>一直以来，我有个困惑！！！这个困惑让我迷茫了很久：客户端持有远程进程的某个对象引用，然后调用引用类中的函数，远程进程的函数就执行了。我在想，凭什么？学过操作系统都知道，不同的进程之间是不共享资源的。也就是说，客户端持有的这个对象跟远程进程中的实际对象完全是两个不同的对象。客户端调用引用的对象跟远程进程半毛钱关系都没有，凭啥远程进程就调用了执行了？相信也有一部分人跟我有同样的困惑！仔细研读一下下面这张图，相信你会豁然开朗！</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119203454.png" alt="" loading="lazy"></figure>
+<p>服务端跨进程的类都要继承Binder类。我们所持有的Binder引用(即服务端的类引用)并不是实际真实的远程Binder对象，我们的引用在Binder驱动里还要做一次映射。也就是说，设备驱动根据我们的引用对象找到对应的远程进程。客户端要调用远程对象函数时，只需把数据写入到Parcel，在调用所持有的Binder引用的transact()函数，transact函数执行过程中会把参数、标识符（标记远程对象及其函数）等数据放入到Client的共享内存，Binder驱动从Client的共享内存中读取数据，根据这些数据找到对应的远程进程的共享内存，把数据拷贝到远程进程的共享内存中，并通知远程进程执行onTransact()函数，这个函数也是属于Binder类。远程进程Binder对象执行完成后，将得到的写入自己的共享内存中，Binder驱动再将远程进程的共享内存数据拷贝到客户端的共享内存，并唤醒客户端线程。</p>
+<h3 id="binder机制运用">Binder机制运用</h3>
+<p>好了，现在对Binder机制已经理解了，我们再看看Android是怎么运用Binder的。再现前面代码：</p>
+<pre><code class="language-java">//获取WindowManager服务引用
+WindowManager wm = (WindowManager)getSystemService(getApplication().WINDOW_SERVICE);  
+//布局参数layoutParams相关设置略...
+View view=LayoutInflater.from(getApplication()).inflate(R.layout.float_layout, null);  
+//添加view
+wm.addView(view, layoutParams);  
+</code></pre>
+<p>这段代码前面已经出现过。getSystemService(getApplication().WINDOW_SERVICE);函数内部原理就是向ServiceManager查询标识符为getApplication().WINDOW_SERVICE的远程对象的引用。即WindowManager对象的引用，这个引用的真正实现是WindowManager的某个代理。得到这个引用后，在调用addView时，真正的实现是在代理里面，代理把参数打包到Parcel对象中，然后调用transact函数（该函数继承自Binder），再触发Binder驱动的一系列调用过程，在Binder驱动实现原理一节中有具体介绍，忘记了的同学可以返回继续看。关于Binder的代理对象，可以参考AIDL工具生成的代码，这里不再具体介绍。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/huo-qu-wei-an-zhuang-zi-yuan-apk-chong-de-zi-yuan-wen-jian">获取未安装资源apk种的资源文件</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/ying-jian-jia-su-setlayertype">硬件加速 setlayertype</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AFbinder">什么是Binder</a></li>
+<li><a href="#binder%E6%9C%BA%E5%88%B6">Binder机制</a>
+<ul>
+<li><a href="#%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B">代码执行过程</a></li>
+</ul>
+</li>
+<li><a href="#binder%E7%9A%84cs%E6%9E%B6%E6%9E%84">Binder的C/S架构</a></li>
+<li><a href="#binder%E9%A9%B1%E5%8A%A8%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86">Binder驱动实现原理</a></li>
+<li><a href="#binder%E6%9C%BA%E5%88%B6%E8%BF%90%E7%94%A8">Binder机制运用</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

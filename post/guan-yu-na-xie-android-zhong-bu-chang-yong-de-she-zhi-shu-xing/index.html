@@ -1,0 +1,307 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>关于那些Android中不常用的设置属性 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">关于那些Android中不常用的设置属性</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>很多在manifest中的属性我们经常遗忘了它们，或者经常看到但又不是很明白它的作用。那么在这里我就拿了一些属性简单的解释一下，防止以后碰到却不知道其中的意思。不是很全，以后会断断续续的补充吧</p>
+<!--more-->
+<h3 id="一-androidinstalllocationinternalonly">一、android:installLocation='internalOnly'</h3>
+<p>android:installLocation隶属于AndroidManifest.XML中的manifest节点.如下所示:</p>
+<pre><code class="language-xml">&lt;manifest xmlns:android='http://schemas.android.com/apk/res/android'
+	package='string'
+	android:sharedUserId='string'
+	android:sharedUserLabel='string resource'
+	android:versionCode='integer'
+	android:versionName='string'
+	android:installLocation=['auto' | 'internalOnly' | 'preferExternal'] &gt;
+	. . .
+&lt;/manifest&gt;
+</code></pre>
+<p>android:installLocation可以设置为'auto'、'internalOnly'、'preferExternal'三个值中的任何一个.</p>
+<p>auto:程序可能被安装在外部存储介质上(例如:SD Card),但是默认会被安装到手机内存中.当手机内存为空时,程序将被安装到外部存储介质上.当程序安装到手机上后,用户可以决定把程序放在外部储介质还是内存中.</p>
+<p>internalOnly:默认值.当设置为该值时,程序只能被安装在内存中,如果内存为空,则程序将不能成功安装.</p>
+<p>preferExternal:将程序安装在外部存储介质上,但是系统不保证程序一定会被安装到外部存储介质上.当外部存储介质不可以或空时,程序将被安装到内存中.程序使用了forward-locking机制时也将被安装到内存中,因为外部存储不支持此机制.程序安装后,用户可以自由切换程序应该在外部还是内部存储介质上.</p>
+<p>简而言之，就是控制应用是安装在外部存储上还是内存中，安装在内存中<br>
+①Service</p>
+<p>正在运行的服务将被终止,当外部存储介质被重新加载时服务不会被重启.</p>
+<p>②Alarm Service</p>
+<p>闹钟服务将被取消,开发者必须在外部存储介质重新加载后重新注册闹钟服务.</p>
+<p>③Input Method Engines</p>
+<p>输入法将被换成系统输入法,当外部存储介质被重新加载后用户可以通过系统设置来启动我们的输入法</p>
+<p>④Live Wallpapers</p>
+<p>我们的动态壁纸将被替换为默认的动态壁纸.外部存储介质重载后,用户可以更换回来.</p>
+<p>⑤Live Folders</p>
+<p>我们的动态文件夹将被移出.</p>
+<p>⑥App Widgets</p>
+<p>我们的小部件将被移出,通常只有系统重启后我们的小部件才可用.</p>
+<p>⑦Account Managers</p>
+<p>使用AccountManager创建的账户将会消失,直至存储介质被重新加载.</p>
+<p>⑧Sync Adapters</p>
+<p>只有外部存储介质被重新加载时,我们的同步功能才可用</p>
+<p>⑨Device Administrators</p>
+<p>我们的DeviceAdminReceiver将会失效</p>
+<p>⑩监听开机结束事件</p>
+<p>系统会在加载外部存储介质之前发送ACTION_BOOT_COMPLETED广播.因此安装在外部存储介质的程序将不能接受开机广播.</p>
+<h3 id="二-androidversioncode">二、android:versionCode</h3>
+<p>Google为APK定义了两个关于版本属性：VersionCode和VersionName，他们有不同的用途。</p>
+<p>VersionCode：对消费者不可见，仅用于应用市场、程序内部识别版本，判断新旧等用途。 VersionName：展示给消费者，消费者会通过它认知自己安装的版本，下文提到的版本号都是说这个</p>
+<h3 id="三-androidprotectionlevelsignature">三、android:protectionLevel='signature'</h3>
+<p>normal：低风险权限，只要申请了就可以使用（在AndroidManifest.xml中添加<uses-permission>标签），安装时不需要用户确认；<br>
+dangerous：高风险权限，安装时需要用户的确认才可使用；<br>
+signature：只有当申请权限的应用程序的数字签名与声明此权限的应用程序的数字签名相同时（如果是申请系统权限，则需要与系统签名相同），才能将权限授给它；<br>
+signatureOrSystem：签名相同，或者申请权限的应用为系统应用（在system image中）。</p>
+<p>上述四类权限级别同样可用于自定义权限中。如果开发者需要对自己的应用程序（或部分应用）进行访问控制，则可以通过在AndroidManifest.xml中添加<permission>标签，将其属性中的protectionLevel设置为上述四类级别中的某一种来实现。<br>
+A方：</p>
+<pre><code class="language-xml">&lt;!-- 声明权限 --&gt; 
+&lt;permission android:name='com.example.testbutton.RECEIVE' /&gt; 
+&lt;!-- 注册Broadcast Receiver，并指定了给当前Receiver发送消息方需要的权限 --&gt; 
+&lt;receiver 
+	android:name='com.example.testbutton.TestButtonReceiver' 
+	android:permission='com.example.testbutton.RECEIVE' &gt; 
+		&lt;intent-filter&gt; 
+		&lt;action android:name='com.test.action' /&gt; 
+		&lt;/intent-filter&gt; 
+&lt;/receiver&gt;
+</code></pre>
+<p>B方：</p>
+<pre><code class="language-xml">&lt;!-- 声明使用指定的权限 --&gt; 
+&lt;uses-permission android:name='com.example.testbutton.RECEIVE' /&gt;
+</code></pre>
+<h3 id="四-uses-feature">四、uses-feature</h3>
+<p>Android Market会根据uses-feature过滤所有你设备不支持的应用。通过使用<uses-feature>元素，一个应用可以指定它所 支持的硬件型号，举个例子，有些设备不支持多点触控或者OpenGL ES 2.0，那么过滤器就会过滤需要这些硬件支持（多点触控或者OpenGL ES 2.0）的应用，用户就不会在android market上看到这些应用。</p>
+<p>android.hardware.touchscreen.multitouch：它要求设备有一个多点触控的屏幕以支持基本的多点触控交互，就如收缩（放大）图像比例。这些类型的屏幕跟踪多个手指的能力都有所不同，所以你必须确保这个屏幕的性能是能够支持的游戏进行。</p>
+<p>android.hardware.touchscreen.multitouch.distinct: 这是一个多点触控的兄弟属性，它要求提设备供完整的多点触控功能。</p>
+<p>现在只要记住在当你的游戏需要一个支持多点触控的屏幕的时候，我们可以使用 <uses-feature>元素来剔除所有不支持多点触控的设备，就像下面这样：</p>
+<pre><code class="language-xml">&lt;uses-feature android:name='android.hardware.touchscreen.multitouch' android:required='true'/&gt;
+</code></pre>
+<p>另外一个在游戏开发中非常有用的是去指定需要的OpenGL ES版本。如果你的游戏需要更强大的图形处理能力，我们可以指定OpenGL ES 2.0，然后我们的游戏只会被支持OpenGL ES 2.0的设备所看见。注意，在本书中不会使用OPenGL ES 2.0, 我们只是过滤那些不能提供足够图形处理能力的设备。下面显示了我们怎么去实现它。</p>
+<pre><code class="language-xml">&lt;uses-feature android:glEsVersion='0x00020000' required='true'/&gt;
+</code></pre>
+<h3 id="五-androidsupportsrtltrue">五、android:supportsRtl='true'</h3>
+<p>android4.2有一个新特性 layoutRtl，当然是对于开发者而言的，主要是方便开发者去支持阿拉伯语/波斯语等阅读习惯是从右往左的。</p>
+<p>可以在manifest的application标签添加：android:supportsRtl 取值：true/false</p>
+<p>这样就可以打开layoutRtl这个功能。如果当前系统语言是阿拉伯语/波斯语，打开了这个功能的应用的布局就会自动变成从右往左的，当然前提是布局没有写死控件间的位置。</p>
+<h3 id="六-androidshareduserid">六、android:sharedUserId</h3>
+<p>Android给每个APK进程分配一个单独的空间,manifest中的userid就是对 应一个分配的Linux用户ID，并且为它创建一个沙箱，以防止影响其他应用程序（或者其他应用程序影响它）。用户ID 在应用程序安装到设备中时被分配，并且在这个设备中保持它的永久性。</p>
+<p>通常，不同的APK会具有不同的userId，因此运行时属于不同的进程中，而不同进程中的资源是不共享的，在保障了程序运行的稳定。然后在有些时候，我们自己开发了多个APK并且需要他们之间互相共享资源，那么就需要通过设置shareUserId来实现这一目的。</p>
+<p>通过Shared User id,拥有同一个User id的多个APK可以配置成运行在同一个进程中.所以默认就是可以互相访问任意数据. 也可以配置成运行成不同的进程, 同时可以访问其他APK的数据目录下的数据库和文件.就像访问本程序的数据一样。</p>
+<p>shareUserId设置：</p>
+<p>在需要共享资源的项目的每个AndroidMainfest.xml中添加shareuserId的标签。</p>
+<pre><code class="language-xml">android:sharedUserId='com.example'
+</code></pre>
+<p>id名自由设置，但必须保证每个项目都使用了相同的sharedUserId。一个mainfest只能有一个Shareuserid标签。</p>
+<pre><code class="language-xml">&lt;manifest xmlns:android='http://schemas.android.com/apk/res/android'    
+			package='com.example.shareusertesta'    
+			android:versionCode='1'    
+			android:versionName='1.0'     
+			android:sharedUserId='com.example'&gt;
+</code></pre>
+<p>datadata自定义的package 路径下的互相访问</p>
+<p>每个安装的程序都会根据自己的包名在手机文件系统的datadatayour package建立一个文件夹（需要su权限才能看见），用于存储程序相关的数据。</p>
+<p>在代码中，我们通过context操作一些IO资源时，相关文件都在此路径的相应文件夹中。比如默认不设置外部路径的文件、DB等等。</p>
+<p>正常情况下，不同的apk无法互相访问对应的app文件夹。但通过设置相同的shareUserId后，就可以互相访问了。</p>
+<p>如：A程序中</p>
+<pre><code class="language-java">//默认建立在data/data/xxx/file/            
+fOut = openFileOutput('settings.dat', MODE_PRIVATE);                       
+osw = new OutputStreamWriter(fOut);           
+osw.write(data);           
+osw.flush();
+</code></pre>
+<p>B程序中</p>
+<pre><code class="language-java">//获取程序A的context           
+Context ctx = this.createPackageContext('com.example.shareusertesta',Context.CONTEXT_IGNORE_SECURITY);           
+String msg = ReadSettings(ctxDealFile);           
+Toast.makeText(this, 'DealFile2 Settings read' + msg,Toast.LENGTH_SHORT).show();           
+WriteSettings(ctx, 'deal file2 write');
+</code></pre>
+<p>两个程序就能互相的访问资源了。（当然前提是都设置了相同的shareUserId）</p>
+<p>Resources和SharedPreferences的共享</p>
+<p>通过shareuserId共享，我们可获取到程序A的context。因此，我们就可以通过context来获取程序A对应的各种资源。比较常用的就是Raw资源的获取，如一些软件的apk皮肤包就是采用了这种技术，将主程序和皮肤资源包分在两个apk中。</p>
+<p>获 取Resources很简单，在程序A和B的mainfest中设置好相同的shareuserId后，通过createPackageContext获 取context即可。之后就和原来的方式一样，通过getResources函数获取各种资源，只是此时的context环境是目标APP的 context环境。</p>
+<p>看见程序A和B之间的联系有三个：</p>
+<p>1 mainfest中声明shareuserId时需要知道一个共同的userId</p>
+<p>2 createpackageContext时需要知道目标APK的package的name</p>
+<p>3 获取资源时需要知道该资源的对应ID</p>
+<h3 id="七-androidsettingsactivity">七、android:settingsActivity</h3>
+<p>不知道怎么用的==，这是在一个源码里看到</p>
+<h3 id="八-androidlaunchmodesingletop-activity节点下">八、android:launchMode='singleTop'  &lt;Activity节点下&gt;</h3>
+<p>Activity一共有以下四种launchMode：</p>
+<p>1.standard    2.singleTop   3.singleTask    4.singleInstance</p>
+<p>（1）standard：系统默认的标准型，每次跳转系统都会在task中生成一个新的Activity实例，并且放于栈结构的顶部，当我们按下后退键时，才能看到原来的Activity实例。</p>
+<p>这就是standard启动模式，不管有没有已存在的实例，都生成新的实例。跟普通的栈一样，先进后出。</p>
+<p>（2）single:它是在standard的标准下加了一个属性。即当你要跳转的activity是位于栈顶时，它不会再new一个新的实例出来。但如果是firstactivity和secondactivity交替跳转，那跟普通的standard模式一样。</p>
+<p>（3）singleTask。它的原理是保证这个activity实例生成后是不会再生成新的实例。比如说两个activity,first和second。First设为singleTask，然后跳转到second，再返回first时，first不会生成实例，而是从栈中取出first放在栈顶。还有一点比较重要的一点是，在first上的activity会全部移除出栈，不管你这个activitys是不是也是singleTask模式，一律移除。</p>
+<p>（4）singleInstance。这个就比较特殊了，不过也比较简单。就是新开一个task栈专门放这个activity,而其它activity不让它进去。</p>
+<h3 id="九-androidtaskaffinity">九、android:taskAffinity</h3>
+<p>每 个Activity都有taskAffinity属性，这个属性指出了它希望进入的Task。如果一个Activity没有显式的指明该 Activity的taskAffinity，那么它的这个属性就等于Application指明的taskAffinity，如果 Application也没有指明，那么该taskAffinity的值就等于包名。而Task也有自己的affinity属性，它的值等于它的根 Activity的taskAffinity的值。 一开始，创建的Activity都会在创建它的Task中，并且大部分都在这里度过了它的整个生命。</p>
+<p>allowTaskReparenting用来标记Activity能否从启动的Task移动到taskAffinity指定的Task，默认是继承至 application中的allowTaskReparenting=false，如果为true，则表示可以更换；false表示不可以。</p>
+<p>这两个属性通常是放在一起用的。</p>
+<p>简而言之，用了taskAffinity的activity实例化的时候会先看看有没有与taskAffinity相同的task,如果有，则会跑到那边的task中,并实例化。</p>
+<h3 id="十-androidconfigchanges">十、android:configChanges</h3>
+<p>对android:configChanges属性，一般认为有以下几点：</p>
+<p>1、不设置Activity的android:configChanges时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行两次</p>
+<p>2、设置Activity的android:configChanges='orientation'时，切屏还是会重新调用各个生命周期，切横、竖屏时只会执行一次</p>
+<p>3、设置Activity的android:configChanges='orientation|keyboardHidden'时，切屏不会重新调用各个生命周期，只会执行onConfigurationChanged方法</p>
+<p>但是，自从Android 3.2（API 13），在设置Activity的android:configChanges='orientation|keyboardHidden'后，还是一样 会重新调用各个生命周期的。因为screen size也开始跟着设备的横竖切换而改变。所以，在AndroidManifest.xml里设置的MiniSdkVersion和 TargetSdkVersion属性大于等于13的情况下，如果你想阻止程序在运行时重新加载Activity，除了设置'orientation'， 你还必须设置'ScreenSize'。</p>
+<p>http://www.cnblogs.com/adamzuocy/archive/2009/10/15/1583670.html</p>
+<h3 id="十一-androidexported">十一、android:exported</h3>
+<p>这个属性用于指示该服务是否能够被其他应用程序组件调用或跟它交互。如果设置为true，则能够被调用或交互，否则不能。设置为false时，只有同一个应用程序的组件或带有相同用户ID的应用程序才能启动或绑定该服务。它的默认值依赖与该服务所包含的过滤器。没有过滤器则意味着该服务只能通过指定明确的类名来调用，这样就是说该服务只能在应用程序的内部使用（因为其他外 部使用者不会知道该服务的类名），因此这种情况下，这个属性的默认值是false。另一方面，如果至少包含了一个过滤器，则意味着该服务可以给外部的其他 应用提供服务，因此默认值是true。<br>
+这个属性不是限制把服务暴露给其他应用程序的唯一方法。还可以使用权限来限制能够跟该服务交互的外部实体。</p>
+<h3 id="十二-androidimmersive">十二、android:immersive</h3>
+<p>貌似是全屏的设置，可以用来隐藏标题栏和菜单栏。可以通过代码来实现不同的UI响应事件</p>
+<h3 id="十三-androidexcludefromrecents">十三、android:excludeFromRecents</h3>
+<p>控制在不在recent列表中显示，就是使用该activity时app不会出现在最近使用app列表中</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/jian-guo-yun-gityou-xiao-guan-li-nin-de-dai-ma">坚果云+git，有效管理您的代码</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/guan-yu-android-webviewclient-he-webchromeclient">关于android WebViewClient和WebChromeClient</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-androidinstalllocationinternalonly">一、android:installLocation='internalOnly'</a></li>
+<li><a href="#%E4%BA%8C-androidversioncode">二、android:versionCode</a></li>
+<li><a href="#%E4%B8%89-androidprotectionlevelsignature">三、android:protectionLevel='signature'</a></li>
+<li><a href="#%E5%9B%9B-uses-feature">四、uses-feature</a></li>
+<li><a href="#%E4%BA%94-androidsupportsrtltrue">五、android:supportsRtl='true'</a></li>
+<li><a href="#%E5%85%AD-androidshareduserid">六、android:sharedUserId</a></li>
+<li><a href="#%E4%B8%83-androidsettingsactivity">七、android:settingsActivity</a></li>
+<li><a href="#%E5%85%AB-androidlaunchmodesingletop-activity%E8%8A%82%E7%82%B9%E4%B8%8B">八、android:launchMode='singleTop'  &lt;Activity节点下&gt;</a></li>
+<li><a href="#%E4%B9%9D-androidtaskaffinity">九、android:taskAffinity</a></li>
+<li><a href="#%E5%8D%81-androidconfigchanges">十、android:configChanges</a></li>
+<li><a href="#%E5%8D%81%E4%B8%80-androidexported">十一、android:exported</a></li>
+<li><a href="#%E5%8D%81%E4%BA%8C-androidimmersive">十二、android:immersive</a></li>
+<li><a href="#%E5%8D%81%E4%B8%89-androidexcludefromrecents">十三、android:excludeFromRecents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

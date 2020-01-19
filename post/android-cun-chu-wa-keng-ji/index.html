@@ -1,0 +1,285 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Android存储挖坑记 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Android存储挖坑记</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>最近在搞Android存储相关的业务，什么Internal/External/Primary/Secondary搞得我都看懵了，国内也没什么好的文章系统的讲这个，我就挖挖各类资料，整理一下。</p>
+<!--more-->
+<h3 id="1-internal-vs-external">1. Internal vs External</h3>
+<hr>
+<p>对于Internal Storage 与 External Storage，官方文档上有这么一段话，描述得很详细了，我翻译了一段下来：</p>
+<p>所有的Android设备都有两块存储区域：Internal Storage和External Storage。它们的名称来源于早期的Android系统，那时候大家的手机都内置(Permanent)一块较小存储板（即Internal Storage），并配上一个的外置的(Removable)储存卡（即External Storage）。后来部分手机开始将最初定义的“Internal Storage”，即内置存储，分成Internal和External两部分。这样一来就算没有外置储存，手机也有Internal和External两块存储区域。这两块存储区域的区别是：</p>
+<table>
+<thead>
+<tr>
+<th> </th>
+<th>Internal Storage</th>
+<th>External Storage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>可信度</td>
+<td>永远可用(Permanent)</td>
+<td>可能不可用，最典型的当设备作为USB存储被mount时不可用</td>
+</tr>
+<tr>
+<td>访问权限</td>
+<td>App存储内容仅App本身（或共享uid的App）可访问（Root除外）</td>
+<td>App存储内容全局可读</td>
+</tr>
+<tr>
+<td>内容持久</td>
+<td>App存储内容随App卸载而消失</td>
+<td>当App卸载时，只有存在getExternalFilesDir()路径下的文件会消失</td>
+</tr>
+<tr>
+<td>适应情况</td>
+<td>存储内容仅App自己访问时的最佳选择</td>
+<td>存储内容希望与其他App共享或传到电脑上，但是不想申请任何权限时的最佳选择</td>
+</tr>
+</tbody>
+</table>
+<p>注：此处讨论的访问权限是应用路径下的权限。</p>
+<p>总结下来，External存储区域有几个好处：</p>
+<ol>
+<li>可以传到电脑上；</li>
+<li>可以与其他app共享；</li>
+<li>在4.4之后的App路径(Android/data/包名)下读写不需任何权限；</li>
+<li>存在App路径之外的文件不会随App卸载。</li>
+</ol>
+<p>相应的，也有几个缺点：</p>
+<ol>
+<li>可能不可用；</li>
+<li>会被其他应用读到;</li>
+<li>在非App路径下写、修改文件需要权限。</li>
+</ol>
+<h3 id="11-external-storage的权限">1.1 External Storage的权限</h3>
+<p>在Internal Storage的App路径下（/data/data/包名下)，App的读写操作无需任何权限，我们只需要总结一下External Storage的情况：</p>
+<table>
+<thead>
+<tr>
+<th>Android版本</th>
+<th>读</th>
+<th>写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4.4以下</td>
+<td>无需权限</td>
+<td>需要申请WRITE_EXTERNAL_STORAGE</td>
+</tr>
+<tr>
+<td>4.4及以上</td>
+<td>无需权限</td>
+<td>在App目录之外写，需要申请WRITE_EXTERNAL_STORAGE</td>
+</tr>
+</tbody>
+</table>
+<p>关于读External的权限，在Android Developer上有这样一段话:</p>
+<p>目前，所有App都可以读External存储而不需要任何权限，这一点可能会在未来做出改变。如果你希望读External存储，那最好申请一下READ_EXTERNAL_STORAGE权限。另外，写权限已经默认包含了读权限了。</p>
+<p>正常情况下，你用任何文件管理器，点开的根目录就是你的External存储。你可以到它下面的应用目录，你会发现，就算是各个包名下的文件，你也是看得到的。</p>
+<h3 id="12-多用户">1.2 多用户</h3>
+<p>在4.2及以上的Android系统中引入了多用户机制。你可能会发现在存储路径后面有’0’/‘1’的字样（如/storage/emulated/0/），这后面的数字表示用户。主用户后面为0。</p>
+<h3 id="2-primary-vs-secondary">2. Primary vs Secondary</h3>
+<hr>
+<p>这个Primary和Secondary是怎么来的呢？实际上最开始Android也没有考虑这个区分，但是后来有一个情况发生了，就是上面所说到的：</p>
+<p>后来部分手机开始将最初定义的“Internal Storage”，即内置存储，分成Internal和External两部分。</p>
+<p>那么如果这个时候手机再插入sd卡，那不是有多个External Storage了吗？</p>
+<p>这个时候，从Internal Storage里面分出来的那块“External Storage”我们称之为主存储(Primary Storage)，插入的外置储存称之为副存储(Secondary Storage)。</p>
+<p>主存储路径的获取方式非常简单，可以通过Environment.getExternalStorageDirectory()或者Context.getExternalFilesDir(null)来获取。</p>
+<p>副存储路径在4.4及以上的Android系统中，可以使用Context.getExternalFilesDirs(null)(注意最后多了一个’s’)，它返回的是一个字符串数组。第0个就是主存储路径，第1个是副存储路径（如果有的话）。</p>
+<p>在4.4及以下系统中，的副存储的获取方式就是一个大坑了，一个一个介绍一下笔者看到过的方法。</p>
+<h3 id="21-副储存路径-storagemanager">2.1 副储存路径-StorageManager</h3>
+<p>在Android中可以通过context.getSystemService(STORAGE_SERVICE)来获取到StorageManager，但是很可惜的是，它里面有价值的方法都是hide的。</p>
+<p>庆幸的是还有反射。我们可以调用getVolumeList()函数，这个返回的List里面，主存储是第0个，副存储（如果有的话）是第1个。</p>
+<p>你可以看到Environment.getExternalStorageDirectory()里面就是用它实现的，可以说这个方法是目前最稳妥的。它通过系统的MountService来获取已mount上来的设备，并且能够通过StorageVolume知道该存储是否removable、是否是emulated、mount状态等等。</p>
+<p>涉及到存储，由于Android rom千奇百怪，不可能是万全的。如果反射出来的方法缺少变量、方法，或者有别的什么坑，那只能试一下其他方法来保底。</p>
+<p>靠谱程度：99%</p>
+<h3 id="22-副存储路径-读配置xml">2.2 副存储路径-读配置xml</h3>
+<p>读com.android.internal.R.xml.storage_list.xml可以获取到系统的VolumeList，但是这种方法是行不通的，我们可以从源码中看看。</p>
+<p>在6.0以前的MountService上面看到readStorageList()这个函数，它在构造函数里面就会被调用，就是在读取这个xml文件。但是我们可以看到它并没有在Volume改变的时候被动态写入。</p>
+<p>并且参考AOSP Document,这个xml文件里面存储的就是厂商配置的分区，它根本无法更新removable存储的热插拔信息。</p>
+<p>注意：这个xml在6.0被移除了(参考AOSP Document)</p>
+<p>靠谱程度：0%</p>
+<h3 id="23-副存储路径-mount命令">2.3 副存储路径-mount命令</h3>
+<p>执行Linux shell下的mount命令，遍历每个mount点，从中找到副存储。</p>
+<p>目前，它确实能够列出副存储。但是同时会列出很多很多mount点，包括系统mount点，目前好像没有已知的靠谱方法能够从中准确找出副存储。副存储的命名是没有规律的，枚举排除系统mount点的方法不能够100%确保准确性。</p>
+<p>靠谱程度：10%</p>
+<h3 id="24-副存储路径-读voldfstab文件">2.4 副存储路径-读vold.fstab文件</h3>
+<p>解析/etc/void.fstab，从中找到副存储位置。</p>
+<p>Vold(Volume Daemon)是ServiceManager与kernel层之间的桥梁，它对于Volume的信息维护在/etc/vold.fstab中。</p>
+<p>一听就是一个奇怪的方法，文件位置、信息也可能被各类厂商篡改，还可能存在瞬时不一致的情况，不要考虑它。有兴趣的同学可以研究一下android-storage-vold。</p>
+<p>靠谱程度：0%</p>
+<h3 id="总结">总结</h3>
+<hr>
+<p>总结出Android手机目前的几种存储方式：</p>
+<h3 id="在60之前">在6.0之前</h3>
+<p>6.0之前，所有的存储类型都是Traditional Storage。它支持多用户、模拟External存储。由于是MBR分区，存储上线为2TB。</p>
+<ol>
+<li>Physical Primary 最原始的样子是只有机身自带的Internal存储和以External存在的外置存储，这时候只有一个主存储，并且它是Physical的。</li>
+<li>Emulated Primary (Optional Physical Secondary) 之前所说，从Internal Storage分出一块来给External Storage。这块存储空间就是在Permanent存储版中”模拟“上去的。所以你可以看到主存储经常有emulated字样。 如果这时候还能再插SD卡，则会多一个Physical的Secondary存储。</li>
+</ol>
+<h3 id="在60之后">在6.0之后</h3>
+<p>正常情况下，它的存储方式与之前的两种相同，不过多了一种新的存储方式：Adoptable Storage</p>
+<h3 id="adoptable-storage">Adoptable Storage</h3>
+<p>由于External Storage的缺点（有时不可用，存储内容没有被保护），在6.0之后多出了Adoptable存储方式。</p>
+<p>当Android系统Adopt了一块External存储区域的时候，它会被视为Internal Storage，同时会被格式化与加密。格式化之后是GPT分区，存储上线为9ZB。</p>
+<p>当你在一个支持Adoptable Storage的手机上插入一个sd卡，它会提示你是否将这个sd卡格式化并用作Internal Storage，或者正常作为External Storage使用。</p>
+<p>推荐一篇文章：<br>
+CommonsWare’s post，从不同角度诠释了Internal&amp;External Storage， 非常不错！</p>
+<p><a href="https://commonsware.com/blog/2014/04/07/storage-situation-internal-storage.html">https://commonsware.com/blog/2014/04/07/storage-situation-internal-storage.html</a></p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/android-kai-fa-zhi-mediaplayer-zhuang-tai-zhuan-huan-tu-ji-yin-pin-jiao-dian">Android开发之Mediaplayer状态转换图及音频焦点</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/androidstudio-guan-lian-zi-ji-xia-zai-de-android-source-fang-fa">AndroidStudio关联自己下载的android source方法</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#1-internal-vs-external">1. Internal vs External</a></li>
+<li><a href="#11-external-storage%E7%9A%84%E6%9D%83%E9%99%90">1.1 External Storage的权限</a></li>
+<li><a href="#12-%E5%A4%9A%E7%94%A8%E6%88%B7">1.2 多用户</a></li>
+<li><a href="#2-primary-vs-secondary">2. Primary vs Secondary</a></li>
+<li><a href="#21-%E5%89%AF%E5%82%A8%E5%AD%98%E8%B7%AF%E5%BE%84-storagemanager">2.1 副储存路径-StorageManager</a></li>
+<li><a href="#22-%E5%89%AF%E5%AD%98%E5%82%A8%E8%B7%AF%E5%BE%84-%E8%AF%BB%E9%85%8D%E7%BD%AExml">2.2 副存储路径-读配置xml</a></li>
+<li><a href="#23-%E5%89%AF%E5%AD%98%E5%82%A8%E8%B7%AF%E5%BE%84-mount%E5%91%BD%E4%BB%A4">2.3 副存储路径-mount命令</a></li>
+<li><a href="#24-%E5%89%AF%E5%AD%98%E5%82%A8%E8%B7%AF%E5%BE%84-%E8%AF%BBvoldfstab%E6%96%87%E4%BB%B6">2.4 副存储路径-读vold.fstab文件</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+<li><a href="#%E5%9C%A860%E4%B9%8B%E5%89%8D">在6.0之前</a></li>
+<li><a href="#%E5%9C%A860%E4%B9%8B%E5%90%8E">在6.0之后</a></li>
+<li><a href="#adoptable-storage">Adoptable Storage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

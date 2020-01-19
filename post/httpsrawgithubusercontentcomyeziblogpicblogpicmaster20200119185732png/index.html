@@ -1,0 +1,145 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>android项目gradle下载问题 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">android项目gradle下载问题</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><h1 id="1gradle下载不了">1.gradle下载不了</h1>
+<p>修改gradle/wrapper/gradle-wrapper.properties中的distributionUrl，修改为gradle官网的地址，打开<a href="http://services.gradle.org/distributions/">http://services.gradle.org/distributions/</a>，点击下载，复制浏览器的下载链接，如https://services.gradle.org/distributions/gradle-4.4-all.zip，替换实际的链接为http://219.238.7.67/files/125100000B1BAF17/services.gradle.org/distributions/gradle-4.4-all.zip，飞速！！！</p>
+<h1 id="2download-httpsdlgooglecomdlandroidmaven2comandroidtoolsbuildgradle310gradle-310pom失败或者缓慢">2.Download https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/3.1.0/gradle-3.1.0.pom，失败或者缓慢</h1>
+<p>这个问题坑了我好几天，烦死了。解决方案在此。<a href="https://discuss.gradle.org/t/android-studio-could-not-get-resource-https-dl-google-com-dl-android-maven2-com-android-tools-build-gradle-3-1-0-gradle-3-1-0-pom/26734">https://discuss.gradle.org/t/android-studio-could-not-get-resource-https-dl-google-com-dl-android-maven2-com-android-tools-build-gradle-3-1-0-gradle-3-1-0-pom/26734</a></p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119185732.png" alt="" loading="lazy"></figure>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/jian-shao-task-jia-kuai-gradle-bian-yi-su-du">减少Task加快Gradle编译速度</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/an-zhuo-zi-ding-yi-view-jin-jie-fen-lei-he-liu-cheng">安卓自定义View进阶 - 分类和流程</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li><a href="#1gradle%E4%B8%8B%E8%BD%BD%E4%B8%8D%E4%BA%86">1.gradle下载不了</a></li>
+<li><a href="#2download-httpsdlgooglecomdlandroidmaven2comandroidtoolsbuildgradle310gradle-310pom%E5%A4%B1%E8%B4%A5%E6%88%96%E8%80%85%E7%BC%93%E6%85%A2">2.Download https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/3.1.0/gradle-3.1.0.pom，失败或者缓慢</a></li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

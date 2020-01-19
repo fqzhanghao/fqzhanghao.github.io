@@ -1,0 +1,187 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>sdcard文件目录分析(含修正) | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">sdcard文件目录分析(含修正)</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>关于文件软链接,这个问题曾经困扰过我,后来经过正则排除了软链接的影响.下面是以前找到的资料,坐下备份.以后遇到还能解释.</p>
+<!--more-->
+<h3 id="1">1</h3>
+<p>在Android 4.2版本之前，通过Environment.getExternalStorageDirectory()获取的sdcard默认目录是正常的，可进行读写，一般的结果是“/mnt/sdcard”，但是在4.2版本之后，获取的sdcard目录是“/storage/emulated/0”，使用File.exist()方法返回true表示文件/目录是存在的，但是通过adb向该返回的目录中写数据（上传文件＝）是不成功的，返回的错误是&quot;No such file or directory&quot;，个人判断是返回的路径“/storage/emulated/0”其实是个类似快捷方式的文件，通过特定的解析方式可以认为是目录，但对于adb来说，该路径就是个文件，adb没有做过多的属性＝判断。上述判断也是有依据的，通过adb的shell命令获取指定目录下的文件/文件夹列表， 该路径显示的是文件，且有大小。</p>
+<p>之前就有猜测，关于目录结构中会存在不同程度的虚拟链接文件，google了下确实如此，以下的3处虚拟符号链接(类似windows下的快捷方式)是：</p>
+<p>&quot;/storage/emulated/0 and /storage/emulated/0/0 (new and &quot;backup&quot; locations, respectively)<br>
+/storage/emulated/legacy and /storage/emulated/legacy/0 (new and &quot;backup&quot; locations, respectively)<br>
+/storage/sdcard0 and /storage/sdcard0/0 (new and &quot;backup&quot; locations, respectively)&quot; (文章链接是http://androidforums.com/verizon-galaxy-nexus-all-things-root/649940-4-2-sdcard-sdcard-0-observation.html)</p>
+<p>所以在处理sdcard目录时，尽量自己先判断处理后提供同一的接口</p>
+<h3 id="2">2</h3>
+<p>关于目录/storage/emulated/legacy/目录的问题<br>
+因为google在4.2中考虑多用户的问题，对每个用户（user）来说，看各自的文件夹可以，但对于数据文件夹的处理就稍微麻烦了，所以调整了数据的挂载结构，如使用fuse技术/dev/fuse 会被挂载到/storage/emulated/0 目录，为了兼容以前，同时挂载到 /storage/emulated/legacy （故名思议，传统的），还建立三个软连接 /storage/sdcard0 ，/sdcard，/mnt/sdcard ，都指向  /storage/emulated/legacy/，（链接参见：http://bbs.gfan.com/android-5382920-1-1.html），但是就可能造成获取文件目录中的文件（如image）时，会出现相同的图片（本来上传1张，但出现了2张＝＝）<br>
+将上面的类的判断修改如下</p>
+<p>另外，针对image的上传后通过provider获取image图片时同一张图片给了2份，地址分别是&quot;/storage/emulated/legacy/dcim/camera/1.jpg&quot;和&quot;/storage/sdcard0/DCIM/Camera/1.jpg&quot;，其中legacy的属于兼容的，但获取能获取出来，所以获取时要进行过滤处理</p>
+<h3 id="3">3</h3>
+<p>安卓系统的问题，android 4.2使用fuse技术/dev/fuse 会被挂载到/storage/emulated/0 目录，为了兼容以前的版本，同时挂载到 /storage/emulated/legacy （故名思议，传统的），还建立三个软连接 /storage/sdcard0 ，/sdcard，/mnt/sdcard ，都指向 /storage/emulated/legacy。也就是说文件夹0和legacy指向的地址是一致的，都是存储盘里的，楼主想放到哪个文件夹都可以。</p>
+<h3 id="4">4</h3>
+<p>In short: It has to do with the multi-user functionality introduced with Jelly Bean:</p>
+<ul>
+<li>
+<p>/storage/emulated/0/: to my knowledge, this refers to the &quot;emulated MMC&quot; (&quot;owner part&quot;). Usually this is the internal one. The &quot;0&quot; stands for the user here, &quot;0&quot; is the first user aka device-owner. If you create additional users, this number will increment for each.</p>
+</li>
+<li>
+<p>/storage/emulated/legacy/ as before, but pointing to the part of the currently working user (for the owner, this would be a symlink to /storage/emulated/0/). So this path should bring every user to his &quot;part&quot;.</p>
+</li>
+<li>
+<p>/sdcard/: According to a comment by Shywim, this is a symlink to...</p>
+<ul>
+<li>/mnt/sdcard (Android &lt; 4.0)</li>
+<li>/storage/sdcard0 (Android 4.0+)</li>
+</ul>
+</li>
+<li>
+<p>/storage/sdcard0/: As there's no legacy pendant here (see comments below), the &quot;0&quot; in this case rather identifies the device (card) itself. One could, eventually, connect a card reader with another SDCard via OTG, which then would become /storage/sdcard1 (no proof for that, just a guess -- but I'd say a good one)</p>
+</li>
+</ul>
+<p>Though one might get to the conclusion there should be a /storage/sdcard/legacy as well, there isn't (see comments) -- which completely makes sense with my assumption of the numbers here are not related to the user, but rather to possible multiple cards: &quot;0&quot; would always be the one in the card-slot of the device, so no need for a &quot;legacy symlink&quot; here.</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/url-schemes">URL schemes</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/scrollbarstyle-shu-xing-de-she-zhi-dui-scrollbar-wei-zhi-de-ying-xiang"> Scrollbarstyle属性的设置对scrollbar位置的影响</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#1">1</a></li>
+<li><a href="#2">2</a></li>
+<li><a href="#3">3</a></li>
+<li><a href="#4">4</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

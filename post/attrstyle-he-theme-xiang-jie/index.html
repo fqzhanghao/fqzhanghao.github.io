@@ -1,0 +1,247 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Attr、Style和Theme详解 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Attr、Style和Theme详解</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>转自:<a href="http://www.jianshu.com/p/dd79220b47dd">http://www.jianshu.com/p/dd79220b47dd</a></p>
+<!--more-->
+<h3 id="前言">前言</h3>
+<p>这三个概念贯穿Android框架的方方面面，是Android程序设计中很重要的一环，理解它们，并能学以致用，不但可以让你的代码变得简洁明了，还可以让你的应用更加灵活。但目前网上资料对这块介绍的知识点往往比较散，不是很系统全面，在此特以自己开发经验总结此文一篇，希望可以帮助初学者把这三个概念彻底搞明白，开发出高质量的Android代码。</p>
+<h3 id="概念说明">概念说明</h3>
+<p><strong>Attr</strong>：属性，风格样式的最小单元；<br>
+<strong>Style</strong>：风格，它是一系列Attr的集合用以定义一个View的样式，比如height、width、padding等；<br>
+<strong>Theme</strong>：主题，它与Style作用一样，不同于Style作用于个一个单独View，而它是作用于Activity上或是整个应用。</p>
+<h3 id="attr的定义">Attr的定义</h3>
+<p>我们先举一个框架中的源码例子，用来介绍下Android中是如何定义一个Attr的，比如以下创建一个简单的TextView布局</p>
+<p><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119192328.png" alt="" loading="lazy"><br>
+其中layout_width对应到框架中的attr信息如下：</p>
+<pre><code class="language-xml">&lt;declare-styleable name=&quot;ViewGroup_Layout&quot;&gt;
+    &lt;attr name=&quot;layout_width&quot; format=&quot;dimension&quot;&gt;
+        &lt;enum name=&quot;fill_parent&quot; value=&quot;-1&quot; /&gt;
+        &lt;enum name=&quot;match_parent&quot; value=&quot;-1&quot; /&gt;
+        &lt;enum name=&quot;wrap_content&quot; value=&quot;-2&quot; /&gt;
+    &lt;/attr&gt;
+    ...
+&lt;/declare-styleable&gt;
+</code></pre>
+<p>从上可以看到layout_width可以使用三个枚举值，并且其中fill_parent和match_parent的value值都为-1。做过Android开发的童鞋肯定知道，从2.2开始Android框架就推荐用match_parent代替fill_parent，而以上代码正实现了兼容，因为它们对应的值都为-1。</p>
+<p>以上的textStyle的属性信息在源码中如下：</p>
+<pre><code class="language-xml">&lt;attr name=&quot;textStyle&quot;&gt;
+    &lt;flag name=&quot;normal&quot; value=&quot;0&quot; /&gt;
+    &lt;flag name=&quot;bold&quot; value=&quot;1&quot; /&gt;
+    &lt;flag name=&quot;italic&quot; value=&quot;2&quot; /&gt;
+&lt;/attr&gt;
+</code></pre>
+<p>它也对应了三个值，但这里却使用了flag标签。细心的童鞋可能已经明白了flag与enum的差别，flag表示这几个值可以做或运算，比如上面的textStyle，你可以叠加使用，如用bold|italic表示既加粗也变成斜体，而enum只能让你选择其中一个值。</p>
+<p>看完上例后，我们来试着自己自定义一个自己的属性，在values目录下创建一个attrs.xml文件，在<resources>元素里面首先申明一个自己的<declare-styleable>表示一个属性组，再在里面加上属性就行。如下我们定义一个DogStyle的属性组，其中有三个属性一个是dogSex，一个是dogName，dogName的格式我们设置为string，最后一个是dogColor，这样一个属于我们自己的属性就定义成功了。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200119192344.png" alt="" loading="lazy"></figure>
+<p>attr的format根据字面意思也挺容易理解的，这里我解释下reference的用法。它用在一些可以设置引用值的情况，比如@drawable/myImage、@color/myColor等。当然format也可以进行或运算，一般我们定义color类型的属性时，也一般会把format写成format=&quot;reference|color&quot;，这样我们不但可以设置颜色值，如#FFFFFF，还可以使用我们自己定义的狗图片，如@drawable/dog_pic。</p>
+<pre><code>TIPS：format即使用错，只要你自定义的View中获取对应类型值也是可以的，只是在布局中写代码时，IDE就不会根据你定义的format给出相应的提示了，所以最好在自定义View时还是仔细斟酌下类型。
+</code></pre>
+<h3 id="style的使用">Style的使用</h3>
+<p>如下我们在styles.xml中定义一个雪纳瑞风格</p>
+<pre><code class="language-xml">&lt;style name=&quot;SchnauzerStyle&quot;&gt;
+    &lt;item name=&quot;dogName&quot;&gt;雪纳瑞&lt;/item&gt;
+    &lt;item name=&quot;dogColor&quot;&gt;@drawable/schnauzer&lt;/item&gt;
+    &lt;item name=&quot;dogSex&quot;&gt;boy&lt;/item&gt;
+&lt;/style&gt;
+</code></pre>
+<p>下面我们看下如何让一个Style作用在一个View上的。<br>
+首先我们自定义了一个View命名为DogView，然后创建一个布局文件中加入该DogView视图，并让该View使用SchnauzerStyle风格。代码如下：</p>
+<pre><code class="language-xml">&lt;cn.hadcn.test.DogView
+    style=&quot;@style/SchnauzerStyle&quot;
+    android:layout_height=&quot;wrap_content&quot;
+    android:layout_width=&quot;wrap_content&quot;/&gt;
+</code></pre>
+<p>移步到DogView的Java代码中，我们可以通过theme的obtainStyledAttributes方法来获得我们刚刚定义的几个Attr属性在Style中的内容，如下我们举一个获得dogName的例子：</p>
+<pre><code class="language-java">final Resources.Theme theme = context.getTheme();
+TypedArray dogArray = theme.obtainStyledAttributes(attrs, R.styleable.DogStyle, defStyleAttr, defStyleRes);
+
+String name = dogArray.getString(R.styleable.DogStyle_dogName);
+Log.e(&quot;dog&quot;, &quot;name = &quot; + name);
+
+dogArray.recycle();
+</code></pre>
+<p>以上obtainStyledAttributes有四个入参，前两个比较容易理解，后两个用作指定默认的Style，表示如果attrs中没有你想获得的属性，但如果你指定了默认Style，它会去从该默认的Style里面找你想要的属性。defStyleAttr和defStyleRes功能一样，指定的资源形式不同，前者表示一个默认的指向一个style风格的attr属性，而后者你可以直接传入一个style风格的id。注意以上定义的Style只能在这个DogView中被使用，如果你想在其他View使用，就需要再在需要使用的View中增加这个Style。这就是先前我们说的Style只能作用于一个View。</p>
+<h3 id="theme的使用">Theme的使用</h3>
+<p>Theme与Style使用同一个元素标签&lt;style&gt;，区别在于所包含的属性不同，并且使用的地方也不一样。Theme你需要设置到AndroidManifest.xml的<application>或者<activity>标签下，设置后，被设置的Activity或整个应用下所有的View都可以使用该&lt;style&gt;里面的属性了。</p>
+<p>比如在上例中，我们直接把SchnauzerStyle设置到<activity>标签中，并把布局文件中DogView元素的style=&quot;@style/SchnauzerStyle&quot;栏位删除，以此来测试下，这个Activity下的所有View是不是可以直接使用theme中声明的这些属性。</p>
+<pre><code class="language-xml">&lt;activity
+    android:name=&quot;.MainActivity&quot;
+    android:theme=&quot;@style/SchnauzerStyle&quot;&gt;
+    ...
+&lt;/activity&gt;
+</code></pre>
+<p>以上理论上是可行的，不过运行后，程序却出现奔溃，出现以下错误提示：</p>
+<pre><code class="language-java">java.lang.IllegalStateException: You need to use a Theme.AppCompat theme (or descendant) with this activity.
+</code></pre>
+<p>有些同学一眼可能就看出，因为在这里Activity或Application的需要很多属性才能工作的，而此处我们只给它传一个SchnauzerStyle，这当然不行，所以我们需要对这个Style做下处理，让SchnauzerStyle继承一个系统主题，如下：</p>
+<pre><code class="language-xml">&lt;style name=&quot;SchnauzerStyle&quot; parent=&quot;Theme.AppCompat&quot;&gt;
+    &lt;item name=&quot;dogName&quot;&gt;雪纳瑞&lt;/item&gt;
+    &lt;item name=&quot;dogColor&quot;&gt;@drawable/schnauzer&lt;/item&gt;
+    &lt;item name=&quot;dogSex&quot;&gt;boy&lt;/item&gt;
+&lt;/style&gt;
+</code></pre>
+<p>这样一个雪纳瑞主题就诞生了，而在这个Activity下的所有View都可以用雪纳瑞的信息了。Application中定义theme的原理一样，这里就不多说了。</p>
+<pre><code>TIPS：框架使用Attr的顺序是：View中的Style会优先于Activity中的Theme，Activity中的Theme会优先于Application中的Theme，所以说你可以定义整个应用的总体风格，但局部风格你也可以做出自己的调整。
+</code></pre>
+<h3 id="attr的获得方法">Attr的获得方法</h3>
+<p>有些情况下，我们可能需要使用theme中的属性值，比如下面我们想让一个TextView直接显示dogName这个属性的内容，并且使用系统字体的颜色，则可以如下做：</p>
+<pre><code class="language-xml">&lt;TextView
+    android:layout_width=&quot;wrap_content&quot;
+    android:layout_height=&quot;wrap_content&quot;
+    android:textColor=&quot;?android:textColorSecondary&quot;
+    android:text=&quot;?attr/dogName&quot;/&gt;
+</code></pre>
+<p>获得一个Attr的方法，不同于普通资源使用@符号获得的方式，而是需要使用?符号来获得属性，整体的表达方式如下：</p>
+<pre><code>?[*&lt;package_name&gt;*:][*&lt;resource_type&gt;*/]*&lt;resource_name&gt;*
+</code></pre>
+<p>如果是本应用中的attr使用，则可以省去&lt;package_name&gt;部分。</p>
+<p>此处的textColor使用当前主题的android:textColorSecondary属性内容。因为资源工具知道此处是一个属性，所以省去了attr （完整写法：?android:attr/textColorSecondary）。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/cmd-he-git-zhong-de-dai-li-she-zhi">CMD 和 Git 中的代理设置</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/anroid-dong-tai-jia-zai-ji-zhu-xi-lie-suo-yin">ANROID动态加载技术 系列索引</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E6%A6%82%E5%BF%B5%E8%AF%B4%E6%98%8E">概念说明</a></li>
+<li><a href="#attr%E7%9A%84%E5%AE%9A%E4%B9%89">Attr的定义</a></li>
+<li><a href="#style%E7%9A%84%E4%BD%BF%E7%94%A8">Style的使用</a></li>
+<li><a href="#theme%E7%9A%84%E4%BD%BF%E7%94%A8">Theme的使用</a></li>
+<li><a href="#attr%E7%9A%84%E8%8E%B7%E5%BE%97%E6%96%B9%E6%B3%95">Attr的获得方法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

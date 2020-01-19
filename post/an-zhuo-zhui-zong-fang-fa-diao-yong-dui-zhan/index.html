@@ -1,0 +1,245 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>安卓追踪方法调用堆栈 | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">安卓追踪方法调用堆栈</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>接到组长下发的书城隐私协议问题，记录了一下排查过程，以后可以模仿此步骤，进行隐私协议排查工作</p>
+<p>问题如下图所示：<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200103141931.png" alt="" loading="lazy"><br>
+很明显，我们在未被授权获取用户设备信息的情况下，频繁的请求了用户的设备信息。这是不允许的。<br>
+查找资料，如下代码，可以获取用户信息</p>
+<pre><code>TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+imei = telephonyManager.getDeviceId();
+</code></pre>
+<p>那我们可以按照如下逻辑，进行排查工作。<br>
+1.分析我们代码里面的获取逻辑，做权限检查+imei缓存处理<br>
+2.分析三方SDK里面的获取情况</p>
+<p>那么问题来了，检查1，自己的代码我们可以进行检索，排查。三方的SDK我们如何知晓调用情况呢，断点打到系统上？其实方案很简单，就是Hook。<br>
+一方面我们可以使用java的动态代理，Hook本应用获取的系统服务，另一方面我们可以使用Xposed,注入系统进程，Hook所有的系统服务。<br>
+市面上经常有模拟器刷量，他们Hook系统api，返回虚假的IMEI，我们可以如法炮制。条条道路通罗马，我们选择最简单的那条路（Xposed Hook）。</p>
+<p>准备工具如下：<br>
+1.<a href="https://www.ldmnq.com/">雷电模拟器</a><br>
+2.<a href="https://bintray.com/rovo89/de.robv.android.xposed/api/82">Xposed jar</a><br>
+3.<a href="http://deelmind.cn/2018/06/09/%E6%9C%80%E6%96%B0Android-Studio%E6%90%AD%E5%BB%BAXposed-Hook%E7%8E%AF%E5%A2%83/">Xposed开发环境部署</a><br>
+4.<a href="https://github.com/shuihuadx/XposedHook">免重启Xposed模块改进</a></p>
+<p>首先安装雷电模拟器，自带Root权限。启动后，安装Xposed installer（需梯子）。<br>
+然后按照工具3，部署Xposed开发环境。我已在文章末尾附上git地址，大家clone下开箱可用。</p>
+<p>回到我们的主题，我们需要Hook系统的<strong>getSystemService</strong>，咨询了技术部的大佬@杨滨(yangbin)，写出了如下的代码。</p>
+<p>首先，我们Hook <strong>loadClass</strong>.看看是否加载了 <strong>android.content.ContextWrapper</strong>，</p>
+<pre><code class="language-java">XposedHelpers.findAndHookMethod(ClassLoader.class, &quot;loadClass&quot;, String.class, new XC_MethodHook() {
+                // 在类方法loadClass执行之后执行的代码
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                 // 参数的检查
+                    if (param.hasThrowable()) {
+                        return;
+                    }
+                    // 获取指定名称的类加载之后的Class&lt;?&gt;
+                    Class&lt;?&gt; clazz = (Class&lt;?&gt;) param.getResult();
+                    // 获取加载的指定类的名称
+                    String strClazz = clazz.getName();
+                    if (strClazz.startsWith(&quot;android.content.ContextWrapper&quot;)) {
+                        XposedBridge.log(&quot;--------------------LoadClass-------------------------- : &quot; + strClazz);
+                        .......
+                     }
+                }
+          }
+);
+</code></pre>
+<p>然后我们Hook <strong>getSystemService</strong>方法</p>
+<pre><code class="language-java">for (int i = 0; i &lt; m.length; i++) {
+    XposedBridge.log(&quot;--------------HOOKED CLASS-METHOD-------------------: &quot; + strClazz + &quot;-&quot; + m[i].toString());
+    if (m[i].toString().indexOf(&quot;getSystemService&quot;) == -1) {
+        continue;
+    }
+    if (!Modifier.isAbstract(m[i].getModifiers())           // 过滤掉指定名称类中声明的抽象方法
+            // &amp;&amp; !Modifier.isNative(m[i].getModifiers())     // 过滤掉指定名称类中声明的Native方法
+            &amp;&amp; !Modifier.isInterface(m[i].getModifiers())  // 过滤掉指定名称类中声明的接口方法
+    ) {
+            // 对指定名称类中声明的非抽象方法进行java Hook处理
+            XposedBridge.hookMethod(m[i], new XC_MethodHook() {
+
+                // 被java Hook的类方法执行完毕之后，打印log日志
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                   .....
+                }
+             }
+        }
+}       
+</code></pre>
+<p>最后我们Hook 获取<strong>Context.TELEPHONY_SERVICE</strong>服务的调用，打印出调用栈。</p>
+<pre><code class="language-java">// 打印被java Hook的类方法的名称和参数类型等信息
+if ((param.args != null) &amp;&amp; (param.args.length &gt; 0)) {
+    for (int i = 0; i &lt; param.args.length; i++) {
+        if (param.args[i] != null) {
+            String c = param.args[i].toString();
+            if (c.indexOf(&quot;phone&quot;) != -1) {
+                Thread.sleep(100);
+                new Exception(&quot;-------phone---printStackTrace&quot;).printStackTrace();
+            }
+            XposedBridge.log(&quot;---------------xxxxxx-----HOOKED METHOD: -------param-------------&quot; + &quot;-&quot; + &quot;-&quot; + param.method + &quot;-&quot; + i + &quot;:&quot; + param.args[i]);
+        }
+    }
+
+}
+
+// 打印被java Hook的类方法的名称和参数类型等信息
+if (param.getResult() != null) {
+    try {
+        XposedBridge.log(&quot;--------------------HOOKED METHOD: --------------result------&quot; + param.getClass().getName() + &quot;-&quot; + param.method.toString() + &quot;:&quot; + param.getResult().toString());
+    } catch (Throwable e) {
+
+    }
+}
+
+</code></pre>
+<p>这样，我们就可以在所有第三方SDK，调用系统phone服务的时候，打印出当前的调用栈。</p>
+<p>安装好Xposed模块并勾选，因为是免重启模块，杀死宿主和模块，点开我们的书城即可查看。</p>
+<p>在日志中我们可以查看到，广点通服务在频繁的调用，<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200103160807.png" alt="" loading="lazy"><br>
+QM统计在频繁调用<br>
+<img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20200103160702.png" alt="" loading="lazy"></p>
+<p>哈哈，是不是原形毕露呢，这样我们不仅可以找到是谁在调用IMEI，还可以有证据证明他们在调用，可以愉快的把图发给他们(三方SDK)，让他们整改了。</p>
+<p>一通操作，可以发现，有很多处地方在频繁获取系统服务，比如phone，网络等。可以针对这种问题，给SDK提出整改意见，进行cache处理，优化执行效率。</p>
+<p>举一反三，我们可以Hook系统的函数，修改系统参数,Hook三方App，修改程序逻辑。仅限学习研究！</p>
+<p>备注：<br>
+Xposed学习链接<br>
+<a href="https://www.cnblogs.com/claireyuancy/p/6962664.html">Xposed编写</a><br>
+<a href="https://www.cnblogs.com/gordon0918/p/6732100.html">Xposed编写</a><br>
+<a href="https://blog.csdn.net/u011956004/article/details/78612502">免重启Xposed原理解析</a><br>
+java动态代理学习链接<br>
+<a href="http://weishu.me/2016/02/16/understand-plugin-framework-binder-hook/">维术大佬系列文章</a><br>
+开箱即用的Xposed开发环境<br>
+http://gitlab.inner.yuewen.local/zhanghao.c/XposedHook.git</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/zu-jian-hua-ji-cheng">组件化集成</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/an-zhuo-qia-dun-pai-cha-bu-zou">安卓卡顿排查步骤</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

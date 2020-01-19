@@ -1,0 +1,229 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title> 树莓派安装nginx+php5+sqlite3运行Typecho | 浩浩的博客</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fqzhanghao.github.io//styles/main.css">
+          <script src="https://fqzhanghao.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://fqzhanghao.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3"> 树莓派安装nginx+php5+sqlite3运行Typecho</div>
+                           <a  class="index-list-biaoqian ">2020-01-19</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>环境说明：</p>
+<ul>
+<li>硬件:RasyberryPi 2B</li>
+<li>系统：<a href="http://pan.baidu.com/s/1pJqQxHD">raspbian-wheezy</a></li>
+<li>Blog站：<a href="http://pan.baidu.com/s/1o61bO6Y">Typecho 1.0（14.10.10）</a></li>
+</ul>
+<!--more-->
+<p>操作步骤:</p>
+<ol>
+<li>安装nginx,先更新一下软件源（建议修改镜像源为国内镜像，速度会快很多）<br>
+<code>sudo apt-get update</code><br>
+更新过后就可以安装nginx了<br>
+<code>sudo apt-get install nginx</code></li>
+<li>安装sqlite3<!--more--><br>
+<code>sudo apt-get install sqlite3</code></li>
+<li>安装php<br>
+PHP5<br>
+<code>sudo apt-get install php5-fpm</code><br>
+php5数据库<br>
+<code>sudo apt-get install php5-sqlite</code><br>
+php优化<br>
+<code>sudo apt-get install php-apc</code></li>
+<li>配置nginx的php支持<br>
+备份nginx的默认配置<br>
+<code>sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak</code><br>
+然后就可以放心的修改了<br>
+<code>sudo nano /etc/nginx/sites-available/default</code></li>
+</ol>
+<p>下面这一行将前面的#号去掉，变成：<br>
+<code>listen 80; ## listen for ipv4;</code></p>
+<p>下面这一行需要增加一句index.php<br>
+<code>index index.html index.htm;</code><br>
+变成<br>
+<code>index index.php index.html index.htm;</code></p>
+<p>接着往下翻页继续修改</p>
+<pre><code>#location ~ \.php$ {
+# fastcgi_split_path_info ^(.+\.php)(/.+)$;
+# # NOTE: You should have &quot;cgi.fix_pathinfo = 0;&quot; in php.ini
+#
+# # With php5-cgi alone:
+# fastcgi_pass 127.0.0.1:9000;
+# # With php5-fpm:
+# fastcgi_pass unix:/var/run/php5-fpm.sock;
+# fastcgi_index index.php;
+# include fastcgi_params;
+#}
+</code></pre>
+<p>改为</p>
+<pre><code>if (!-e $request_filename) {
+rewrite ^(.*)$ /index.php$1 last;
+}
+location ~ \.php$ {
+# fastcgi_split_path_info ^(.+\.php)(/.+)$;
+# # NOTE: You should have &quot;cgi.fix_pathinfo = 0;&quot; in php.ini
+#
+# # With php5-cgi alone:
+# fastcgi_pass 127.0.0.1:9000;
+# # With php5-fpm:
+fastcgi_pass unix:/var/run/php5-fpm.sock;
+fastcgi_index index.php;
+include fastcgi_params;
+} 
+</code></pre>
+<ol start="5">
+<li>测试php<br>
+<code>sudo nano /etc/share/nginx/www/test.php</code><br>
+输入如下内容：</li>
+</ol>
+<pre><code>&lt;?php
+phpinfo();
+?&gt;
+</code></pre>
+<p>重启nginx，和php5-fpm<br>
+<code>sudo /etc/init.d/nginx restart</code><br>
+<code>sudo /etc/init.d/php5-fpm restart</code></p>
+<p>局域网的电脑中输入树莓派的ip地址查看是否成功<br>
+<code>http://192.169.1.102/test.php</code></p>
+<ol start="6">
+<li>
+<p>上传并配置typecho权限<br>
+修改<code>www</code>目录权限，使网页文件能正常上传。<br>
+<code>sudo chmod 777 /usr/share/nginx/www</code><br>
+使用<a href="http://pan.baidu.com/s/1sjJSCWl">winscp</a>工具上传到nginx的默认目录<br>
+修改typecho的文件夹权限，以便之后的安装能够顺利进行。<br>
+<code>sudo chmod 777 /usr/share/nginx/www/usr</code><br>
+修改后台上传默认文件夹的权限，使后台能够上传附件。<br>
+<code>sudo chmod 777 /usr/share/nginx/www/usr/uploads</code></p>
+</li>
+<li>
+<p>设置typecho<br>
+在浏览器上面输入树莓派IP地址，进行初始化安装。数据库会自动创建，我们仅需输入初始的账号和密码即可。完成后进入后台修改永久链接，根据需要可开启地址重写功能。</p>
+</li>
+</ol>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://fqzhanghao.github.io/post/mei-ge-cheng-xu-yuan-du-bi-du-de-10-pian-wen-zhang">每个程序员都必读的10篇文章</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://fqzhanghao.github.io/post/ru-he-jie-jue-android-50-zhong-chu-xian-de-jing-gao-service-intent-must-be-explitict">如何解决Android 5.0中出现的警告：Service Intent must be explitict</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+ <script src="https://fqzhanghao.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <div class="toc-container mdui-float-right">
+                
+              </div>
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>
