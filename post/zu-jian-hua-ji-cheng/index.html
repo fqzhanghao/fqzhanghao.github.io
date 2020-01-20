@@ -42,16 +42,15 @@
                          <article class="mdui-shadow-10 mdui-p-a-2 post-list">
                            <div class="mdui-typo-display-1 mdui-m-b-3">组件化集成</div>
                            <a  class="index-list-biaoqian ">2020-01-19</a>
-                           <div class="mdui-typo mdui-m-t-3 post-neirong"><h1 id="组件化集成">组件化集成</h1>
-<p>上半年的技术需求,是做白牌组件集成,就是将白牌独立出来的组件,集成到合作项目中.</p>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>上半年的技术需求,是做白牌组件集成,就是将白牌独立出来的组件,集成到合作项目中.</p>
 <p>看起来很简单,就像我们使用okhttp,只要导入一句**compile 'com.squareup.okhttp3:okhttp:3.4.1'**即可.</p>
 <p>但是事与愿违.过程充满了艰辛,下面记录一下这次集成中的总结.</p>
-<h3 id="项目背景">项目背景</h3>
+<h2 id="项目背景">项目背景</h2>
 <p>首先明确一下项目的背景.</p>
 <p>在合作项目中,小说使用replugin形式集成,表现为一个插件apk.我们称之为壳app,这个app是一个壳,他的实际入口为壳app中依赖的读书aar.</p>
 <p>我们所要做的,就是在这个aar中集成白牌组件.即<strong>插件apk--&gt;读书aar--&gt;白牌组件.</strong></p>
 <p>以下所有均围绕这个过程准备.在此之前我们需要做一个依赖统一管理,如果不做这个,那么各个版本依赖冲突起来,简直解决到怀疑人生.</p>
-<h3 id="依赖统一">依赖统一</h3>
+<h2 id="依赖统一">依赖统一</h2>
 <p>在项目根目录新建config.gradle文件,配置如下</p>
 <pre><code class="language-groovy">ext {
     android = [
@@ -87,7 +86,7 @@ common  ---&gt;core,三方
 core    ---&gt;三方
 </code></pre>
 <p>针对上面复杂的依赖关系,总结了四种依赖集成方式.</p>
-<h3 id="使用源码依赖">使用源码依赖</h3>
+<h2 id="使用源码依赖">使用源码依赖</h2>
 <p>对项目而言,我们集成三方依赖是为了使用它的代码,完成某些任务,那么最简单的集成方式,就是将源码拷贝过来,进行项目集成.</p>
 <p>我们可以做如下方式集成:</p>
 <p>1.将common和core模块下载到本地,并拷贝到三方壳项目中</p>
@@ -119,7 +118,7 @@ core    ---&gt;三方
 }
 </code></pre>
 <p>这样就可以正常使用白牌组件了.当然这中间还有很多冲突问题需要解决.我会写在最后的备注中.</p>
-<h3 id="使用aar集成">使用aar集成</h3>
+<h2 id="使用aar集成">使用aar集成</h2>
 <p>有了上一步源码集成成功的前提,我们下一步改造为aar集成.aar集成有三种方式,我们使用第一种,单aar集成.</p>
 <p>因为我们的项目是层层依赖的,那我们先从最底层的core模块处理.</p>
 <p>对core模块进行assembleRelease命令,会在build/output文件夹获得一个aar文件.</p>
@@ -166,7 +165,7 @@ core    ---&gt;三方
 }
 </code></pre>
 <p>这样就可以正常使用白牌组件了.</p>
-<h3 id="使用fat-aar集成">使用fat-aar集成</h3>
+<h2 id="使用fat-aar集成">使用fat-aar集成</h2>
 <p>从上面的集成方式可以看到这么搞起来好像很复杂啊,有没有简单一点的方式呢.</p>
 <p>我们可以使用fat-aar技术,官网这么解释的.</p>
 <blockquote>
@@ -179,7 +178,7 @@ core    ---&gt;三方
 <p>这项技术对比下面的maven远程依赖技术有优点与缺点.</p>
 <p>优点:如果使用方无法访问我们的maven库,那可以把所有模块资源打成fat-aar,提供一个aar供依赖方使用.</p>
 <p>缺点:这个库已经不维护了,需要使用特定版本的gradle编译,并需要修改脚本,适应自己的项目.</p>
-<h3 id="使用maven远程依赖集成">使用maven远程依赖集成</h3>
+<h2 id="使用maven远程依赖集成">使用maven远程依赖集成</h2>
 <p>探索到了现在我一直在思考一个问题,github上有很多组件供大家使用,他们是怎么完成这个依赖的问题呢?</p>
 <p>比如我们使用的okhttp,它依赖okio,但是我们使用的时候,只需要compile okhttp就行了.</p>
 <p>以前也在网上搜过相应的文章,但是只是简单的提到,需要把三方库变成maven远程依赖.对于我们项目,方式二已经变成了远程依赖,但是为什么做不到呢?</p>
@@ -311,7 +310,7 @@ apply from: &quot;./upload.gradle&quot;
 </code></pre>
 <p>完美!</p>
 <p>这才是我心目中的使用方式,其实我们也可以把sdk的aar做下类似的包装.不过就比较麻烦了,还有一堆provided的依赖需要处理,这个还是暴露给业务方处理比较合适.</p>
-<h3 id="备注">备注</h3>
+<h2 id="备注">备注</h2>
 <p>冲突问题如何解决.</p>
 <p>在解决aar打包问题前,我使用的是源码依赖.但是这种最简单的方式依旧冲突重重.</p>
 <p>首先提供学习资料</p>
@@ -364,8 +363,7 @@ apply from: &quot;./upload.gradle&quot;
                          </article>
                  <div class="toc-container mdui-float-right">
                 <ul class="markdownIt-TOC">
-<li><a href="#%E7%BB%84%E4%BB%B6%E5%8C%96%E9%9B%86%E6%88%90">组件化集成</a><br>
-*
+<li>
 <ul>
 <li><a href="#%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF">项目背景</a></li>
 <li><a href="#%E4%BE%9D%E8%B5%96%E7%BB%9F%E4%B8%80">依赖统一</a></li>
