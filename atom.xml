@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fqzhanghao.github.io/</id>
     <title>浩浩的博客</title>
-    <updated>2020-01-20T03:09:20.943Z</updated>
+    <updated>2020-01-20T08:47:12.602Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fqzhanghao.github.io/"/>
     <link rel="self" href="https://fqzhanghao.github.io/atom.xml"/>
@@ -17,12 +17,12 @@
         </link>
         <updated>2020-01-19T12:53:01.000Z</updated>
         <content type="html"><![CDATA[<h1 id="组件化集成">组件化集成</h1>
-<p>上半年的技术需求,是做白牌组件集成,就是将白牌独立出来的组件,集成到腾讯视频,腾讯新闻,腾讯新闻极速版中.</p>
+<p>上半年的技术需求,是做白牌组件集成,就是将白牌独立出来的组件,集成到合作项目中.</p>
 <p>看起来很简单,就像我们使用okhttp,只要导入一句**compile 'com.squareup.okhttp3:okhttp:3.4.1'**即可.</p>
 <p>但是事与愿违.过程充满了艰辛,下面记录一下这次集成中的总结.</p>
 <h3 id="项目背景">项目背景</h3>
 <p>首先明确一下项目的背景.</p>
-<p>在腾讯视频项目中,小说使用replugin形式集成,表现为一个插件apk.我们称之为壳app,这个app是一个壳,他的实际入口为壳app中依赖的读书aar.</p>
+<p>在合作项目中,小说使用replugin形式集成,表现为一个插件apk.我们称之为壳app,这个app是一个壳,他的实际入口为壳app中依赖的读书aar.</p>
 <p>我们所要做的,就是在这个aar中集成白牌组件.即<strong>插件apk--&gt;读书aar--&gt;白牌组件.</strong></p>
 <p>以下所有均围绕这个过程准备.在此之前我们需要做一个依赖统一管理,如果不做这个,那么各个版本依赖冲突起来,简直解决到怀疑人生.</p>
 <h3 id="依赖统一">依赖统一</h3>
@@ -39,7 +39,7 @@
             &quot;support-v4&quot;          : 'com.android.support:support-v4:25.3.1',
             &quot;appcompat-v7&quot;        : 'com.android.support:appcompat-v7:25.3.1',
             &quot;okhttp3&quot;             : 'com.squareup.okhttp3:okhttp:3.4.1',
-            &quot;xlog&quot;                : 'com.yuewen.cooperate.xlog:xlog-common:1.0.0',
+            &quot;xlog&quot;                : 'com.xxxx.cooperate.xlog:xlog-common:1.0.0',
             &quot;mmkv&quot;                : 'com.tencent:mmkv:1.0.10',
             &quot;android-gif-drawable&quot;: 'pl.droidsonroids.gif:android-gif-drawable:1.2.6'
     ]
@@ -56,15 +56,15 @@
 </code></pre>
 <p>回到我们具体项目里面,白牌组件目前需要接入的有两个,一个是common模块,一个是core模块.这两个模块也有依赖关系,表现为common依赖core.core模块依赖三方模块.</p>
 <p>那么具体到项目表现为</p>
-<pre><code>SDK		---&gt;commom,core,三方
-common	---&gt;core,三方
-core	---&gt;三方
+<pre><code>SDK	    ---&gt;commom,core,三方
+common  ---&gt;core,三方
+core    ---&gt;三方
 </code></pre>
 <p>针对上面复杂的依赖关系,总结了四种依赖集成方式.</p>
 <h3 id="使用源码依赖">使用源码依赖</h3>
 <p>对项目而言,我们集成三方依赖是为了使用它的代码,完成某些任务,那么最简单的集成方式,就是将源码拷贝过来,进行项目集成.</p>
 <p>我们可以做如下方式集成:</p>
-<p>1.将common和core模块下载到本地,并拷贝到视频壳项目中</p>
+<p>1.将common和core模块下载到本地,并拷贝到三方壳项目中</p>
 <p>2.在setting.gradle中引入项目,':CooperateCommonModule',':CooperateCoreModule'</p>
 <p>3.调整项目依赖.</p>
 <p>core中如下:</p>
@@ -98,14 +98,14 @@ core	---&gt;三方
 <p>因为我们的项目是层层依赖的,那我们先从最底层的core模块处理.</p>
 <p>对core模块进行assembleRelease命令,会在build/output文件夹获得一个aar文件.</p>
 <p>这种build方式打出的aar,只包含模块本身的代码,不包含三方依赖.</p>
-<p>打开<a href="http://dev.inner.yuewen.local/nexus/">内网maven</a>,登陆后使用upload功能,上传此aar.然后配置如下</p>
+<p>打开<a href="http://dev.inner.xxxx.local/nexus/">内网maven</a>,登陆后使用upload功能,上传此aar.然后配置如下</p>
 <figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/yeziblogpic/blogpic/master/20190527105140.png" alt="" loading="lazy"></figure>
-<p>接着我们就可以使用compile ''com.yuewen.cooperate.core:core-thirdpart:1.0.2&quot;使用此aar了.</p>
+<p>接着我们就可以使用compile ''com.xxxx.cooperate.core:core-thirdpart:1.0.2&quot;使用此aar了.</p>
 <p>我们提一个知识点,就是maven仓库中的某aar的pom.xml文件.这个文件记录了aar的描述,声明,依赖等.</p>
 <p>观察这个aar的pom.xml文件,可以看到</p>
 <pre><code class="language-xml">&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
     &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
-    &lt;groupId&gt;com.yuewen.cooperate.core&lt;/groupId&gt;
+    &lt;groupId&gt;comxxxx.cooperate.core&lt;/groupId&gt;
     &lt;artifactId&gt;core-thirdpart&lt;/artifactId&gt;
     &lt;version&gt;1.0.2&lt;/version&gt;
     &lt;packaging&gt;aar&lt;/packaging&gt;
@@ -116,7 +116,7 @@ core	---&gt;三方
 <pre><code class="language-groovy">dependencies {
     compile  fileTree(dir: 'libs/main', include: ['*.jar'])
     compile  fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.yuewen.cooperate.core:core-thirdpart:1.0.2'
+    compile 'com.xxxx.cooperate.core:core-thirdpart:1.0.2'
     compile rootProject.ext.dependencies[&quot;appcompat-v7&quot;]
     compile rootProject.ext.dependencies[&quot;okhttp3&quot;]
     compile rootProject.ext.dependencies[&quot;xlog&quot;]
@@ -124,14 +124,14 @@ core	---&gt;三方
     compile rootProject.ext.dependencies[&quot;android-gif-drawable&quot;]
 }
 </code></pre>
-<p>上传并得到使用方式compile 'com.yuewen.cooperate.common:common-thirdpart:1.0.2'</p>
+<p>上传并得到使用方式compile 'com.xxxx.cooperate.common:common-thirdpart:1.0.2'</p>
 <p>同理在SDK中使用common,core的远程依赖.</p>
 <pre><code class="language-groovy">dependencies {
     FileTree tree = fileTree(dir: 'libs', includes: ['*.so', '*.jar'])
     compile tree
     provided fileTree(include: ['*.jar'], dir: 'providedlib')
-    compile 'com.yuewen.cooperate.common:common-thirdpart:1.0.2'
-    compile 'com.yuewen.cooperate.core:core-thirdpart:1.0.2'
+    compile 'com.xxxx.cooperate.common:common-thirdpart:1.0.2'
+    compile 'com.xxxx.cooperate.core:core-thirdpart:1.0.2'
     compile rootProject.ext.dependencies[&quot;appcompat-v7&quot;]
     compile rootProject.ext.dependencies[&quot;okhttp3&quot;]
     compile rootProject.ext.dependencies[&quot;xlog&quot;]
@@ -161,7 +161,7 @@ core	---&gt;三方
 <pre><code class="language-xml">&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
     &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
     &lt;groupId&gt;com.tencent.news&lt;/groupId&gt;
-    &lt;artifactId&gt;plugin-lib&lt;/artifactId&gt;
+    &lt;artifactId&gt;xxxx-lib&lt;/artifactId&gt;
     &lt;version&gt;2.7.20&lt;/version&gt;
     &lt;packaging&gt;aar&lt;/packaging&gt;
     &lt;dependencies&gt;
@@ -173,13 +173,13 @@ core	---&gt;三方
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;com.tencent.news&lt;/groupId&gt;
-            &lt;artifactId&gt;tn-plugin-interface&lt;/artifactId&gt;
+            &lt;artifactId&gt;xxxx&lt;/artifactId&gt;
             &lt;version&gt;2.7.20&lt;/version&gt;
             &lt;scope&gt;compile&lt;/scope&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;com.tencent.news&lt;/groupId&gt;
-            &lt;artifactId&gt;tn-report&lt;/artifactId&gt;
+            &lt;artifactId&gt;xxxx&lt;/artifactId&gt;
             &lt;version&gt;2.7.20&lt;/version&gt;
             &lt;scope&gt;compile&lt;/scope&gt;
         &lt;/dependency&gt;
@@ -197,10 +197,10 @@ tasks.withType(JavaCompile) {
 apply plugin: 'maven'
 
 // 对应的仓库地址
-def URL_PUCBLIC = &quot;http://dev.inner.yuewen.local/nexus/repository/maven-releases/&quot;
-def USERNAME = &quot;dev&quot;
-def PASSWORD = &quot;dev&quot;
-def GROUP_ID = &quot;com.yuewen.cooperate.core&quot;
+def URL_PUCBLIC = &quot;http://dev.inner.xxxx.local/nexus/repository/maven-releases/&quot;
+def USERNAME = &quot;xxxx&quot;
+def PASSWORD = &quot;xxxx&quot;
+def GROUP_ID = &quot;com.xxxx.cooperate.core&quot;
 def ARTIFACT_ID = &quot;core-thirdpart&quot;
 def VERSION = &quot;1.0.5&quot;
 // 上传到公共仓库
@@ -227,7 +227,7 @@ apply from: &quot;./upload.gradle&quot;
 <p>3.刷新项目,就可以再gradle的任务中看到uploadToPublic,双击执行这个task.就可以在maven库中看到当前aar已上传.我们观察下它的pom.xml</p>
 <pre><code class="language-xml">&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
     &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
-    &lt;groupId&gt;com.yuewen.cooperate.core&lt;/groupId&gt;
+    &lt;groupId&gt;com.xxxx.cooperate.core&lt;/groupId&gt;
     &lt;artifactId&gt;core-thirdpart&lt;/artifactId&gt;
     &lt;version&gt;1.0.5&lt;/version&gt;
     &lt;packaging&gt;aar&lt;/packaging&gt;
@@ -245,7 +245,7 @@ apply from: &quot;./upload.gradle&quot;
             &lt;scope&gt;compile&lt;/scope&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
-            &lt;groupId&gt;com.yuewen.cooperate.xlog&lt;/groupId&gt;
+            &lt;groupId&gt;com.xxxx.cooperate.xlog&lt;/groupId&gt;
             &lt;artifactId&gt;xlog-common&lt;/artifactId&gt;
             &lt;version&gt;1.0.0&lt;/version&gt;
             &lt;scope&gt;compile&lt;/scope&gt;
@@ -272,7 +272,7 @@ apply from: &quot;./upload.gradle&quot;
 <pre><code class="language-groovy">dependencies {
     compile  fileTree(dir: 'libs/main', include: ['*.jar'])
     compile  fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.yuewen.cooperate.core:core-thirdpart:1.0.5'
+    compile 'com.xxxx.cooperate.core:core-thirdpart:1.0.5'
 }
 </code></pre>
 <p>在SDK中使用</p>
@@ -280,7 +280,7 @@ apply from: &quot;./upload.gradle&quot;
     FileTree tree = fileTree(dir: 'libs', includes: ['*.so', '*.jar'])
     compile tree
     provided fileTree(include: ['*.jar'], dir: 'providedlib')
-    compile 'com.yuewen.cooperate.common:common-thirdpart:1.0.3'
+    compile 'com.xxxx.cooperate.common:common-thirdpart:1.0.3'
 }
 </code></pre>
 <p>完美!</p>
@@ -578,7 +578,7 @@ f键，放大选中的帧</p>
 <p>对V的所有操作，都是P层在控制，PM之间通过回调进行。可以逐步去掉handler的使用。</p>
 <p>rxjava的引入。rxjava流式处理较好用，可以无缝切换线程。在项目中的体现就是：子线程拿数据（M）--&gt; 切换--&gt; 主线程展示UI（V).我们可以把rxjava运用到P层，来处理P层中涉及到这个操作的逻辑。</p>
 <h1 id="七-一期改造效果">七、一期改造效果</h1>
-<p>仓库地址：http://git.code.oa.com/book_cooperate_client/cooperate-baseline.git （feature_p_haoizhang_20181122_readerpage_mvp）</p>
+<p>仓库地址：http://xxxx/book_cooperate_client/cooperate-baseline.git （feature_xxxx_20181122_readerpage_mvp）</p>
 <p>删减ReaderPageActivity类 初始行数13102，抽取结束后4853，代码减少63%，包含View交互。</p>
 <p>新增ReaderPagePresenter类 行数6170，包含书籍加载+书籍控制+付费</p>
 <p>新增ReaderPageModel类  行数231，包含数据请求</p>
