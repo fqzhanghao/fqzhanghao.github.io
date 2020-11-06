@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fqzhanghao.github.io/</id>
     <title>浩浩的博客</title>
-    <updated>2020-01-20T08:53:34.731Z</updated>
+    <updated>2020-11-06T09:56:52.659Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fqzhanghao.github.io/"/>
     <link rel="self" href="https://fqzhanghao.github.io/atom.xml"/>
@@ -12,8 +12,8 @@
     <rights>All rights reserved 2020, 浩浩的博客</rights>
     <entry>
         <title type="html"><![CDATA[组件化集成]]></title>
-        <id>https://fqzhanghao.github.io/post/zu-jian-hua-ji-cheng</id>
-        <link href="https://fqzhanghao.github.io/post/zu-jian-hua-ji-cheng">
+        <id>https://fqzhanghao.github.io/post/zu-jian-hua-ji-cheng/</id>
+        <link href="https://fqzhanghao.github.io/post/zu-jian-hua-ji-cheng/">
         </link>
         <updated>2020-01-19T12:53:01.000Z</updated>
         <content type="html"><![CDATA[<p>上半年的技术需求,是做白牌组件集成,就是将白牌独立出来的组件,集成到合作项目中.</p>
@@ -305,8 +305,8 @@ apply from: &quot;./upload.gradle&quot;
     </entry>
     <entry>
         <title type="html"><![CDATA[安卓追踪方法调用堆栈]]></title>
-        <id>https://fqzhanghao.github.io/post/an-zhuo-zhui-zong-fang-fa-diao-yong-dui-zhan</id>
-        <link href="https://fqzhanghao.github.io/post/an-zhuo-zhui-zong-fang-fa-diao-yong-dui-zhan">
+        <id>https://fqzhanghao.github.io/post/an-zhuo-zhui-zong-fang-fa-diao-yong-dui-zhan/</id>
+        <link href="https://fqzhanghao.github.io/post/an-zhuo-zhui-zong-fang-fa-diao-yong-dui-zhan/">
         </link>
         <updated>2020-01-19T12:50:56.000Z</updated>
         <content type="html"><![CDATA[<p>接到组长下发的书城隐私协议问题，记录了一下排查过程，以后可以模仿此步骤，进行隐私协议排查工作</p>
@@ -422,8 +422,8 @@ http://gitlab.inner.yuewen.local/zhanghao.c/XposedHook.git</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[安卓卡顿排查步骤]]></title>
-        <id>https://fqzhanghao.github.io/post/an-zhuo-qia-dun-pai-cha-bu-zou</id>
-        <link href="https://fqzhanghao.github.io/post/an-zhuo-qia-dun-pai-cha-bu-zou">
+        <id>https://fqzhanghao.github.io/post/an-zhuo-qia-dun-pai-cha-bu-zou/</id>
+        <link href="https://fqzhanghao.github.io/post/an-zhuo-qia-dun-pai-cha-bu-zou/">
         </link>
         <updated>2020-01-19T12:45:36.000Z</updated>
         <content type="html"><![CDATA[<p>接到组长下发的书城卡顿排查任务，学习了两个工具，记录一下排查过程，以后可以模仿此步骤，进行页面卡顿检测</p>
@@ -500,8 +500,8 @@ f键，放大选中的帧</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[阅读页mvp技术需求]]></title>
-        <id>https://fqzhanghao.github.io/post/yue-du-ye-mvp-ji-zhu-xu-qiu</id>
-        <link href="https://fqzhanghao.github.io/post/yue-du-ye-mvp-ji-zhu-xu-qiu">
+        <id>https://fqzhanghao.github.io/post/yue-du-ye-mvp-ji-zhu-xu-qiu/</id>
+        <link href="https://fqzhanghao.github.io/post/yue-du-ye-mvp-ji-zhu-xu-qiu/">
         </link>
         <updated>2020-01-19T12:44:41.000Z</updated>
         <content type="html"><![CDATA[<p><strong>需求</strong>：</p>
@@ -604,8 +604,8 @@ f键，放大选中的帧</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[pip网络超时解决办法]]></title>
-        <id>https://fqzhanghao.github.io/post/pip-wang-luo-chao-shi-jie-jue-ban-fa</id>
-        <link href="https://fqzhanghao.github.io/post/pip-wang-luo-chao-shi-jie-jue-ban-fa">
+        <id>https://fqzhanghao.github.io/post/pip-wang-luo-chao-shi-jie-jue-ban-fa/</id>
+        <link href="https://fqzhanghao.github.io/post/pip-wang-luo-chao-shi-jie-jue-ban-fa/">
         </link>
         <updated>2020-01-19T12:43:31.000Z</updated>
         <content type="html"><![CDATA[<p>使用豆瓣源</p>
@@ -615,8 +615,8 @@ f键，放大选中的帧</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[从SVN到Git代码迁移]]></title>
-        <id>https://fqzhanghao.github.io/post/cong-svn-dao-git-dai-ma-qian-yi</id>
-        <link href="https://fqzhanghao.github.io/post/cong-svn-dao-git-dai-ma-qian-yi">
+        <id>https://fqzhanghao.github.io/post/cong-svn-dao-git-dai-ma-qian-yi/</id>
+        <link href="https://fqzhanghao.github.io/post/cong-svn-dao-git-dai-ma-qian-yi/">
         </link>
         <updated>2020-01-19T12:43:13.000Z</updated>
         <content type="html"><![CDATA[<p>准备工作:</p>
@@ -646,8 +646,8 @@ git push -u origin ${NAME}
     </entry>
     <entry>
         <title type="html"><![CDATA[阅读类app竞品分析]]></title>
-        <id>https://fqzhanghao.github.io/post/yue-du-lei-app-jing-pin-fen-xi</id>
-        <link href="https://fqzhanghao.github.io/post/yue-du-lei-app-jing-pin-fen-xi">
+        <id>https://fqzhanghao.github.io/post/yue-du-lei-app-jing-pin-fen-xi/</id>
+        <link href="https://fqzhanghao.github.io/post/yue-du-lei-app-jing-pin-fen-xi/">
         </link>
         <updated>2020-01-19T12:36:25.000Z</updated>
         <summary type="html"><![CDATA[<h2 id="一-竞品分析对象选择">一、竞品分析对象选择</h2>
@@ -1599,8 +1599,8 @@ Network Information下有具体的流量消耗，此次测试仅测试WIFI网络
     </entry>
     <entry>
         <title type="html"><![CDATA[通过观察者模式监听媒体库的变化实现APP本地数据自动更新]]></title>
-        <id>https://fqzhanghao.github.io/post/tong-guo-guan-cha-zhe-mo-shi-jian-ting-mei-ti-ku-de-bian-hua-shi-xian-app-ben-di-shu-ju-zi-dong-geng-xin</id>
-        <link href="https://fqzhanghao.github.io/post/tong-guo-guan-cha-zhe-mo-shi-jian-ting-mei-ti-ku-de-bian-hua-shi-xian-app-ben-di-shu-ju-zi-dong-geng-xin">
+        <id>https://fqzhanghao.github.io/post/tong-guo-guan-cha-zhe-mo-shi-jian-ting-mei-ti-ku-de-bian-hua-shi-xian-app-ben-di-shu-ju-zi-dong-geng-xin/</id>
+        <link href="https://fqzhanghao.github.io/post/tong-guo-guan-cha-zhe-mo-shi-jian-ting-mei-ti-ku-de-bian-hua-shi-xian-app-ben-di-shu-ju-zi-dong-geng-xin/">
         </link>
         <updated>2020-01-19T12:35:59.000Z</updated>
         <summary type="html"><![CDATA[<p>转自:<a href="http://zmywly8866.github.io/2015/03/03/auto-update-app-data.html?utm_source=tuicool&amp;utm_medium=referral">http://zmywly8866.github.io/2015/03/03/auto-update-app-data.html?utm_source=tuicool&amp;utm_medium=referral</a></p>
@@ -1949,8 +1949,8 @@ public class AutoRefreshBookShelf {
     </entry>
     <entry>
         <title type="html"><![CDATA[获取未安装资源apk种的资源文件]]></title>
-        <id>https://fqzhanghao.github.io/post/huo-qu-wei-an-zhuang-zi-yuan-apk-chong-de-zi-yuan-wen-jian</id>
-        <link href="https://fqzhanghao.github.io/post/huo-qu-wei-an-zhuang-zi-yuan-apk-chong-de-zi-yuan-wen-jian">
+        <id>https://fqzhanghao.github.io/post/huo-qu-wei-an-zhuang-zi-yuan-apk-chong-de-zi-yuan-wen-jian/</id>
+        <link href="https://fqzhanghao.github.io/post/huo-qu-wei-an-zhuang-zi-yuan-apk-chong-de-zi-yuan-wen-jian/">
         </link>
         <updated>2020-01-19T12:35:11.000Z</updated>
         <summary type="html"><![CDATA[<p>最近做游戏联运的sdk插件，里面涉及到了游戏的登录、应用内支付等功能，故而界面的布局是少不了的。首先，想到的是xml布局，但是，作为第三方的sdk插件，作为jar包需要加到第三方的libs中，xml界面布局是不被打包到jar包中的。虽然，xml布局文件可以通过反射获取到，但是，这对第三方的要求是所有文件必须放的位置正确，不得出现疏忽。为此，想到，如果把所有的资源文件全部放到一个apk中，然后去加载这个apk的资源，那问题岂不是都解决了？带着这个想法，一步一步来实现这个功能。</p>
@@ -2115,8 +2115,8 @@ public class GetOtherApkRes {
     </entry>
     <entry>
         <title type="html"><![CDATA[简单明了，彻底地理解Binder]]></title>
-        <id>https://fqzhanghao.github.io/post/jian-dan-ming-liao-che-di-di-li-jie-binder</id>
-        <link href="https://fqzhanghao.github.io/post/jian-dan-ming-liao-che-di-di-li-jie-binder">
+        <id>https://fqzhanghao.github.io/post/jian-dan-ming-liao-che-di-di-li-jie-binder/</id>
+        <link href="https://fqzhanghao.github.io/post/jian-dan-ming-liao-che-di-di-li-jie-binder/">
         </link>
         <updated>2020-01-19T12:33:51.000Z</updated>
         <summary type="html"><![CDATA[<p>转自:<a href="http://blog.csdn.net/huachao1001/article/details/51504469">http://blog.csdn.net/huachao1001/article/details/51504469</a></p>
